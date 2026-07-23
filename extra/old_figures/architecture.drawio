@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="pipeline" id="staging-pipeline">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="960" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== INPUT ===== -->
+        <mxCell id="inp" value="&lt;b&gt;Input (PSG epoch)&lt;/b&gt;&lt;br&gt;&lt;br&gt;7 ch × 3000&lt;br&gt;30 s @ 100 Hz&lt;br&gt;EEG ×4, EOG ×2, EMG" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="170" width="180" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ===== FEATURE EXTRACTION group ===== -->
+        <mxCell id="feat" value="&lt;b&gt;Feature Extraction&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;verticalAlign=top;spacingTop=8;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="250" y="60" width="540" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="lanA" value="Spectral + temporal  (23 / ch × 7 = 161)" style="text;html=1;align=center;fontSize=11;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="265" y="92" width="250" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lanB" value="Event / physiological  (27)" style="text;html=1;align=center;fontSize=11;fontStyle=1;fontColor=#B26A00;" vertex="1" parent="1">
+          <mxGeometry x="530" y="92" width="245" height="20" as="geometry" />
+        </mxCell>
+        <!-- spectral sub-blocks (B&amp;W) -->
+        <mxCell id="s1" value="band power δ/θ/α/σ/β (abs+rel), 10/ch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="265" y="120" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="spectral entropy + edge, 2/ch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="265" y="174" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="Hjorth: activity / mobility / complexity, 3/ch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="265" y="228" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="time-domain: var, ZCR, percentiles, 8/ch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="265" y="282" width="245" height="46" as="geometry" />
+        </mxCell>
+        <!-- event sub-blocks (COLOURED = contribution) -->
+        <mxCell id="ev1" value="spindle density / amp / var  (×4 EEG)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6C877;strokeColor=#B26A00;fontColor=#5E3A00;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="120" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="ev2" value="slow-wave p2p / amplitude  (×4 EEG)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6C877;strokeColor=#B26A00;fontColor=#5E3A00;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="174" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="ev3" value="ocular movement / p95  (×2 EOG)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6C877;strokeColor=#B26A00;fontColor=#5E3A00;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="228" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="ev4" value="EMG log-RMS / p90 / diff-var" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6C877;strokeColor=#B26A00;fontColor=#5E3A00;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="282" width="245" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="phi" value="per-epoch feature vector  φ &#8712; &#8477;&lt;sup&gt;188&lt;/sup&gt;" style="text;html=1;align=center;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="345" width="320" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ===== TEMPORAL CONTEXT ===== -->
+        <mxCell id="ctx" value="&lt;b&gt;Temporal Context&lt;/b&gt;&lt;br&gt;&lt;br&gt;stack ±3 epochs&lt;br&gt;7-epoch window&lt;br&gt;edge-padded" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="830" y="170" width="180" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ===== BOOSTING ENSEMBLE group ===== -->
+        <mxCell id="ens" value="&lt;b&gt;Boosting Ensemble&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;verticalAlign=top;spacingTop=8;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="830" y="470" width="200" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" value="XGBoost  (500, depth 6, GPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="848" y="512" width="164" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="LightGBM  (600, 63 leaves)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="848" y="566" width="164" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="HistGB  (400 iter)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="848" y="620" width="164" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" value="CatBoost  (700, GPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="848" y="674" width="164" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="sv" value="class-balanced soft-vote&lt;br&gt;&lt;i&gt;P&lt;/i&gt;(&lt;i&gt;y&lt;/i&gt; | &#934;) &#8712; &#8477;&lt;sup&gt;5&lt;/sup&gt;" style="text;html=1;align=center;fontSize=10;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="848" y="730" width="164" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ===== HMM ===== -->
+        <mxCell id="hmm" value="&lt;b&gt;HMM Decoding&lt;/b&gt;&lt;br&gt;&lt;br&gt;transition matrix A (5×5),&lt;br&gt;prior π from train hypnograms&lt;br&gt;Viterbi: &lt;i&gt;&#349;&lt;/i&gt;&lt;sub&gt;1:T&lt;/sub&gt; = argmax&lt;sub&gt;s&lt;/sub&gt; &lt;i&gt;P&lt;/i&gt;(&lt;i&gt;s&lt;/i&gt;|&lt;i&gt;x&lt;/i&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="520" y="510" width="230" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- ===== HYPNOGRAM ===== -->
+        <mxCell id="hyp" value="&lt;b&gt;Hypnogram&lt;/b&gt;&lt;br&gt;&lt;br&gt;5-class sequence&lt;br&gt;W  N1  N2  N3  R&lt;br&gt;10-fold, subject-independent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="250" y="510" width="210" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CLINICAL READOUT (COLOURED = contribution) ===== -->
+        <mxCell id="clin" value="&lt;b&gt;Clinical readout  (event features reused)&lt;/b&gt;&lt;br&gt;&lt;br&gt;spindle asymmetry  AI = (P&lt;sub&gt;ipsi&lt;/sub&gt; &#8722; P&lt;sub&gt;contra&lt;/sub&gt;) / (P&lt;sub&gt;ipsi&lt;/sub&gt; + P&lt;sub&gt;contra&lt;/sub&gt;)  vs  stroke severity (NIHSS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F6C877;strokeColor=#B26A00;fontColor=#5E3A00;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="740" width="450" height="86" as="geometry" />
+        </mxCell>
+
+        <!-- ===== LEGEND ===== -->
+        <mxCell id="lg_w" value="" style="rounded=0;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="30" y="470" width="26" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_wt" value="standard staging pipeline" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="64" y="466" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_o" value="" style="rounded=0;html=1;fillColor=#F6C877;strokeColor=#B26A00;" vertex="1" parent="1">
+          <mxGeometry x="30" y="500" width="26" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_ot" value="physiological features (our contribution)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#5E3A00;" vertex="1" parent="1">
+          <mxGeometry x="64" y="496" width="300" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ===== EDGES ===== -->
+        <mxCell id="e1" value="&#8477;&lt;sup&gt;7×3000&lt;/sup&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.35;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="inp" target="feat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="&#8477;&lt;sup&gt;188&lt;/sup&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.35;entryX=0;entryY=0.5;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="feat" target="ctx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="&#8477;&lt;sup&gt;1316&lt;/sup&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ctx" target="ens">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="&lt;i&gt;P&lt;/i&gt;(&lt;i&gt;y&lt;/i&gt;|&#934;)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ens" target="hmm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="&#375;&lt;sub&gt;1:T&lt;/sub&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#000000;strokeWidth=1.5;endArrow=block;endFill=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="hmm" target="hyp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ebr" value="event features reused" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0.6;entryY=0;strokeColor=#B26A00;strokeWidth=1.5;dashed=1;endArrow=block;endFill=1;fontSize=10;fontColor=#B26A00;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ev4" target="clin">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="305" />
+              <mxPoint x="800" y="710" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

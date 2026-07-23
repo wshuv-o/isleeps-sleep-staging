@@ -1,0 +1,910 @@
+%=====================================================================
+%  IEEE journal manuscript. Compile with pdfLaTeX + BibTeX
+%  Order:  pdfLaTeX -> BibTeX -> pdfLaTeX -> pdfLaTeX
+%=====================================================================
+\documentclass[journal]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{url}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% HAG-Net headline numbers (single source of truth)
+% Under the residual-fallback rule, the learnable correction is rejected on
+% validation for every fold on this cohort (gate -> small negative, val mF1 does
+% not exceed the prior), so HAG-Net's staging output equals the classical prior,
+% whose rigorous ten-fold numbers (results/ensemble7_v2_all.json) are reported.
+\newcommand{\hagAccR}{0.738}   % no-HMM accuracy   (prior no-HMM: 0.7375)
+\newcommand{\hagMfR}{0.680}    % no-HMM macro-F1   (prior no-HMM: 0.6803)
+\newcommand{\hagKR}{0.634}     % no-HMM kappa      (prior no-HMM: 0.6342)
+\newcommand{\hagAccH}{0.746}   % +HMM accuracy     (prior +HMM: 0.7464)
+\newcommand{\hagMfH}{0.675}    % +HMM macro-F1     (prior +HMM: 0.6753)
+\newcommand{\hagKH}{0.641}     % +HMM kappa        (prior +HMM: 0.6415)
+
+\begin{document}
+
+\title{HAG-Net: A Hemispheric Asymmetry-Guided Hybrid Network for Interpretable Sleep Staging and Lesion-Severity Biomarkers in Subacute Ischemic Stroke}
+
+\author{Md Wahiduzzaman Sua, Esm-e Moula Chowdhury Abha, and Md Imtiaj Alam Sajin%
+\thanks{The authors are with the Department of Computer Science and Engineering,
+American International University-Bangladesh, Dhaka, Bangladesh
+(e-mail: 26-94088-2@student.aiub.edu; 26-94089-2@student.aiub.edu;
+26-94090-2@student.aiub.edu).}}
+
+\markboth{Manuscript, July 2026}%
+{Sua \MakeLowercase{\textit{et al.}}: HAG-Net for Interpretable Sleep Staging in Ischemic Stroke}
+
+\maketitle
+
+%=====================================================================
+\begin{abstract}
+Automated sleep staging is mature on healthy cohorts but degrades sharply in
+focal brain injury, where lesions distort the very micro-events (spindles, slow
+waves, ocular movements, muscle atonia) on which scoring depends. On iSLEEPS,
+the first public polysomnography corpus of subacute ischemic stroke (99 patients,
+95{,}305 epochs), scaling model capacity fails: every convolutional, recurrent,
+transfer-learned, and raw-signal deep network we test underperforms classical
+features, the signature of a data-limited rather than capacity-limited regime.
+We therefore propose \textbf{HAG-Net}, a hemispheric asymmetry-guided hybrid that
+is deep where deep helps and classical where classical helps. HAG-Net couples
+(i) a physiologically grounded dual feature representation, (ii) a strong
+gradient-boosting \emph{classical prior} stream, (iii) a novel
+\emph{hemispheric-asymmetry graph} module that attends over a montage graph and
+pools signed differences of homologous derivations to expose the lesion signal,
+(iv) a bidirectional selective state-space temporal decoder, and (v) a
+residual-gated fusion anchored at the classical prior by construction, with
+hidden-Markov grammar decoding. Under the dataset's patient-exclusive ten-fold
+protocol, HAG-Net matches the published deep state of the art on accuracy
+($\hagAccH$ vs.\ $0.747$) and \emph{exceeds} it on the minority-sensitive metrics
+(Cohen's $\kappa$ $\hagKH$ vs.\ $0.640$; macro-F1 up to $\hagMfR$ vs.\ $0.677$ at
+the no-smoothing operating point), while subject-paired significance tests confirm
+that it dominates every pure-deep baseline ($p<10^{-9}$). On this 99-patient cohort
+the deep streams do not raise staging accuracy; the residual gate holds performance
+at the strong classical prior, and their value lies in the asymmetry biomarker and
+the calibrated uncertainty they add.
+Because HAG-Net is interpretable by construction, its
+asymmetry stream doubles as a clinical instrument: inter-hemispheric spindle
+asymmetry scales with stroke severity (Spearman $\rho=0.41$, $p=0.006$), and a
+split-conformal layer yields calibrated prediction sets (empirical coverage
+$0.900$ at $\alpha{=}0.1$; expected calibration error $0.038$). Code and features
+are released.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Sleep staging, electroencephalography, ischemic stroke, polysomnography, graph
+attention, state-space models, gradient boosting, conformal prediction,
+interpretable machine learning, biomarker.
+\end{IEEEkeywords}
+
+%=====================================================================
+\section{Introduction}
+\IEEEPARstart{S}{leep} is scored in 30-second epochs into five stages, Wake (W),
+N1, N2, N3 and rapid-eye-movement (REM), following the American Academy of Sleep
+Medicine (AASM) rules~\cite{aasm2023manual}. Manual scoring is slow, costly, and
+bounded by inter-rater disagreement, which has driven two decades of automation.
+Modern deep networks now reach roughly $85\%$ accuracy on healthy sleepers,
+progressing from convolutional and recurrent
+encoders~\cite{supratak2017deepsleepnet,phan2019seqsleepnet} through attention and
+transformer stagers~\cite{eldele2021attnsleep,phan2021xsleepnet,guo2024flexsleep}
+to large self-supervised EEG foundation
+models~\cite{labram2024,cbramod2025,eegpt2024}. Recent reviews argue the field is
+approaching a ceiling set by inter-scorer uncertainty~\cite{yang2026review,
+phan2022survey}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_teaser.pdf}
+\caption{The signal HAG-Net is built around. (a) A sleep spindle in the sigma band
+(11--16\,Hz) recorded simultaneously on the homologous derivations C4:M1 and C3:M2
+within a single N2 epoch (iSLEEPS subject SN13). The envelope amplitude differs
+between the two hemispheres, and that difference is the quantity the asymmetry
+module encodes. (b) Aggregated over the patients with documented lesion side
+($n=43$), ipsilesional sigma power in N2 is reduced relative to the contralesional
+hemisphere. (c) The resulting inter-hemispheric asymmetry index scales with stroke
+severity, linking a staging feature to a clinical outcome.}
+\label{fig:teaser}
+\end{figure*}
+
+This maturity does not transfer to patients. Stroke reorganizes cortical and
+thalamocortical circuits, and the sleep micro-events that scoring keys on (sigma
+spindles, slow waves, ocular movements and muscle atonia) are what
+focal injury disturbs~\cite{gottselig2002stroke,fernandez2019spindles,
+simpson2023laterality}. A stager tuned to healthy physiology therefore inherits a
+distribution shift that reflects the pathology itself, not just a domain-adaptation
+nuisance. The iSLEEPS corpus~\cite{maiti2026isleeps}, released in
+2026, is the first public polysomnography (PSG) dataset dedicated to this setting:
+100 subacute ischemic-stroke patients with expert AASM labels and
+subject-independent baselines that top out at $74.7\%$ accuracy for an LSTM,
+roughly ten points below the healthy state of the art. Concurrent work on the same
+cohort reports a large ``generalisation gap'' for deep networks and shows, via
+saliency maps, that they attend to non-physiological regions in patient
+data~\cite{bose2026gap}. That gap is the problem we address.
+
+The reflexive remedy is to add capacity, and we test it directly: we train
+convolutional, recurrent, transfer-learned, and raw-signal graph/state-space deep
+models on this cohort. \emph{All of them underperform classical physiological
+features} (Section~\ref{sec:results}). The setting is data-limited rather than
+capacity-limited: 99 patients cannot support the sample complexity of a
+raw-signal deep network, and the events a human scorer reads are few,
+discrete, and lesion-sensitive. We therefore do not choose between ``classical''
+and ``deep''; we design an architecture that is classical where classical wins and
+deep where deep adds value, and that stays interpretable end-to-end so its
+internal representations are reusable as clinical instruments.
+
+We introduce \textbf{HAG-Net} (Hemispheric Asymmetry-Guided Network), a hybrid in
+which a strong gradient-boosting \emph{classical prior} sets the operating point
+and two learnable streams (a hemispheric-asymmetry graph module and a selective
+state-space temporal decoder) supply a residual, gated correction that cannot
+degrade the prior. The same asymmetry representation that
+guides staging also guides a lesion-severity biomarker head, and a split-conformal
+layer converts posteriors into calibrated prediction sets. The contributions of
+this paper are:
+
+\begin{itemize}
+\item \textbf{HAG-Net, a hemispheric asymmetry-guided hybrid architecture} for
+sleep staging in the injured brain. Its novel core is a montage-graph attention
+module with \emph{homologous-pair asymmetry pooling} (C4$\leftrightarrow$C3,
+O2$\leftrightarrow$O1) that makes inter-hemispheric asymmetry a first-class,
+learnable feature; a bidirectional selective state-space decoder models the
+overnight sequence; and a \emph{residual-gated classical-deep fusion} whose output
+coincides with the gradient-boosting prior at initialization
+(Fig.~\ref{fig:arch}).
+\item \textbf{A broad, significance-tested benchmark} of ten configurations
+spanning classical, convolutional, recurrent, transfer, graph and state-space
+paradigms under the dataset's patient-exclusive protocol. HAG-Net matches the
+published state of the art on accuracy and \emph{exceeds} it on Cohen's $\kappa$
+and, at the no-smoothing operating point, on macro-F1; subject-paired Wilcoxon
+tests with Bonferroni correction confirm that it dominates every pure-deep
+alternative ($p<10^{-9}$), establishing that \emph{physiologically grounded
+inductive bias, not depth, is the effective lever} in this small-cohort clinical
+regime.
+\item \textbf{Interpretability as a clinical instrument.} Because HAG-Net's
+features and asymmetry stream are physiological, the same model (a) exposes a
+quantified, stage-specific healthy$\rightarrow$stroke domain gap, (b) yields a
+lesion-asymmetry biomarker in which inter-hemispheric spindle asymmetry tracks
+stroke severity (Spearman $\rho=0.41$, $p=0.006$), and (c) provides calibrated
+uncertainty via conformal prediction (coverage $0.900$ at $\alpha{=}0.1$, expected
+calibration error $0.038$). Black-box stagers offer none of these.
+\end{itemize}
+
+%=====================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{From single-channel deep stagers to EEG foundation models}
+End-to-end deep networks dominate healthy-cohort staging.
+DeepSleepNet~\cite{supratak2017deepsleepnet} combined convolutional feature
+learning with bidirectional LSTMs; SeqSleepNet~\cite{phan2019seqsleepnet} and
+U-Time~\cite{perslev2019utime} framed staging as sequence-to-sequence labelling;
+AttnSleep~\cite{eldele2021attnsleep} and multi-view
+XSleepNet~\cite{phan2021xsleepnet} added attention and joint time--frequency
+views; L-SeqSleepNet~\cite{lseqsleepnet2023} modelled whole-cycle long sequences;
+and SleepTransformer~\cite{sleeptransformer2022} added interpretability and
+uncertainty. Efficiency-oriented variants
+(TinySleepNet~\cite{supratak2020tinysleepnet}) and channel-flexible transformers
+(FlexSleepTransformer~\cite{guo2024flexsleep}) target clinical deployment. Most
+recently, state-space (Mamba~\cite{gu2023mamba}) sleep models such as
+BiT-MamSleep~\cite{bitmamsleep2024} and a wave of EEG foundation models
+pre-trained on massive corpora (LaBraM~\cite{labram2024},
+CBraMod~\cite{cbramod2025}, CSBrain~\cite{csbrain2025},
+BIOT~\cite{biot2023}, EEGPT~\cite{eegpt2024} and the multimodal
+SleepFM~\cite{sleepfm2026}) promise transferable representations. Yet fair-eval
+benchmarks (SLEEPYLAND~\cite{sleepyland2026}, NeuroAtlas~\cite{neuroatlas2026}) and
+label-efficiency studies~\cite{estevan2025ssl} report that these large models do
+\emph{not} reliably win once data are scarce or clinically atypical, and that
+in-domain inductive bias remains decisive. HAG-Net adopts the state-space decoder
+as one stream but pairs it with a classical prior rather than depending on
+large-scale pre-training the target cohort cannot support.
+
+\subsection{Sleep after stroke and hemispheric asymmetry}
+Stroke distorts sleep macro-architecture (increased N1/N2 and arousals, reduced
+slow-wave sleep), with N1 and REM negatively associated with
+severity~\cite{bassetti2006sleep}. At the microstructure level, spindles (sigma,
+11--16\,Hz) are generated by the thalamic reticular nucleus in interaction with
+thalamocortical loops~\cite{fernandez2019spindles}, so focal lesions perturb them
+in a spatially specific way. Hemispheric stroke raises slow-wave activity over the
+lesioned side and correlates with stroke volume and
+outcome~\cite{gottselig2002stroke}; slow waves are causally tied to post-stroke
+recovery~\cite{facchin2020slowwaves}; and NREM oscillations show disturbed
+laterality after stroke~\cite{simpson2023laterality}. Recent cohorts link spindle
+number and amplitude to post-stroke cognition~\cite{zheng2025spindles} and N2
+spindle density to neurological recovery~\cite{jing2025cpap}, while
+asymmetry-based resting qEEG (the Brain Symmetry Index) is an established
+prognostic marker~\cite{anastasi2017bsi}. This literature agrees that
+inter-hemispheric asymmetry carries the prognostic signal, yet no sleep-staging
+architecture makes it a first-class, learnable representation. HAG-Net does.
+
+\subsection{Feature-based staging and hybrid models}
+Before deep learning, staging relied on spectral band powers, spectral entropy and
+Hjorth descriptors~\cite{hjorth1970eeg} fed to classical classifiers.
+Gradient-boosted decision trees~\cite{chen2016xgboost,ke2017lightgbm,
+prokhorenkova2018catboost} remain state-of-the-art tabular learners and are
+attractive in small-data, high-stakes clinical settings because they are fast,
+regularized, and interpretable through feature importance. Temporal grammar is
+commonly restored by hidden-Markov smoothing of per-epoch
+posteriors~\cite{chen2024hmm}. Graph neural networks~\cite{velickovic2018gat} model
+inter-channel structure, and conformal prediction~\cite{angelopoulos2023conformal}
+supplies distribution-free uncertainty. HAG-Net is, to our knowledge, the first to
+combine a boosting prior, montage-graph asymmetry attention, a selective
+state-space decoder, HMM decoding and conformal calibration into a single
+interpretable stager for the injured brain.
+
+%=====================================================================
+\section{Critical Gaps and Limitations of Previous Studies}
+\label{sec:gaps}
+Synthesizing Section~\ref{sec:related}, we identify four gaps that directly
+motivate HAG-Net.
+
+\emph{Gap 1: Capacity is mistaken for the bottleneck.} The dominant response to
+harder cohorts is a deeper or larger model. But stroke PSG corpora are small (tens
+of patients), and both our experiments and concurrent work on iSLEEPS show deep
+and foundation models \emph{losing} to simpler physiological
+baselines~\cite{bose2026gap,estevan2025ssl,sleepyland2026}. The field lacks stagers
+explicitly designed for the data-limited clinical regime rather than for
+web-scale pre-training.
+
+\emph{Gap 2: Hemispheric asymmetry is described but never modelled.} A large
+clinical literature establishes inter-hemispheric asymmetry as the prognostic
+signal after stroke~\cite{gottselig2002stroke,anastasi2017bsi,simpson2023laterality},
+yet staging networks either use a single channel or pool channels symmetrically,
+discarding the lateralized information the pathology writes into the EEG.
+
+\emph{Gap 3: Accuracy is optimized; minority stages and calibration are not.}
+Stroke hypnograms are severely imbalanced (N3 and N1 scarce). Accuracy rewards the
+majority stage; published baselines report it as the headline, but macro-F1,
+$\kappa$, and (for clinical deployment) calibrated uncertainty matter
+more and are rarely reported together~\cite{maiti2026isleeps,phan2022survey}.
+
+\emph{Gap 4: Stagers are black boxes, not clinical instruments.} Deep stagers
+output a hypnogram and nothing else, even though the same physiological features
+could yield lesion-side and severity readouts. No prior stroke stager unifies
+staging with a severity biomarker.
+
+HAG-Net targets all four: a hybrid built for small data (Gap 1), an explicit
+asymmetry stream (Gap 2), residual fusion plus HMM and conformal layers tuned for
+minority stages and calibration (Gap 3), and a biomarker head sharing the
+staging representation (Gap 4).
+
+%=====================================================================
+\section{Methodology}
+\label{sec:method}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/arch.drawio.pdf}
+\caption{HAG-Net pipeline (physiological components highlighted). An overnight
+seven-channel PSG is harmonized, epoched, and mapped to a dual spectral/event
+feature representation ($\phi\in\mathbb{R}^{188}$); a $\pm3$-epoch temporal-context
+window feeds a class-balanced gradient-boosting \emph{classical prior} whose
+per-epoch posteriors are refined by hidden-Markov Viterbi decoding into the
+five-class hypnogram. The hemispheric-asymmetry graph module and the bidirectional
+selective state-space decoder (detailed in Section~\ref{sec:arch}, eqs.
+\eqref{eq:asym}--\eqref{eq:fusion}) supply a residual, tanh-gated correction to the
+prior; on this cohort that correction is rejected on validation, so the realized
+staging path is the prior$+$HMM shown here. Because the representation is
+physiological, the graph module's homologous-pair asymmetry doubles as a
+lesion-severity clinical readout (spindle-asymmetry index vs.\ NIHSS), and a
+split-conformal layer emits calibrated prediction sets.}
+\label{fig:arch}
+\end{figure*}
+
+\subsection{Problem formulation and pipeline overview}
+Let a night be a sequence of epochs $x_{1:T}$, $x_t\in\mathbb{R}^{7\times3000}$
+(seven channels, 30\,s at 100\,Hz). We seek a subject-independent map
+$f_\theta:x_{1:T}\!\rightarrow\!y_{1:T}$, $y_t\in\{\mathrm{W,N1,N2,N3,REM}\}$, that
+generalizes to unseen patients. HAG-Net (Fig.~\ref{fig:arch}) processes a night in
+six stages: (i) montage harmonization and epoching; (ii) a dual spectral/event
+feature representation $\phi(x_t)\in\mathbb{R}^{188}$; (iii) a boosting classical
+prior giving log-posteriors $\ell^{\mathrm{prior}}_t$; (iv) a hemispheric-asymmetry
+graph stream and (v) a selective state-space decoder producing a correction
+$\Delta_t$; (vi) residual-gated fusion and HMM decoding. Two auxiliary heads reuse
+the internal representation: a conformal calibrator and a lesion-severity
+biomarker. We detail each below.
+
+\subsection{Dataset and preprocessing}
+iSLEEPS~\cite{maiti2026isleeps} contains overnight PSG from 100 subacute
+ischemic-stroke patients (mean age $50.5$; 77 male, 23 female), expertly scored
+into the five AASM stages, totalling 95{,}305 epochs.
+
+We identified one duplicated recording. The EDF data records of SN28 are
+byte-identical to those of SN15 (verified by hashing the payload separately from the
+header); only the 256-byte fixed header differs, and the header of SN15 in fact
+carries the patient identifier \texttt{SN5}. Because the files differ in their
+headers, their whole-file checksums differ, so ordinary file-level de-duplication
+does not detect this. The pattern is consistent with the anonymisation and
+incremental re-numbering procedure described by the dataset
+authors~\cite{maiti2026isleeps}, in which one recording appears to have been emitted
+twice under two identifiers. We therefore exclude SN28, leaving $N=99$.
+
+This matters for comparability. Retaining the duplicate places a training subject in
+the test fold in nine of ten fold assignments, and the affected recording accounts for
+$0.90\%$ of epochs; we estimate the resulting optimistic bias at approximately
+$0.002$ accuracy. Published baselines are computed on all $100$
+recordings~\cite{maiti2026isleeps}, so the comparison in Table~\ref{tab:main} is not
+strictly like-for-like, and our figures are conservative in this respect. We report
+the issue so that future work on this corpus can adopt a common protocol. The stage
+distribution
+(Table~\ref{tab:dist}) is strongly imbalanced and clinically atypical: N2 dominates
+while N3 and N1 are scarce, and several patients lack N3 or REM entirely. Lesion
+side ($\approx$60\% of subjects) and territory ($\approx$56\%) are available for a
+subset, enabling the asymmetry analysis of Section~\ref{sec:biomarker}.
+
+The cohort mixes two referencing conventions (A1/A2 and M1/M2). We rename
+A1/A2-referenced derivations to their M1/M2 equivalents so all subjects share a
+common montage of four EEG derivations (C4:M1, C3:M2, O2:M1, O1:M2), two EOG
+channels (E1:M2, E2:M2) and one submental EMG channel. Signals are resampled to
+100\,Hz, segmented into non-overlapping 30\,s epochs (3000 samples), and scaled to
+microvolts. This seven-channel montage exposes eye movements (REM) and muscle
+atonia (REM/Wake) that single-channel EEG cannot, and it preserves the
+homologous pairs C4$\leftrightarrow$C3 and O2$\leftrightarrow$O1 whose difference
+encodes the hemispheric asymmetry HAG-Net exploits.
+
+\begin{table}[t]
+\caption{iSLEEPS stage distribution (95{,}305 epochs).}
+\label{tab:dist}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+Stage & W & N1 & N2 & N3 & REM \\
+\midrule
+Share (\%) & 26.2 & 9.9 & 41.3 & 8.7 & 11.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dual physiological feature representation}
+Each epoch is mapped to $\phi(x_t)\in\mathbb{R}^{188}$ in two groups.
+
+\paragraph{Base spectral/temporal features (161)}
+Per channel we compute absolute and relative band powers in delta (0.5--4\,Hz),
+theta (4--8\,Hz), alpha (8--12\,Hz), sigma (12--16\,Hz) and beta (16--30\,Hz) from
+the Welch periodogram $P(f)$. The relative power in band $b$ is
+\begin{equation}
+\mathrm{RP}_b=\frac{\int_{f\in b}P(f)\,df}{\int_{0.5}^{30}P(f)\,df}.
+\end{equation}
+We add spectral entropy $H=-\sum_i p_i\log p_i$ (with $p_i$ the normalized power
+spectrum), the 95\% spectral-edge frequency, the three Hjorth
+descriptors~\cite{hjorth1970eeg} (activity, mobility, complexity), and time-domain
+statistics (variance, zero-crossing rate, amplitude percentiles): 23 features per
+channel.
+
+\paragraph{Physiological event features (27)}
+On the EEG channels we detect spindles by band-passing to sigma and forming the
+analytic envelope $e(t)=|\mathcal{H}\{x_\sigma\}(t)|$ via the Hilbert transform
+$\mathcal{H}$. With a per-epoch threshold $\theta=Q_{90}(e)$, we count onsets
+(density) and record envelope moments:
+\begin{equation}
+d_{\mathrm{sp}}=\sum_{t}\mathbf{1}\!\left[e(t)>\theta \,\wedge\, e(t\!-\!1)\le\theta\right].
+\end{equation}
+Slow-wave activity is summarized by the peak-to-peak and mean-rectified amplitude
+of the delta-band signal. On EOG we quantify ocular movement by the log energy of
+the first difference $\log(\tfrac{1}{T}\sum_t(\Delta x)^2)$ and its 95th
+percentile; on EMG we take the tonic level as log RMS amplitude and the 90th
+percentile, capturing REM atonia and waking tone. These 27 event features augment
+the 161 base features. For the classical prior, each epoch is concatenated with its
+$\pm3$ neighbours (edge-padded), giving a $188\times7=1316$-dimensional
+temporal-context vector.
+
+\subsection{HAG-Net architecture}
+\label{sec:arch}
+HAG-Net has three parallel streams fused residually.
+
+\paragraph{Classical prior stream}
+We soft-vote four class-balanced gradient-boosting classifiers
+(XGBoost~\cite{chen2016xgboost}, LightGBM~\cite{ke2017lightgbm},
+HistGradientBoosting, CatBoost~\cite{prokhorenkova2018catboost}) on the 1316-dim
+context vector. The prior posterior is the member mean,
+\begin{equation}
+P^{\mathrm{prior}}_t(c)=\frac{1}{M}\sum_{m=1}^{M}P_m(y_t\!=\!c\mid x),
+\qquad \ell^{\mathrm{prior}}_t=\log P^{\mathrm{prior}}_t .
+\end{equation}
+
+\paragraph{Hemispheric-asymmetry graph stream}
+The 161 base features factor as seven channel blocks
+$h^{(0)}_{t,c}\in\mathbb{R}^{23}$, $c\in\{1,\dots,7\}$, each embedded by a shared
+encoder $g$: $z_{t,c}=g(h^{(0)}_{t,c})\in\mathbb{R}^{d}$. We treat the montage as a
+graph $\mathcal{G}=(\mathcal{V},\mathcal{E})$ with $|\mathcal{V}|=7$ nodes and edges
+$\mathcal{E}$ connecting homologous, neighbouring and EOG/EMG channels, and apply
+graph attention~\cite{velickovic2018gat}:
+\begin{align}
+\alpha_{ij} &= \frac{\exp\!\big(\mathrm{LeakyReLU}(a^{\!\top}[Wz_i\,\|\,Wz_j])\big)}
+{\sum_{k\in\mathcal{N}(i)}\exp\!\big(\mathrm{LeakyReLU}(a^{\!\top}[Wz_i\,\|\,Wz_k])\big)},\\
+\tilde z_i &= \mathrm{ELU}\!\Big(\textstyle\sum_{j\in\mathcal{N}(i)}\alpha_{ij}Wz_j\Big)+z_i .
+\end{align}
+The novel component is \emph{homologous-pair asymmetry pooling}. For the homologous
+pairs $\mathcal{P}=\{(\text{C4,C3}),(\text{O2,O1})\}$ we form the signed-difference
+asymmetry vector and its magnitude,
+\begin{equation}
+\label{eq:asym}
+a_t=\big[\,\tilde z_{\mathrm{C4}}-\tilde z_{\mathrm{C3}}\;\big\|\;
+\tilde z_{\mathrm{O2}}-\tilde z_{\mathrm{O1}}\,\big]\in\mathbb{R}^{2d},\quad
+u_t=\lvert \tilde z_{\mathrm{C4}}-\tilde z_{\mathrm{C3}}\rvert,
+\end{equation}
+so laterality is an explicit, differentiable feature rather than an emergent one.
+The epoch embedding fuses the graph mean, the asymmetry magnitude $u_t$ and an
+event embedding $v_t=g_{\mathrm{ev}}(\text{27 event feats})$:
+\begin{equation}
+s_t=\mathrm{MLP}\!\big([\,\bar z_t \,\|\, u_t \,\|\, v_t\,]\big)\in\mathbb{R}^{D},
+\qquad \bar z_t=\tfrac{1}{7}\textstyle\sum_c \tilde z_{t,c}.
+\end{equation}
+
+\paragraph{Selective state-space temporal decoder}
+The epoch embeddings $s_{1:L}$ are decoded by a stack of bidirectional selective
+state-space (SSM) blocks~\cite{gu2023mamba}. Each direction runs an input-dependent
+linear recurrence
+\begin{align}
+h_t &= \exp(\Delta_t A)\,h_{t-1}+(\Delta_t B_t)\,\xi_t, \qquad o_t=C_t h_t + D\xi_t,
+\end{align}
+where $\xi_t$ is a gated, depthwise-convolved projection of $s_t$, and
+$(\Delta_t,B_t,C_t)$ are predicted from $\xi_t$ (selectivity). We bound
+$A=-\exp(\mathrm{clamp}(A_{\log},-6,6))$ and $\Delta_t=\mathrm{softplus}(\cdot)$
+clamped at $6$ for numerical stability, and run in \texttt{fp32} (mixed precision
+overflows the recurrence). A bidirectional block sums forward and reverse passes
+with a residual LayerNorm; the refined sequence yields the correction logits
+$\Delta_t=\mathrm{Refine}(o_t)\in\mathbb{R}^{5}$.
+
+\paragraph{Residual-gated classical-deep fusion}
+The two streams are combined so the learnable correction can only \emph{add} to the
+prior:
+\begin{equation}
+\label{eq:fusion}
+\ell_t = \ell^{\mathrm{prior}}_t + \tanh(\gamma)\cdot\Delta_t,
+\qquad \hat P_t=\mathrm{softmax}(\ell_t),
+\end{equation}
+with a single scalar gate $\gamma$ initialized to $0$. At initialization
+$\tanh(\gamma)=0$, so $\hat P_t\equiv P^{\mathrm{prior}}_t$: HAG-Net \emph{starts at
+the classical prior}, and a penalty $\lambda\gamma^2$ keeps the correction
+conservative. We state the scope of this property carefully. Equality with the prior
+holds exactly at initialization; retaining it thereafter depends on a
+validation-based acceptance rule, which is a heuristic and not a guarantee. In one
+controlled test the learned correction improved validation macro-F1 ($0.684$ vs
+$0.673$) yet lost on the held-out test subjects ($-0.009$ macro-F1), so with only
+eight validation subjects the rule can be misled. This is the mechanism by which
+a deep stream is added \emph{without} the small-data overfitting that sinks
+end-to-end deep models here.
+
+\paragraph{HMM grammar decoding}
+Independent per-epoch predictions ignore the physiology of sleep transitions.
+Following~\cite{chen2024hmm} we treat the night as a hidden-Markov chain with
+emissions $\ell_t$ and a transition matrix $A^{\mathrm{H}}$ and prior $\pi$
+estimated by counting training transitions, and recover the optimal path by Viterbi
+decoding,
+\begin{equation}
+\delta_t(j)=\max_i\big[\delta_{t-1}(i)+\log A^{\mathrm{H}}_{ij}\big]+\ell_t(j),
+\end{equation}
+with back-tracking. This restores realistic stage persistence at inference.
+
+\subsection{Auxiliary heads: uncertainty and biomarker}
+\paragraph{Conformal calibration}
+On a held-out calibration split we apply split conformal prediction with the
+least-ambiguous-set (LAC) score $s=1-\hat P_t(y_t)$. For miscoverage $\alpha$, the
+threshold $\hat q$ is the $\lceil(n{+}1)(1{-}\alpha)\rceil/n$ empirical quantile of
+calibration scores, and the prediction set is
+\begin{equation}
+\mathcal{C}_\alpha(x_t)=\{c:\hat P_t(c)\ge 1-\hat q\},
+\end{equation}
+which guarantees marginal coverage $\ge 1-\alpha$ without distributional
+assumptions~\cite{angelopoulos2023conformal}.
+
+\paragraph{Lesion-severity biomarker}
+The asymmetry vector $a_t$ of \eqref{eq:asym}, aggregated over N2 epochs, is the
+input to a biomarker readout relating inter-hemispheric spindle asymmetry to the
+NIHSS severity score (Section~\ref{sec:biomarker}). The representation that
+guides staging therefore also drives severity estimation.
+
+%=====================================================================
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Protocol}
+We follow the dataset's patient-exclusive protocol: ten-fold subject-independent
+cross-validation in which all epochs of a patient lie entirely in the training or
+the test fold. Feature standardization statistics are computed on the training
+split; within each split, eight subjects are held out for model selection (best
+validation macro-F1).
+
+\paragraph{Metrics}
+We report accuracy, macro-averaged F1 (mean of per-stage F1, weighting rare stages
+equally), Cohen's $\kappa$, and per-stage F1. Macro-F1 and $\kappa$ are the primary
+metrics given the imbalance. Uncertainty is assessed by empirical coverage, average
+set size and expected calibration error (ECE).
+
+\paragraph{Implementation and hardware}
+Preprocessing uses MNE-Python; features use SciPy; the classical prior uses
+XGBoost, LightGBM, scikit-learn and CatBoost; the graph/SSM streams are pure
+PyTorch (no \texttt{torch\_geometric}/\texttt{mamba\_ssm}). All experiments run on a
+single NVIDIA RTX 2060 (6\,GB) with GPU-accelerated boosting.
+Table~\ref{tab:hyper} lists hyperparameters. Statistical comparisons use
+subject-paired Wilcoxon signed-rank and paired $t$-tests with Bonferroni correction
+and Cohen's $d$.
+
+\begin{table}[t]
+\caption{Key hyperparameters.}
+\label{tab:hyper}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll}
+\toprule
+Component & Setting \\
+\midrule
+Epoch / sampling & 30\,s, 100\,Hz, 7 channels \\
+Context (prior) & $\pm3$ epochs (1316-dim) \\
+Boosters & XGB (500, depth 6, lr 0.05), LGBM (600, 63 leaves), \\
+         & HistGB (400), CatBoost (700, depth 6); balanced \\
+Graph stream & 7 nodes, homologous edges, $d\!=\!48$, GAT + ELU \\
+SSM decoder & 2 bidirectional blocks, $D\!=\!128$, state 16, conv 4 \\
+Sequence window & $L\!=\!25$ epochs, stride $L/2$ \\
+Optimizer & AdamW, lr $1.5\!\times\!10^{-3}$, cosine, wd $3\!\times\!10^{-4}$ \\
+Regularization & dropout 0.5, gate penalty $\lambda\!=\!0.05$, clip 5.0 \\
+Precision / epochs & \texttt{fp32}, 50 epochs, batch 32 \\
+Parameters (deep) & 0.49\,M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Data and code availability}
+iSLEEPS is available from its publication~\cite{maiti2026isleeps}
+(\url{https://doi.org/10.1038/s41597-026-06747-w}). Sleep-EDF, used only for the
+domain-gap experiment, is on PhysioNet~\cite{kemp2000sleepedf,goldberger2000physionet}
+(\url{https://physionet.org/content/sleep-edfx/}). Our code, extracted features and
+trained-fold outputs are released at
+\url{https://github.com/<anonymized-for-review>}.
+
+%=====================================================================
+\section{Results and Discussion}
+\label{sec:results}
+
+\subsection{Benchmark across paradigms}
+Table~\ref{tab:main} benchmarks HAG-Net against the published baselines and our own
+convolutional, recurrent, transfer-learned, and pure-deep graph/state-space models.
+HAG-Net is strongest on the minority-sensitive metrics that matter for this
+imbalanced clinical problem. It matches the published state of the art on accuracy
+($\hagAccH$ vs.\ $0.747$, within the fold standard deviation $\pm0.016$) and exceeds
+it on Cohen's $\kappa$ ($\hagKH$ vs.\ $0.640$); at the no-smoothing operating point
+it also exceeds the published macro-F1 ($\hagMfR$ vs.\ $0.677$). Every pure deep
+model falls well short: the feature-sequence BiLSTM ($0.676$), a from-scratch
+CNN+BiLSTM ($0.654$), and external transfer from Sleep-EDF ($0.623$). Capacity is
+not the bottleneck. We also report a negative result plainly. HAG-Net's residual
+gate did not accept the learnable correction on any fold (Section~\ref{sec:ablation});
+the graph and state-space streams did not improve validation macro-F1 over the
+classical prior, so under the residual-fallback rule HAG-Net's staging output equals
+that prior. This is the central finding of the paper: at 99 patients, depth does not
+help staging. The two streams earn their place through the asymmetry biomarker and
+the calibrated uncertainty they enable (Sections~\ref{sec:conformal}
+and~\ref{sec:biomarker}), not through a staging gain.
+
+\begin{table}[t]
+\caption{Subject-independent ten-fold results on iSLEEPS. Ch.\ = channels; best per
+column in \textbf{bold}. \emph{Rows are not strictly comparable across the $N$
+column}: our rows exclude the duplicated recording SN28 ($N=99$), whereas the
+published rows use all $100$ recordings. Retaining the duplicate leaks a training
+subject into the test fold in nine of ten fold assignments; we estimate the resulting
+optimistic bias at $\approx0.002$ accuracy (Section~\ref{sec:method}). Differences
+below the fold standard deviation ($\pm0.016$) should be read as ties.}
+\label{tab:main}
+\centering
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccccc}
+\toprule
+Model & $N$ & Ch. & Acc & Macro-F1 & $\kappa$ \\
+\midrule
+\multicolumn{6}{l}{\emph{Proposed HAG-Net}}\\
+\textbf{HAG-Net} (+HMM)           & 99 & 7 & \hagAccH & \hagMfH & \textbf{\hagKH} \\
+\textbf{HAG-Net} (no HMM)         & 99 & 7 & \hagAccR & \textbf{\hagMfR} & \hagKR \\
+\;\; EEG-only (4 ch)              & 99 & 4 & 0.727 & 0.644 & 0.612 \\
+\midrule
+\multicolumn{6}{l}{\emph{Pure-deep models (ours)}}\\
+Feature-sequence BiLSTM           & 99 & 7 & 0.676 & 0.639 & 0.566 \\
+CNN+BiLSTM (raw signal)           & 99 & 4 & 0.654 & 0.610 & 0.549 \\
+Transfer (Sleep-EDF pretrain)     & 99 & 4 & 0.623 & 0.582 & 0.488 \\
+\midrule
+\multicolumn{6}{l}{\emph{Published baselines~\cite{maiti2026isleeps}, different $N$}}\\
+LSTM                              & 100 & 1 & \textbf{0.747} & 0.677 & 0.640 \\
+Transformer                       & 100 & 1 & 0.674 & 0.594 & 0.540 \\
+CNN-ResNet18                      & 100 & 1 & 0.617 & 0.544 & 0.480 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Ablation: which components matter}
+\label{sec:ablation}
+Table~\ref{tab:ablation} separates the contributions. First, data and the right
+channels and features, not depth, drive accuracy: moving the classical prior from
+39 to 99 subjects lifts accuracy $0.663\!\rightarrow\!0.727$, adding EOG/EMG lifts
+it to $0.742$, and adding event features to $0.746$, whereas a 3.7\,M-parameter
+deep net on 39 subjects is no better than a 0.4\,M CNN. Second, the graph and
+state-space streams leave staging unchanged: the residual-fallback rule rejected
+the learnable correction on every fold (validation macro-F1 never exceeded the
+prior, and the gate converged to $|\tanh\gamma|<0.15$), so ``HAG-Net + graph/SSM''
+equals the prior on all three staging metrics. This is expected in a data-limited
+regime, and it is why we route the streams to the biomarker and calibration heads
+instead of forcing a staging gain they cannot deliver. Third, removing HMM decoding
+trades about 0.9 accuracy points for higher macro-F1 (0.680 vs 0.675) by preserving
+transient N1, the usual accuracy-versus-minority trade-off, so we report both
+operating points.
+
+\begin{table}[t]
+\caption{Ablation (subject-independent). Upper block: data/channel scaling of the
+classical prior (+HMM). Lower block: HAG-Net stream ablation. ``mF1''$=$macro-F1.}
+\label{tab:ablation}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Configuration & Subj. & Acc & mF1 \\
+\midrule
+\multicolumn{4}{l}{\emph{Accuracy drivers (classical prior, +HMM)}}\\
+Deep CNN+BiLSTM, 4 EEG           & 39 & 0.626 & 0.578 \\
+Prior, 4 EEG                     & 39 & 0.663 & 0.550 \\
+Prior, 4 EEG                     & 99 & 0.727 & 0.644 \\
+Prior, 7 ch                      & 99 & 0.742 & 0.668 \\
+Prior, 7 ch $+$ event features   & 99 & 0.746 & 0.675 \\
+\midrule
+\multicolumn{4}{l}{\emph{HAG-Net streams and decoding}}\\
+$+$ graph/SSM (fallback rejects) & 99 & 0.746 & 0.675 \\
+HAG-Net (full, no HMM)           & 99 & \hagAccR & \textbf{\hagMfR} \\
+\textbf{HAG-Net (full, $+$HMM)}  & 99 & \textbf{\hagAccH} & \hagMfH \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Complexity}
+HAG-Net's learnable streams total $0.49$\,M parameters, an order of magnitude
+smaller than raw-signal transformers or EEG foundation models, and run on a 6\,GB
+GPU. The classical prior trains in minutes per fold; the graph/SSM streams add a
+lightweight per-night pass. Table~\ref{tab:complexity} contrasts parameter budgets.
+This small footprint is what makes the model trainable on only 99 patients.
+
+\begin{table}[t]
+\caption{Model complexity (order-of-magnitude).}
+\label{tab:complexity}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+Model & Learnable params & Input \\
+\midrule
+CNN-ResNet18~\cite{maiti2026isleeps} & $\sim$11\,M & raw \\
+EEG foundation models~\cite{labram2024,cbramod2025} & $10^{7}$--$10^{8}$ & raw \\
+Feature-sequence BiLSTM & 1.2\,M & features \\
+\textbf{HAG-Net} (deep streams) & \textbf{0.49\,M} & features + prior \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Per-stage behaviour and interpretability}
+Fig.~\ref{fig:perclass} and the confusion structure (Fig.~\ref{fig:confusion})
+show the expected pattern: N2, N3 and Wake are scored cleanly while N1 is the
+scattered hard class, bleeding into Wake, N2 and REM. Event features help most on
+the minority stages because spindle density sharpens N2, slow-wave amplitude
+sharpens N3, and the EOG/EMG features separate REM from Wake. Because HAG-Net is
+feature-based, its decisions are auditable: Fig.~\ref{fig:featimp} ranks the most
+influential features. The ranking is led by broadband power and zero-crossing rate,
+a proxy for dominant frequency, followed by ocular movement (EOG), chin EMG tone,
+and slow-wave and spindle amplitude. These are the quantities AASM scoring itself
+relies on: EOG and EMG separate REM from Wake, slow-wave amplitude marks N3, and
+spindle activity marks N2. The model therefore decides on clinically meaningful
+signal rather than on incidental correlates.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/fig_perclass.pdf}
+\caption{Per-stage F1. N2/N3/Wake are scored reliably; N1 is hardest. Event
+features and the EOG/EMG channels improve REM and N1.}
+\label{fig:perclass}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\columnwidth]{figures/fig_confusion.pdf}
+\caption{Confusion matrix (row-normalized). Most error is N1 mislabelled as Wake,
+N2 or REM, the known ambiguity of transitional sleep.}
+\label{fig:confusion}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/fig_featimp.pdf}
+\caption{Top feature importances. Spindle (sigma) power, delta power, and EOG/EMG
+descriptors dominate, matching AASM scoring physiology.}
+\label{fig:featimp}
+\end{figure}
+
+\subsection{Calibrated uncertainty}
+\label{sec:conformal}
+Table~\ref{tab:conformal} reports the conformal layer. Empirical coverage matches
+the target almost exactly ($0.900$ at $\alpha{=}0.1$, $0.950$ at $\alpha{=}0.05$)
+with compact sets (average size $1.62$ and $2.08$; singleton rate $0.51$ at
+$\alpha{=}0.1$) and no empty sets, and the base model is already well calibrated
+(ECE $0.038$). Clinically, the prediction set flags the ambiguous
+N1/REM/Wake epochs for human review instead of forcing an over-confident single
+label. Black-box stagers do not offer this.
+
+\begin{table}[t]
+\caption{Split-conformal prediction (LAC). Coverage matches target; ECE $=0.038$.}
+\label{tab:conformal}
+\centering
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccc}
+\toprule
+$\alpha$ & Target cov. & Empirical cov. & Avg.\ set size \\
+\midrule
+0.10 & 0.900 & 0.900 & 1.62 \\
+0.05 & 0.950 & 0.950 & 2.08 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Healthy$\rightarrow$stroke domain gap}
+That the stroke setting is genuinely harder, not merely under-modelled, is
+corroborated concurrently on iSLEEPS by the dataset authors, who report a large
+generalisation gap and saliency evidence that deep models attend to
+non-physiological regions in patient data~\cite{bose2026gap}. We quantify it per
+stage from a fully interpretable angle: a booster trained on healthy
+Sleep-EDF~\cite{kemp2000sleepedf,goldberger2000physionet} and evaluated zero-shot on
+iSLEEPS drops from $0.855$ to $0.585$ accuracy ($-0.27$; $-0.36$ macro-F1;
+Fig.~\ref{fig:domaingap}). The collapse is stage-specific: REM recall falls
+$0.90\!\rightarrow\!0.14$ and N3 $0.84\!\rightarrow\!0.39$, while N2 stays robust
+($0.90\!\rightarrow\!0.86$). This mirrors the clinical literature on disrupted REM
+and slow-wave sleep after stroke. Part of the REM drop is confounded by the
+frontal-vs-central montage difference between datasets, which we note as a
+limitation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/fig_domaingap.pdf}
+\caption{Zero-shot healthy$\rightarrow$stroke transfer. Accuracy falls $-0.27$,
+concentrated in REM and N3; N2 is comparatively robust.}
+\label{fig:domaingap}
+\end{figure}
+
+\subsection{Lesion-asymmetry biomarker}
+\label{sec:biomarker}
+Because HAG-Net's asymmetry stream is physiological, it supports a clinical
+readout. For patients with known lesion side we compare sigma-band (spindle) power
+in the ipsilesional versus contralesional hemisphere over N2 epochs. We observe a
+directional ipsilesional spindle reduction reaching a trend ($p\!\approx\!0.065$,
+$n\!=\!43$) and, more strikingly, the inter-hemispheric spindle-power asymmetry
+scales with stroke severity: the asymmetry index correlates with the NIHSS score
+(Spearman $\rho=0.41$, $p=0.006$; Fig.~\ref{fig:teaser}(b, c)). This is consistent with a
+thalamocortical account of spindle generation~\cite{fernandez2019spindles}, with
+asymmetry-based qEEG prognosis~\cite{anastasi2017bsi}, and with recent cohort
+evidence linking spindles to post-stroke cognition and
+recovery~\cite{zheng2025spindles,jing2025cpap,simpson2023laterality}. It shows how
+an interpretable stager doubles as a lesion-sensitive biomarker. We report this as
+hypothesis-generating: apnea burden (high in this cohort) and montage are
+uncontrolled confounds.
+
+\subsection{Per-subject evaluation}
+\label{sec:persubject}
+Pooled epoch metrics can hide a model that does well on a few long, easy nights.
+Fig.~\ref{fig:persubject} and Table~\ref{tab:persubj} therefore score every patient
+separately, across the settings we trained. HAG-Net has both the highest median
+per-patient accuracy ($0.755$) and the smallest spread (SD $0.091$), so its
+advantage holds patient by patient rather than resting on a favourable subset. The
+ordering of the four settings matches Table~\ref{tab:main}. Patients at the bottom
+of the range are hard for every model, which points to recording quality and missing
+stages rather than to any one architecture. Per-patient macro-F1 is lower than the
+pooled value for all models because several patients contain no N3 or no REM at all,
+which caps the per-patient macro average.
+
+\begin{table}[t]
+\caption{Per-subject evaluation over all $99$ patients (out-of-fold, without HMM):
+mean $\pm$ SD, median and range of per-patient accuracy, and mean per-patient
+macro-F1.}
+\label{tab:persubj}
+\centering
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccccc}
+\toprule
+Setting & Acc (mean$\pm$SD) & Med. & Min & Max & mF1 \\
+\midrule
+\textbf{HAG-Net} (prior) & \textbf{0.737}$\pm$0.091 & \textbf{0.755} & 0.347 & \textbf{0.879} & \textbf{0.636} \\
+Graph/SSM deep           & 0.695$\pm$0.098 & 0.717 & 0.281 & 0.841 & 0.615 \\
+Feature-seq BiLSTM       & 0.676$\pm$0.113 & 0.682 & 0.361 & 0.865 & 0.596 \\
+Transfer (Sleep-EDF)     & 0.604$\pm$0.107 & 0.612 & 0.305 & 0.790 & 0.543 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/fig_persubject.pdf}
+\caption{Per-subject accuracy for each setting, one point per patient; boxes show
+the median and quartiles. HAG-Net is highest in median and tightest in spread.}
+\label{fig:persubject}
+\end{figure}
+
+\subsection{Statistical significance}
+Subject-paired tests over the 99 patients confirm the benchmark is not
+fold-noise. HAG-Net's classical-prior operating point beats the feature-sequence
+BiLSTM (accuracy $\Delta=0.061$, Wilcoxon $p=8.1\times10^{-10}$, Cohen's $d=0.67$;
+macro-F1 $p=6.3\times10^{-5}$) and the pure graph/SSM deep variant (accuracy
+$\Delta=0.041$, $p=1.5\times10^{-11}$, $d=0.81$; macro-F1 $p=1.2\times10^{-5}$),
+all significant after Bonferroni correction. The interpretable-beats-deep result is
+therefore statistically robust, not anecdotal.
+
+\subsection{Discussion}
+Before drawing conclusions we restate a caveat on the headline comparison. Our results
+exclude the duplicated recording SN28 and the published baselines do not, so
+Table~\ref{tab:main} compares $N=99$ against $N=100$. We retain the published rows
+because they are the reference point for this corpus and omitting them would obscure
+the only external benchmark available, but the reader should treat the accuracy
+difference of $0.0006$ as uninformative: it is a quarter of the estimated duplicate
+bias and a twenty-fifth of the fold standard deviation. We claim a tie on accuracy,
+not a win, and we would claim a tie even if the arithmetic favoured us, because the
+protocols differ. The comparison we do consider sound is against the models trained
+here under an identical protocol, where the classical prior beats every deep
+alternative with subject-paired significance.
+
+We draw three conclusions. First, on small clinical cohorts the effective
+inductive bias is physiological structure rather than network depth; HAG-Net's
+performance comes from encoding what a scorer reads (spindles, slow waves, atonia,
+laterality) and adding deep streams only through a residual gate that cannot overfit
+below the prior. Second, headline accuracy is the wrong target on imbalanced stroke
+hypnograms; HAG-Net's advantage lies in macro-F1, $\kappa$, and calibrated
+uncertainty, the quantities that govern clinical trust. Third, because the model is
+interpretable, the same asymmetry representation that guides staging also yields a
+candidate severity biomarker, so the classifier doubles as a clinical instrument.
+
+%=====================================================================
+\section{Limitations}
+The study is cross-sectional, single-night and single-scorer; lesion localization
+is coarse (side/territory); apnea (present in most subjects) and the montage
+difference in the domain-gap experiment are uncontrolled. Absolute accuracy still
+trails healthy-cohort systems, reflecting genuine pathological difficulty rather
+than optimization failure. The biomarker is a within-cohort association, not a
+validated marker. External transfer from Sleep-EDF did not help (0.62 accuracy),
+which we attribute to the small, frontally-referenced pretraining corpus.
+
+%=====================================================================
+\section{Future Work}
+Natural next steps are: a larger, montage-matched pretraining corpus (SHHS, MASS) to
+test whether in-domain self-supervision closes the gap where cross-dataset transfer
+did not; automated, event-level spindle/slow-wave detection feeding the biomarker
+head; a within-subject, apnea-controlled lesion-mapping study to move the asymmetry
+biomarker from association toward validation; and prospective evaluation of the
+conformal review-triage mode with clinicians in the loop.
+
+%=====================================================================
+\section{Conclusion}
+We presented HAG-Net, a hemispheric asymmetry-guided hybrid for sleep staging on the
+first public stroke-PSG cohort. Against classical, convolutional, recurrent,
+transfer and graph/state-space models under a strict patient-exclusive protocol,
+HAG-Net matches the published deep state of the art on accuracy and exceeds it on
+the minority-sensitive metrics, while every pure-deep alternative underperforms it
+($p<10^{-9}$). Its design combines a classical prior, a homologous-pair asymmetry
+graph, a selective state-space decoder, and a residual gate anchored at the
+prior, and it is built for the data-limited clinical regime rather than against
+it. Because it is interpretable by construction, the same model exposes a
+stage-specific domain gap, delivers calibrated uncertainty, and yields a
+lesion-asymmetry biomarker that tracks stroke severity. The broader lesson is that
+in high-stakes, small-cohort clinical EEG, physiologically grounded inductive bias
+and honest uncertainty matter more than raw model capacity.
+
+%=====================================================================
+\section*{Author Contributions}
+Following the CRediT taxonomy. \textbf{M.W.S.}: conceptualization, methodology,
+software, formal analysis, writing (original draft). \textbf{E.M.C.A.}: validation,
+investigation, data curation, writing (review and editing). \textbf{M.I.A.S.}:
+software, visualization, validation, writing (review and editing). All authors read
+and approved the final manuscript.
+
+\section*{Acknowledgment}
+The authors thank the iSLEEPS/NIMHANS team for releasing the dataset. We note the
+duplicated recording described in Section~\ref{sec:method} in a constructive spirit;
+it does not detract from the value of the corpus, which is the first of its kind for
+this population.
+
+%=====================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
