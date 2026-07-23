@@ -1,0 +1,48 @@
+# ---- data (clinical patient data + large; NOT redistributed) ----
+data/
+*.edf
+*.npz
+
+# ---- run logs / scratch ----
+*.log
+*.err
+scratchpad/
+
+# ---- python ----
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# ---- LaTeX build artifacts ----
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
+paper/*.synctex.gz
+paper/*.toc
+paper/build.log
+paper/main.log
+
+# ---- OS ----
+Thumbs.db
+.DS_Store
+
+# private strategy analysis - never publish
+jahin_analysis/
+
+# ---- third-party copyrighted PDFs: keep locally, never publish ----
+extra/reference_papers/
+*.zip
+
+# ---- training artefacts / scratch ----
+catboost_info/
+extra/**/__pycache__/
+*.pt
+*.pptx
+.claude/
+
+# notebook runtime outputs
+experiment_results.json
