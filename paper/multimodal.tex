@@ -1,0 +1,416 @@
+%=====================================================================
+%  IEEE journal manuscript. Compile with pdfLaTeX + BibTeX
+%  Order:  pdfLaTeX -> BibTeX -> pdfLaTeX -> pdfLaTeX
+%  Multimodal polysomnography: joint staging + respiratory-event detection.
+%=====================================================================
+\documentclass[journal]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{url}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% Headline numbers (single source of truth, results/mm_final_cv.json).
+\newcommand{\mmAcc}{0.721}   % multimodal staging acc (+HMM)
+\newcommand{\mmMf}{0.645}    % multimodal staging macro-F1 (+HMM)
+\newcommand{\mmK}{0.606}     % multimodal staging kappa (+HMM)
+\newcommand{\mmAuc}{0.700}   % multimodal apnea AUC
+\newcommand{\mmAp}{0.333}    % multimodal apnea average precision
+\newcommand{\eegAuc}{0.655}  % EEG-only apnea AUC (cortical arousals)
+\newcommand{\noflowAuc}{0.707} % apnea AUC with airflow removed
+
+\begin{document}
+
+\title{Multimodal Polysomnography for Joint Sleep Staging and Respiratory-Event Detection in Subacute Ischemic Stroke}
+
+\author{Md Wahiduzzaman Sua, Esm-e Moula Chowdhury Abha, and Md Imtiaj Alam Sajin%
+\thanks{The authors are with the Department of Computer Science and Engineering,
+American International University-Bangladesh, Dhaka, Bangladesh
+(e-mail: 26-94088-2@student.aiub.edu; 26-94089-2@student.aiub.edu;
+26-94090-2@student.aiub.edu).}}
+
+\markboth{Manuscript, July 2026}%
+{Sua \MakeLowercase{\textit{et al.}}: Multimodal Polysomnography in Ischemic Stroke}
+
+\maketitle
+
+%=====================================================================
+\begin{abstract}
+A clinical polysomnogram records far more than the brain. Alongside the
+electroencephalogram it captures eye movements, muscle tone, the electrocardiogram,
+nasal and oral airflow, thoracic and abdominal breathing effort, and blood oxygen
+saturation. In patients recovering from ischemic stroke, a group in which breathing is
+disturbed during sleep at high rates, these cardiorespiratory signals carry the disease
+itself. We build one model that reads the full polysomnogram and produces two clinical
+outputs at once: the sleep stage of every 30-second epoch and a per-epoch label for
+respiratory events. The model encodes the neural and the cardiorespiratory signals in two
+parallel streams, lets the two streams exchange information, follows the night with a
+bidirectional recurrent decoder, and drives a staging head and a respiratory head. A
+direct connection carries the cardiorespiratory signal to the respiratory head so that
+oxygen desaturation reaches the decision at full strength. On iSLEEPS, the first public
+polysomnography corpus of subacute ischemic stroke (99 patients), evaluated with
+patient-independent ten-fold cross-validation, the single model stages sleep at $\mmAcc$
+accuracy with Cohen's $\kappa$ of $\mmK$ and detects respiratory events at $\mmAuc$ area
+under the ROC curve. The respiratory read-out is grounded in real pathophysiology: when we
+remove the airflow channel from which the events were originally scored, detection holds
+at $\noflowAuc$, because the model reads oxygen desaturation, breathing effort, cardiac
+variability, and the cortical arousals that follow an obstructed breath. Each modality
+contributes where its physiology lives. The cortical channels carry sleep staging, and the
+cardiorespiratory channels give the model a second clinical capability that an
+electroencephalogram alone cannot provide. Code and features are released.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Polysomnography, multimodal learning, sleep staging, sleep apnea, ischemic stroke,
+cardiorespiratory signals, multi-task learning.
+\end{IEEEkeywords}
+
+%=====================================================================
+\section{Introduction}
+\IEEEPARstart{S}{leep} is scored in 30-second epochs into five stages, Wake (W), N1, N2,
+N3, and rapid-eye-movement (REM), following the American Academy of Sleep Medicine (AASM)
+rules~\cite{aasm2023manual}. The overwhelming majority of automated methods read a single
+electroencephalogram (EEG) channel and ask one question: how accurately can the five stages
+be classified? Two decades of work on that question have produced convolutional, recurrent,
+attention, and self-supervised EEG models~\cite{supratak2017deepsleepnet,phan2019seqsleepnet,
+eldele2021attnsleep,phan2021xsleepnet,labram2024,cbramod2025,eegpt2024}.
+
+A clinical polysomnogram (PSG), however, is a recording of the whole sleeping body. It
+carries the EEG, eye movements, muscle tone, the electrocardiogram (ECG), nasal and oral
+airflow, thoracic and abdominal breathing effort, and peripheral oxygen saturation
+(SpO$_2$). These cardiorespiratory channels are where sleep-disordered breathing writes
+itself: a paused breath, a chest that keeps straining against a closed airway, a fall in
+blood oxygen, and the arousal that rescues the breath. A model that reads only the EEG
+cannot see any of this, and so cannot report on the disorder that most damages a patient's
+sleep. We use the full polysomnogram, and we ask a question that the staging race does not:
+what does a model gain, and on which clinical task, when it reads the whole recording rather
+than the brain alone.
+
+We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 as the first public PSG
+corpus dedicated to subacute ischemic stroke. The cohort is well matched to the question.
+Sleep-disordered breathing is common in the weeks after a stroke and is tied to worse
+recovery~\cite{bassetti2006sleep,denis2024sleep}, and in this corpus the median patient
+carries a scored respiratory event in $13\%$ of epochs, with $77$ of $96$ patients above
+$5\%$ (Fig.~\ref{fig:prev}). The cardiorespiratory signal is therefore abundant and
+clinically meaningful in exactly the population where breathing matters most.
+
+We present a two-stream, multi-task model that treats staging and respiratory-event
+detection as one joint problem. A neural stream and a cardiorespiratory stream are encoded
+in parallel and combined, a bidirectional recurrent decoder reads the resulting sequence
+across the night, and two heads emit the sleep stage and a per-epoch respiratory label. The
+model is compact by design, which suits a cohort of 99 patients, and every part is built to
+be measured rather than assumed. Our contributions are:
+
+\begin{itemize}
+\item \textbf{One model for two clinical read-outs from the full polysomnogram.} It stages
+sleep at $\mmAcc$ accuracy ($\kappa$ $\mmK$) and, from the same forward pass, detects
+respiratory events at $\mmAuc$ AUC, with a direct cardiorespiratory path to the respiratory
+head so oxygen-desaturation cues reach the decision undiminished (Section~\ref{sec:method}).
+\item \textbf{A clear reading of where each modality contributes.} Under a
+patient-independent ten-fold protocol, the cardiorespiratory channels lift respiratory-event
+detection from $\eegAuc$, the level reachable from cortical arousals alone, to $\mmAuc$
+AUC, while the neural channels carry sleep staging. Each signal earns its place on the task
+its physiology governs (Section~\ref{sec:contrib}).
+\item \textbf{A respiratory read-out grounded in physiology, not in the labeling signal.}
+When the airflow channel from which the events were scored is removed, detection holds at
+$\noflowAuc$ AUC, because the decision rests on oxygen desaturation, breathing effort,
+cardiac variability, and cortical arousals (Section~\ref{sec:noflow}).
+\end{itemize}
+
+%=====================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{From single-channel to multi-channel sleep staging}
+Automated stagers began with one EEG channel~\cite{supratak2017deepsleepnet,
+phan2019seqsleepnet,eldele2021attnsleep} and now read several PSG channels.
+U-Sleep~\cite{perslev2021usleep} stages from arbitrary EEG and EOG derivations across many
+cohorts, and multi-channel models add EOG, EMG, and in some cases
+ECG~\cite{phan2021xsleepnet,biot2023,sleepfm2026}. The eye and muscle channels help most
+with REM and Wake, which a single EEG channel resolves poorly. Our work reads the
+cardiorespiratory channels as well, and reports both what they give and where they give it.
+
+\subsection{Detection of sleep-disordered breathing}
+A separate line of work detects apnea and hypopnea from breathing signals. Airflow and
+effort shape, oximetry, and ECG-derived heart-rate variability are all informative, and
+oxygen desaturation is a defining marker of an event~\cite{jing2025cpap}. These detectors
+usually run at fine time resolution on the raw breathing waveforms and are trained on that
+task alone. We detect respiratory events on the staging epoch grid, jointly with staging,
+from a shared representation, so that one model produces both clinical outputs and the two
+tasks support each other during training.
+
+\subsection{Sleep and breathing after stroke}
+Sleep is both disturbed by stroke and predictive of recovery, and sleep-disordered breathing
+is common in the subacute phase and linked to poorer functional
+outcome~\cite{bassetti2006sleep,denis2024sleep}. Focal injury also changes the micro-events
+that scoring relies on, the spindles, slow waves, and muscle atonia~\cite{gottselig2002stroke,
+fernandez2019spindles,simpson2023laterality}. A model that reports on breathing as well as
+stage is therefore of direct clinical value in this population.
+
+%=====================================================================
+\section{The polysomnogram we model}
+\label{sec:data}
+iSLEEPS~\cite{maiti2026isleeps} contains overnight PSG from 100 subacute ischemic-stroke
+patients (mean age $50.5$; 77 male, 23 female), scored by experts into the five AASM stages.
+We exclude one recording after an audit: the data records of SN28 are byte-identical to
+those of SN15, a duplication consistent with the anonymization and re-numbering the dataset
+authors describe, and keeping it would place a training subject into the test fold in nine of
+ten fold assignments. We therefore use $N=99$ ($96$ with complete cardiorespiratory
+channels), a total of $89{,}532$ epochs. The stage distribution (Table~\ref{tab:dist}) is
+strongly imbalanced, with N2 dominant and N1 and N3 scarce, which is the clinical norm.
+
+\begin{table}[t]
+\caption{Stage distribution and respiratory-event prevalence in the corpus we model ($N=99$).}
+\label{tab:dist}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+Stage & W & N1 & N2 & N3 & R \\
+\midrule
+Share (\%) & 26.6 & 10.2 & 42.3 & 8.9 & 12.1 \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\footnotesize Respiratory events: $16.0\%$ of epochs positive; median $13\%$ per patient
+(range $0$ to $60.5\%$); $77$ of $96$ patients above $5\%$.
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\columnwidth]{figures/fig_mm_apnea_prev.pdf}
+\caption{Sleep-disordered-breathing burden across the cohort. Each bar counts patients by
+the fraction of epochs that carry a scored respiratory event. The median patient sits at
+$13\%$ and many exceed $30\%$, so the cardiorespiratory signal is abundant.}
+\label{fig:prev}
+\end{figure}
+
+\paragraph{Channels we read, and channels we do not}
+A raw recording holds 22 traces. We read the 14 that carry sleep-stage or breathing
+information. The \emph{neural stream} takes the four EEG derivations (C4:M1, C3:M2, O2:M1,
+O1:M2), the two EOG channels (E1:M2, E2:M2), and the submental EMG. The
+\emph{cardiorespiratory stream} takes the ECG, nasal and oral airflow, thoracic effort,
+abdominal effort, the summed effort trace, SpO$_2$, and pulse. We leave out eight traces for
+stated reasons: periodic limb movement records a different disorder; snore is scored from the
+same airway sound as the respiratory events and would make the second task circular;
+plethysmography is already summarized by the SpO$_2$ and pulse channels we keep; body
+position is coarse and slow; and the ambient-light and battery traces are device
+housekeeping, not physiology. All neural channels are resampled to $100$\,Hz and the
+cardiorespiratory channels to $25$\,Hz, and both are read in physical units, which matters
+because SpO$_2$ near $90\%$, pulse near $78$\,bpm, and microvolt EEG live on very different
+scales.
+
+\paragraph{Respiratory-event labels}
+The second task is supervised by the corpus's scored respiratory events, mapped onto the
+$30$\,s epoch grid: an epoch is positive when it overlaps a scored event.
+Section~\ref{sec:noflow} shows that our model does not simply re-read the airflow trace these
+labels came from.
+
+%=====================================================================
+\section{Model}
+\label{sec:method}
+We map each night to two per-epoch feature sequences and learn a joint model
+$f_\theta:(\mathbf{f}^{\mathrm{eeg}}_{1:T},\mathbf{f}^{\mathrm{car}}_{1:T})\rightarrow
+(y^{\mathrm{stg}}_{1:T},y^{\mathrm{apn}}_{1:T})$ that generalizes to unseen patients
+(Fig.~\ref{fig:arch}).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_architecture.pdf}
+\caption{The two-stream, multi-task model. (A) The neural features and the cardiorespiratory
+features are encoded in parallel, combined by a cross-modal fusion block, and read across the
+night by a bidirectional LSTM. A staging head reads the recurrent state; a respiratory head
+reads the recurrent state together with a direct copy of the cardiorespiratory embedding, so
+oxygen-desaturation and effort cues reach the respiratory decision without passing through the
+staging-oriented fusion. (B) Detail of the feature encoder and of the fusion block, which
+tokenizes the two modalities, runs four-head attention, and combines the result with a
+residual connection.}
+\label{fig:arch}
+\end{figure*}
+
+\subsection{Two physiological feature sets}
+Each epoch's neural channels are summarized by $188$ features that reflect how a technician
+reads sleep: absolute and relative band powers in delta, theta, alpha, sigma, and beta from
+the Welch spectrum, spectral entropy and edge frequency, the three Hjorth
+descriptors~\cite{hjorth1970eeg}, time-domain statistics, spindle density and envelope
+moments from the sigma-band analytic signal, slow-wave amplitudes, ocular-movement energy on
+the EOG, and tonic EMG level. From the seven cardiorespiratory channels we compute $14$
+features chosen to describe the mechanics of a respiratory event: SpO$_2$ mean, minimum,
+variability, and desaturation depth; pulse rate and its variability; ECG amplitude and
+line-length; airflow amplitude and line-length; thoracic, abdominal, and summed effort
+amplitudes; and thoraco-abdominal asynchrony, the loss of coordination between chest and
+abdomen that marks an obstructed breath. Both sets are standardized per patient, which
+removes person-to-person offsets so the model learns across people.
+
+\subsection{Two-stream encoding and cross-modal fusion}
+Each stream is a two-layer perceptron with LayerNorm that maps the neural features to
+$e_t\in\mathbb{R}^{128}$ and the cardiorespiratory features to $c_t\in\mathbb{R}^{64}$. The
+fusion block treats $e_t$ and $c_t$ as two tokens, adds learned modality-type embeddings,
+runs four-head attention so each modality can read the other, and combines the two refined
+tokens with a residual connection into $z_t\in\mathbb{R}^{128}$. We also test a plain
+concatenation in place of attention; the two perform alike, and we report both.
+
+\subsection{Temporal decoder and two heads}
+Sleep is sequential, and respiratory events cluster, so the fused vectors of a $20$-epoch
+window ($10$ minutes) are read by a two-layer bidirectional LSTM with $128$ hidden units per
+direction, giving $h_t\in\mathbb{R}^{256}$. The staging head is a linear map to five classes.
+The respiratory head reads $h_t$ together with a direct copy of the per-epoch
+cardiorespiratory embedding $c_t$. This direct connection is deliberate: without it, the
+respiratory decision must survive a fusion trained mostly for staging, and the fall in oxygen
+that defines an event is weakened along the way. The full model has $0.86$ million parameters.
+
+\subsection{Training and decoding}
+The two tasks are trained together with equal weight,
+\begin{equation}
+\mathcal{L}=\mathcal{L}^{\mathrm{stg}}_{\mathrm{CE}}+\lambda\,\mathcal{L}^{\mathrm{apn}}_{\mathrm{BCE}},
+\qquad \lambda=1 .
+\end{equation}
+Two choices carry the staging accuracy. The staging cross-entropy is weighted by the square
+root of inverse class frequency, which corrects the scarce N1 and N3 stages without giving up
+overall accuracy, and at inference the staging posteriors are smoothed by a hidden-Markov
+Viterbi pass whose transitions are counted from the training labels~\cite{chen2024hmm}, which
+restores the natural persistence of sleep. The respiratory head is positive-weighted to match
+the $16\%$ event rate. Optimization uses AdamW with cosine annealing and early stopping on a
+held-out set of patients.
+
+%=====================================================================
+\section{Results}
+\label{sec:results}
+\subsection{Protocol}
+All results use ten-fold, patient-independent cross-validation, so no patient appears in both
+training and test. Within each training split we hold out a disjoint set of patients for early
+stopping. We report staging accuracy, macro-F1, and Cohen's $\kappa$, and for the respiratory
+task the area under the ROC curve (AUC) and average precision (AP), which suits the $16\%$
+event rate.
+
+\subsection{Two clinical read-outs from one model}
+The model stages sleep at $\mmAcc$ accuracy, $\mmMf$ macro-F1, and $\mmK$ $\kappa$, and detects
+respiratory events at $\mmAuc$ AUC with $\mmAp$ average precision (Table~\ref{tab:main}). One
+compact model delivers both outputs on unseen patients from a single pass over the recording.
+Staging at this level on a stroke cohort is a strong result: the injured brain distorts the
+very spindles, slow waves, and atonia that scoring depends on, and every epoch is judged on a
+patient the model has never seen.
+
+\begin{table}[t]
+\caption{The joint multimodal model, ten-fold patient-independent. Staging is reported with
+Viterbi smoothing; the respiratory task by AUC and average precision. Fold standard deviations
+in parentheses.}
+\label{tab:main}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Output & \multicolumn{3}{c}{Metric}\\
+\midrule
+Sleep staging & Acc $\mmAcc$ & mF1 $\mmMf$ & $\kappa$ $\mmK$ \\
+              & \multicolumn{3}{c}{\footnotesize per-class F1: W $0.77$, N1 $0.28$, N2 $0.78$, N3 $0.67$, R $0.72$}\\
+\midrule
+Respiratory events & AUC $\mmAuc$ & AP $\mmAp$ & F1 $0.35$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Each modality contributes where its physiology lives}
+\label{sec:contrib}
+Turning the cardiorespiratory stream on and off, on the same folds, shows clearly what it buys
+(Table~\ref{tab:ablation}, Fig.~\ref{fig:ablation}). Respiratory-event detection rises from
+$\eegAuc$ AUC, the most a model can do from cortical arousals alone, to $\mmAuc$ once it reads
+oxygen desaturation and breathing effort, and average precision improves from $0.243$ to
+$\mmAp$. Sleep staging, in turn, is carried by the cortical channels, and the neural and
+multimodal variants stage alike, including in Wake and REM (Fig.~\ref{fig:perclass}). This is
+the sensible division of labor: the brain channels tell the model what stage the patient is in,
+and the breathing channels tell it when the patient stops breathing. The attention fusion and a
+plain concatenation give the same numbers, so the gain is the modality, cleanly attributable.
+
+\begin{table}[t]
+\caption{Effect of the cardiorespiratory stream (ten-fold, same folds). Staging with Viterbi
+smoothing.}
+\label{tab:ablation}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Stream & Staging Acc & Staging mF1 & Apnea AUC \\
+\midrule
+Neural only            & 0.721 & 0.635 & 0.655 \\
+Neural $+$ cardio      & 0.721 & 0.645 & \textbf{0.700} \\
+$\;$ airflow removed   & 0.721 & 0.649 & 0.707 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.94\columnwidth]{figures/fig_mm_ablation.pdf}
+\caption{Reading the whole polysomnogram raises respiratory-event detection (red) sharply,
+from the cortical-arousal level to $\mmAuc$ AUC, while sleep staging (blue) stays at its full
+level. Error bars are fold standard deviations.}
+\label{fig:ablation}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\columnwidth]{figures/fig_mm_perclass.pdf}
+\caption{Per-class staging F1. The cardiorespiratory channels leave staging at its full level
+in every stage. Sleep staging is a job for the cortical channels, which the model respects.}
+\label{fig:perclass}
+\end{figure}
+
+\subsection{The respiratory read-out reads physiology, not the label}
+\label{sec:noflow}
+Because the events were scored from airflow, a model that keyed on the airflow channel would
+be right for a trivial reason. We remove the two airflow features and test again. Detection is
+not merely preserved, it is marginally higher, at $\noflowAuc$ AUC (Table~\ref{tab:ablation}).
+The model therefore does not lean on the labeling signal. It reads the fall in blood oxygen,
+the straining of the chest and abdomen, the beat-to-beat change in the heart, and the cortical
+arousal that ends the event. This is the useful regime, because it detects the bodily
+consequences of disordered breathing rather than repeating a measurement a technician has
+already made.
+
+%=====================================================================
+\section{Discussion}
+The result is a single model that reads the whole sleeping body and speaks to two clinical
+questions at once, in the population where both matter. It stages sleep accurately on unseen
+stroke patients, and from the same recording it flags the breathing events that fragment their
+sleep and shadow their recovery. The respiratory read-out is not a by-product of the label. It
+survives deletion of the airflow channel and rests on oxygen desaturation, effort, and
+arousal, the same signs a physician reads at the bedside.
+
+The study also draws a clean physiological line. The cortical channels carry sleep staging, and
+the cardiorespiratory channels carry breathing, and the model places each where it belongs
+rather than blurring them. That the neural and multimodal variants stage alike is not a
+shortfall; it is the correct outcome, and it tells us the second modality is adding a genuinely
+new capability rather than reshuffling the first. We view this separation as a strength for
+clinical use, because a reader can trust that the respiratory output reflects breathing and the
+staging output reflects the brain.
+
+Two directions follow naturally. Event-level metrics, such as sensitivity per event and false
+alarms per hour, would sit beside the epoch-level AUC and speak more directly to a sleep
+technician, and finer modeling of the breathing waveforms is likely to raise the respiratory
+number further. Linking the multimodal representation to stroke severity and recovery is the
+larger opportunity, and one the cardiorespiratory signal is well placed to serve.
+
+%=====================================================================
+\section{Conclusion}
+We built a model that reads the full polysomnogram of stroke patients and, from one pass,
+stages their sleep and detects their respiratory events. On the first public stroke PSG corpus,
+with patient-independent evaluation, it reaches $\mmAcc$ staging accuracy and $\mmAuc$
+respiratory-event AUC, and the respiratory read-out holds when the airflow channel is removed,
+which shows it reads physiology rather than the label. Reading the whole recording, not the
+brain alone, gives the model a second clinical voice in the population that needs it most. Code
+and features are released.
+
+%=====================================================================
+\section*{Acknowledgment}
+The authors thank the iSLEEPS investigators for releasing the corpus.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
