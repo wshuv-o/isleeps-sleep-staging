@@ -47,7 +47,11 @@ extra/*
 !extra/mm_stage_tune.py
 !extra/mm_train.py
 !extra/mm_smoke.py
+!extra/mm_persubject.py
 !extra/cardio_features.py
+
+# Overleaf export folder (redundant copy of tex + bib + figures)
+paper/overleaf/
 .DS_Store
 
 # private strategy analysis - never publish
