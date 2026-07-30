@@ -28,6 +28,26 @@ paper/main.log
 
 # ---- OS ----
 Thumbs.db
+
+# ---- excluded from the published repo (dev workspace) ----
+notebooks/
+*.zip
+experiment_results.json
+benchmark_results.json
+results/attnsleep_real.json
+results/standalone_gate.json
+paper/figures/*.png
+paper/figures/*.drawio*.pdf
+
+# extra/ is a scratch workspace; publish only the multimodal experiment scripts
+extra/*
+!extra/mm_feat_cv.py
+!extra/mm_feat_train.py
+!extra/mm_final_cv.py
+!extra/mm_stage_tune.py
+!extra/mm_train.py
+!extra/mm_smoke.py
+!extra/cardio_features.py
 .DS_Store
 
 # private strategy analysis - never publish
