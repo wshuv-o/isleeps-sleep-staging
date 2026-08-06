@@ -1,0 +1,9 @@
+model,input,params_M,accuracy,macro_f1,kappa
+CNN-ResNet18,1 EEG,11,0.617,0.544,0.48
+DeepSleepNet,1 EEG,21,0.615,0.567,0.483
+AttnSleep,1 EEG,0.5,0.686,0.629,0.577
+CNN+BiLSTM,4 EEG,0.6,0.613,0.565,0.485
+Sleep-EDF transfer,4 EEG,0.6,0.623,0.582,0.488
+Raw multimodal CNN,14 ch,0.95,0.655,0.612,0.531
+MM-Net (neural only),7 ch feat,0.77,0.721,0.635,0.603
+MM-Net (neural+cardio),14 ch feat,0.86,0.721,0.645,0.606

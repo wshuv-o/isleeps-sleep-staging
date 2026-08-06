@@ -1,0 +1,402 @@
+{
+  "SN1": {
+    "ahi": 50.8,
+    "severity": "Severe"
+  },
+  "SN2": {
+    "ahi": 6.5,
+    "severity": "Mild"
+  },
+  "SN3": {
+    "ahi": 41.1,
+    "severity": "Severe"
+  },
+  "SN4": {
+    "ahi": 39.1,
+    "severity": "Severe"
+  },
+  "SN5": {
+    "ahi": 1.9,
+    "severity": "Normal"
+  },
+  "SN6": {
+    "ahi": 6.2,
+    "severity": "Mild"
+  },
+  "SN7": {
+    "ahi": 8.9,
+    "severity": "Mild"
+  },
+  "SN8": {
+    "ahi": 33.1,
+    "severity": "Severe"
+  },
+  "SN9": {
+    "ahi": 14.5,
+    "severity": "Mild"
+  },
+  "SN10": {
+    "ahi": 12.1,
+    "severity": "Mild"
+  },
+  "AN1": {
+    "ahi": 37.8,
+    "severity": "Severe"
+  },
+  "AN2": {
+    "ahi": 12.8,
+    "severity": "Mild"
+  },
+  "AN3": {
+    "ahi": 34.8,
+    "severity": "Severe"
+  },
+  "AN4": {
+    "ahi": 44.5,
+    "severity": "Severe"
+  },
+  "AN5": {
+    "ahi": 5.8,
+    "severity": "Mild"
+  },
+  "AN6": {
+    "ahi": 15.7,
+    "severity": "Moderate"
+  },
+  "AN7": {
+    "ahi": 1.9,
+    "severity": "Normal"
+  },
+  "AN8": {
+    "ahi": 22.7,
+    "severity": "Moderate"
+  },
+  "AN9": {
+    "ahi": 33.8,
+    "severity": "Severe"
+  },
+  "AN10": {
+    "ahi": 0.2,
+    "severity": "Normal"
+  },
+  " SN21": {
+    "ahi": 51.7,
+    "severity": "Severe"
+  },
+  " SN22": {
+    "ahi": 12.8,
+    "severity": "Mild"
+  },
+  " SN23": {
+    "ahi": 21.4,
+    "severity": "Moderate"
+  },
+  " SN24": {
+    "ahi": 25.4,
+    "severity": "Moderate"
+  },
+  " SN25": {
+    "ahi": 17.1,
+    "severity": "Moderate"
+  },
+  " SN26": {
+    "ahi": 39.1,
+    "severity": "Severe"
+  },
+  " SN27": {
+    "ahi": 28.2,
+    "severity": "Moderate"
+  },
+  " SN28": {
+    "ahi": 5.8,
+    "severity": "Mild"
+  },
+  " SN29": {
+    "ahi": 51.6,
+    "severity": "Severe"
+  },
+  " SN30": {
+    "ahi": 49.2,
+    "severity": "Severe"
+  },
+  " SN31": {
+    "ahi": 18.6,
+    "severity": "Moderate"
+  },
+  " SN32": {
+    "ahi": 27.0,
+    "severity": "Moderate"
+  },
+  " SN33": {
+    "ahi": 22.6,
+    "severity": "Moderate"
+  },
+  " SN34": {
+    "ahi": 81.6,
+    "severity": "Severe"
+  },
+  " SN35": {
+    "ahi": 29.9,
+    "severity": "Moderate"
+  },
+  " SN36": {
+    "ahi": 17.8,
+    "severity": "Moderate"
+  },
+  " SN37": {
+    "ahi": 39.0,
+    "severity": "Severe"
+  },
+  " SN38": {
+    "ahi": 5.8,
+    "severity": "Mild"
+  },
+  " SN39": {
+    "ahi": 39.1,
+    "severity": "Severe"
+  },
+  " SN40": {
+    "ahi": 19.5,
+    "severity": "Moderate"
+  },
+  " SN41": {
+    "ahi": 0.6,
+    "severity": "Normal"
+  },
+  " SN42": {
+    "ahi": 61.5,
+    "severity": "Severe"
+  },
+  " SN43": {
+    "ahi": 64.8,
+    "severity": "Severe"
+  },
+  " SN44": {
+    "ahi": 61.0,
+    "severity": "Severe"
+  },
+  " SN45": {
+    "ahi": 4.8,
+    "severity": "Normal"
+  },
+  " SN46": {
+    "ahi": 51.6,
+    "severity": "Severe"
+  },
+  " SN47": {
+    "ahi": 16.4,
+    "severity": "Moderate"
+  },
+  " SN48": {
+    "ahi": 4.8,
+    "severity": "Normal"
+  },
+  " SN49": {
+    "ahi": 31.9,
+    "severity": "Severe"
+  },
+  " SN50": {
+    "ahi": 31.9,
+    "severity": "Severe"
+  },
+  " SN51": {
+    "ahi": 13.7,
+    "severity": "Mild"
+  },
+  " SN52": {
+    "ahi": 8.9,
+    "severity": "Mild"
+  },
+  " SN53": {
+    "ahi": 0.0,
+    "severity": "Normal"
+  },
+  " SN54": {
+    "ahi": 64.5,
+    "severity": "Severe"
+  },
+  " SN55": {
+    "ahi": 11.6,
+    "severity": "Mild"
+  },
+  " SN56": {
+    "ahi": 49.2,
+    "severity": "Severe"
+  },
+  " SN57": {
+    "ahi": 6.5,
+    "severity": "Mild"
+  },
+  " SN58": {
+    "ahi": 29.4,
+    "severity": "Moderate"
+  },
+  " SN59": {
+    "ahi": 6.5,
+    "severity": "Mild"
+  },
+  " SN60": {
+    "ahi": 8.0,
+    "severity": "Mild"
+  },
+  " SN61": {
+    "ahi": 18.6,
+    "severity": "Moderate"
+  },
+  " SN62": {
+    "ahi": 11.2,
+    "severity": "Mild"
+  },
+  " SN63": {
+    "ahi": 1.4,
+    "severity": "Normal"
+  },
+  " SN64": {
+    "ahi": 32.7,
+    "severity": "Severe"
+  },
+  " SN65": {
+    "ahi": 74.8,
+    "severity": "Severe"
+  },
+  " SN66": {
+    "ahi": 44.4,
+    "severity": "Severe"
+  },
+  " SN67": {
+    "ahi": 2.0,
+    "severity": "Normal"
+  },
+  " SN68": {
+    "ahi": 20.6,
+    "severity": "Moderate"
+  },
+  " SN69": {
+    "ahi": 28.4,
+    "severity": "Moderate"
+  },
+  " SN70": {
+    "ahi": 13.4,
+    "severity": "Mild"
+  },
+  " SN71": {
+    "ahi": 54.2,
+    "severity": "Severe"
+  },
+  " SN72": {
+    "ahi": 5.5,
+    "severity": "Mild"
+  },
+  " SN73": {
+    "ahi": 18.1,
+    "severity": "Moderate"
+  },
+  " SN74": {
+    "ahi": 13.4,
+    "severity": "Mild"
+  },
+  " SN75": {
+    "ahi": 13.4,
+    "severity": "Mild"
+  },
+  " SN76": {
+    "ahi": 36.2,
+    "severity": "Severe"
+  },
+  " SN77": {
+    "ahi": 62.0,
+    "severity": "Severe"
+  },
+  " SN78": {
+    "ahi": 2.9,
+    "severity": "Normal"
+  },
+  " SN79": {
+    "ahi": 0.3,
+    "severity": "Normal"
+  },
+  " SN80": {
+    "ahi": 47.3,
+    "severity": "Severe"
+  },
+  " SN81": {
+    "ahi": 53.4,
+    "severity": "Severe"
+  },
+  " SN82": {
+    "ahi": 5.1,
+    "severity": "Mild"
+  },
+  " SN83": {
+    "ahi": 16.2,
+    "severity": "Moderate"
+  },
+  " SN84": {
+    "ahi": 2.4,
+    "severity": "Normal"
+  },
+  " SN85": {
+    "ahi": 4.1,
+    "severity": "Normal"
+  },
+  " SN86": {
+    "ahi": 26.8,
+    "severity": "Moderate"
+  },
+  " SN87": {
+    "ahi": 38.5,
+    "severity": "Severe"
+  },
+  " SN88": {
+    "ahi": 36.6,
+    "severity": "Severe"
+  },
+  " SN89": {
+    "ahi": 0.0,
+    "severity": "Normal"
+  },
+  " SN90": {
+    "ahi": 32.8,
+    "severity": "Severe"
+  },
+  " SN91": {
+    "ahi": 16.3,
+    "severity": "Moderate"
+  },
+  " SN92": {
+    "ahi": 51.0,
+    "severity": "Severe"
+  },
+  " SN93": {
+    "ahi": 51.0,
+    "severity": "Severe"
+  },
+  " SN94": {
+    "ahi": 5.9,
+    "severity": "Mild"
+  },
+  " SN95": {
+    "ahi": 20.9,
+    "severity": "Moderate"
+  },
+  " SN96": {
+    "ahi": 35.7,
+    "severity": "Severe"
+  },
+  " SN97": {
+    "ahi": 0.0,
+    "severity": "Normal"
+  },
+  " SN98": {
+    "ahi": 42.3,
+    "severity": "Severe"
+  },
+  " SN99": {
+    "ahi": 5.7,
+    "severity": "Mild"
+  },
+  " SN100": {
+    "ahi": 22.8,
+    "severity": "Moderate"
+  }
+}

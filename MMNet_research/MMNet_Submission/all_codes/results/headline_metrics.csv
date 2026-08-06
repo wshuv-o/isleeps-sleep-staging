@@ -1,0 +1,12 @@
+metric,value
+staging_accuracy,0.722
+macro_f1,0.651
+cohen_kappa,0.611
+respiratory_auc,0.711
+respiratory_average_precision,0.337
+params_million,0.86
+n_patients_staging,99
+n_patients_respiratory,96
+n_epochs,89532
+cv,10-fold patient-independent
+seed,42

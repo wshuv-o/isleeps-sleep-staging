@@ -1,0 +1,39 @@
+{
+  "reference": "ensemble",
+  "n_subjects": 99,
+  "bonferroni_m": 4,
+  "comparisons": {
+    "featseq": {
+      "acc": {
+        "mean_diff": 0.06109976373252657,
+        "wilcoxon_p": 8.102080509405927e-10,
+        "ttest_p": 1.3555428495372985e-09,
+        "cohens_d": 0.6729065972906025,
+        "sig_bonferroni": true
+      },
+      "mF1": {
+        "mean_diff": 0.03926395168405157,
+        "wilcoxon_p": 6.337673003499124e-05,
+        "ttest_p": 0.00017475182975834066,
+        "cohens_d": 0.3922148304640114,
+        "sig_bonferroni": true
+      }
+    },
+    "kags": {
+      "acc": {
+        "mean_diff": 0.041402068287485126,
+        "wilcoxon_p": 1.5121413789373867e-11,
+        "ttest_p": 1.5100249508178986e-12,
+        "cohens_d": 0.814634646490016,
+        "sig_bonferroni": true
+      },
+      "mF1": {
+        "mean_diff": 0.0209750375788502,
+        "wilcoxon_p": 1.2042147531204747e-05,
+        "ttest_p": 0.0001679134089103705,
+        "cohens_d": 0.3933364535992261,
+        "sig_bonferroni": true
+      }
+    }
+  }
+}

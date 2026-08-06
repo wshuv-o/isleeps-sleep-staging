@@ -1,0 +1,5 @@
+ahi_band,ahi_events_per_hour,patients,staging_accuracy,std
+Normal,<5,14,0.77,0.064
+Mild,5-15,22,0.73,0.077
+Moderate,15-30,23,0.712,0.103
+Severe,>=30,37,0.708,0.091

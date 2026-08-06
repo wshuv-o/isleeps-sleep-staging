@@ -1,0 +1,5 @@
+statistic,value
+spearman_rho,0.315
+p_value,0.002
+n_patients,96
+note,predicted per-patient event burden vs clinical AHI

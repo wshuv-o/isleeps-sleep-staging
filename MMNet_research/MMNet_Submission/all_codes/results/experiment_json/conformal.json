@@ -1,0 +1,19 @@
+{
+  "ece": 0.03796433550414334,
+  "levels": {
+    "alpha_0.1": {
+      "target_coverage": 0.9,
+      "empirical_coverage": 0.9000360414147676,
+      "avg_set_size": 1.6212229739733104,
+      "singleton_rate": 0.5052194704940784,
+      "empty_rate": 0.0
+    },
+    "alpha_0.05": {
+      "target_coverage": 0.95,
+      "empirical_coverage": 0.9501638024088133,
+      "avg_set_size": 2.0752185517546864,
+      "singleton_rate": 0.2994222697564376,
+      "empty_rate": 0.0
+    }
+  }
+}

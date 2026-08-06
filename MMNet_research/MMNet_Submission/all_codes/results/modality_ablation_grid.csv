@@ -1,0 +1,10 @@
+modality_removed,staging_accuracy,respiratory_auc
+none (full model),0.723,0.711
+SpO2,0.727,0.681
+respiratory effort,0.728,0.726
+pulse/HRV,0.723,0.7
+ECG,0.723,0.711
+airflow,0.722,0.704
+EOG (ocular),0.712,0.705
+EMG (muscle),0.724,0.707
+all cardiorespiratory,0.724,0.673
