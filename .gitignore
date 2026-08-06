@@ -30,7 +30,8 @@ paper/main.log
 Thumbs.db
 
 # ---- excluded from the published repo (dev workspace) ----
-notebooks/
+# notebooks/ was here; removed so the MMNet_Submission notebooks (30% of the
+# submission rubric) and the benchmark notebook are tracked.
 *.zip
 experiment_results.json
 benchmark_results.json
