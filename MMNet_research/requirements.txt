@@ -1,0 +1,17 @@
+# iSLEEPS stroke sleep-staging — environment
+# Verified working on Python 3.14, numpy 2.x (newer than the official repo's pins).
+# The official iSLEEPS repo pins numpy==1.24.2 / pandas==1.5.3 / mne==1.3.1, but
+# those do not build on Python 3.14; the versions below are what we actually use.
+
+# preprocessing (EDF + xlsx -> npz)
+mne>=1.12            # EDF read, resample, epoching
+numpy>=2.0
+pandas>=2.0
+openpyxl>=3.1        # read annotation / subject_description .xlsx
+joblib>=1.3          # imported by official staging_preprocess.py
+tqdm>=4.6
+scipy>=1.11
+
+# modelling / evaluation (Phase 1+)
+scikit-learn>=1.4    # metrics, subject-independent CV splitters
+# torch                # add the CUDA build matching your GPU for training

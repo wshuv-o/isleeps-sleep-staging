@@ -58,7 +58,9 @@ paper/overleaf/
 jahin_analysis/
 
 # ---- third-party copyrighted PDFs: keep locally, never publish ----
-extra/reference_papers/
+# path-agnostic: survives folder restructures (was extra/reference_papers/)
+reference_papers/
+ssrn-*.pdf
 *.zip
 
 # ---- training artefacts / scratch ----

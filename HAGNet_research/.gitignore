@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.log
+data/*.npz
+data/Dataset/
+data/multimodal/
+data/processed7/
+*.aux
+*.fls
+*.fdb_latexmk

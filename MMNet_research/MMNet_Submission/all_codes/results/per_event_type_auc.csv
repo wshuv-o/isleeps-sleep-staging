@@ -1,0 +1,4 @@
+event_type,positive_epochs,auc
+hypopnea,11605,0.692
+obstructive_apnea,1661,0.763
+central_apnea,831,0.84
