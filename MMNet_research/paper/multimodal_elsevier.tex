@@ -4,12 +4,19 @@
 %  Multimodal polysomnography: joint staging + respiratory-event detection.
 %  Supervision draft: full benchmark, math formulation, expanded review.
 %=====================================================================
-\documentclass[journal]{IEEEtran}
+\documentclass[preprint,12pt]{elsarticle}
+
+% --- shims: IEEE-only commands used in the body, plus figure search path ---
+\providecommand{\IEEEPARstart}[2]{#1#2}
+\providecommand{\IEEEauthorrefmark}[1]{}
+\providecommand{\IEEEpeerreviewmaketitle}{}
+\graphicspath{{../}{./}}
+
 % Avoid "TeX capacity exceeded [PDF object stream buffer]" that Overleaf/TeXLive raises
 % on large embedded figures. Disabling object-stream compression sidesteps the buffer.
 \ifdefined\pdfobjcompresslevel\pdfobjcompresslevel=0\fi
-\IEEEoverridecommandlockouts
-\usepackage{cite}
+
+
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
@@ -27,10 +34,10 @@
 \setcounter{dbltopnumber}{3}
 \renewcommand{\topfraction}{0.95}
 \renewcommand{\bottomfraction}{0.7}
-\renewcommand{\dbltopfraction}{0.95}
+
 \renewcommand{\textfraction}{0.05}
 \renewcommand{\floatpagefraction}{0.7}
-\renewcommand{\dblfloatpagefraction}{0.7}
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue,breaklinks=true]{hyperref}
 
@@ -45,20 +52,31 @@
 
 \begin{document}
 
-\title{A Physiologically Interpretable Multimodal Model for Joint Sleep Staging and Respiratory-Event Detection in Subacute Ischemic Stroke}
 
-\author{Md Wahiduzzaman Suva, Esm-e Moula Chowdhury Abha, Md Imtiaj Alam Sajin,
-and Md Iftekharul Mobin%
-\thanks{The authors are with the Department of Computer Science and Engineering,
-American International University-Bangladesh, Dhaka, Bangladesh
-(e-mail: 26-94088-2@student.aiub.edu; 26-94089-2@student.aiub.edu;
-26-94090-2@student.aiub.edu; iftekhar.mobin@aiub.edu).}%
-\thanks{Corresponding author: Md Iftekharul Mobin (iftekhar.mobin@aiub.edu).}}
+\begin{frontmatter}
+
+\title{A Physiologically Interpretable Multimodal Model for Joint Sleep Staging
+and Respiratory-Event Detection in Subacute Ischemic Stroke}
+
+\author[aiub]{Md Wahiduzzaman Suva}
+\ead{26-94088-2@student.aiub.edu}
+\author[aiub]{Esm-e Moula Chowdhury Abha}
+\ead{26-94089-2@student.aiub.edu}
+\author[aiub]{Md Imtiaj Alam Sajin}
+\ead{26-94090-2@student.aiub.edu}
+\author[aiub]{Md Iftekharul Mobin\corref{cor1}}
+\ead{iftekhar.mobin@aiub.edu}
+\cortext[cor1]{Corresponding author.}
+
+\affiliation[aiub]{organization={Department of Computer Science and Engineering,
+American International University-Bangladesh},
+  city={Dhaka},
+  country={Bangladesh}}
 
 \markboth{Manuscript, July 2026}%
 {Suva \MakeLowercase{\textit{et al.}}: Multimodal Polysomnography in Ischemic Stroke}
 
-\maketitle
+
 
 %=====================================================================
 \begin{abstract}
@@ -86,10 +104,12 @@ arousals that follow an obstructed breath. Each modality contributes where its p
 lives. Code and features are released.
 \end{abstract}
 
-\begin{IEEEkeywords}
+\begin{keyword}
 Polysomnography, multimodal learning, sleep staging, sleep apnea, ischemic stroke,
 cross-modal attention, multi-task learning, cardiorespiratory signals.
-\end{IEEEkeywords}
+\end{keyword}
+
+\end{frontmatter}
 
 %=====================================================================
 \section{Introduction}
@@ -309,7 +329,7 @@ where $\hat y^{\mathrm{stg}}_t\in\Delta^4$ is a distribution over the five stage
 $\hat y^{\mathrm{apn}}_t\in[0,1]$ is the probability that epoch $t$ contains a respiratory
 event (Fig.~\ref{fig:arch}).
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_architecture.pdf}
 \caption{The two-stream, multi-task model. (A) The neural features and the cardiorespiratory
@@ -321,7 +341,7 @@ staging-oriented fusion. (B) Detail of the feature encoder and of the fusion blo
 tokenizes the two modalities, runs four-head attention, and combines the result with a
 residual connection.}
 \label{fig:arch}
-\end{figure*}
+\end{figure}
 
 \subsection{Physiological feature representations}
 \paragraph{Neural features ($188$)}
@@ -476,7 +496,7 @@ gradient-boosting ensembles); because these only confirm the staging ceiling dis
 we report them in the text rather than tabulate them. All numbers are ten-fold
 patient-independent, at the hidden-Markov operating point where a model provides one.
 
-\begin{table*}[t]
+\begin{table}[t]
 \caption{Sleep staging on iSLEEPS (ten-fold, patient-independent): the proposed feature-based
 model against deep networks trained from scratch, transferred from healthy sleep, or applied to
 the raw multichannel signal. ``feat'' marks engineered features; best per column in
@@ -503,7 +523,7 @@ which reach a comparable staging ceiling, are summarised in the text.}
  & \textbf{MM-Net (neural + cardio)} & 14\,ch feat & 0.86\,M & \mmAcc & \textbf{\mmMf} & \textbf{\mmK} \\
 \bottomrule
 \end{tabular*}
-\end{table*}
+\end{table}
 
 \subsection{Staging Benchmark and Comparison}
 Table~\ref{tab:bench} shows a clear pattern: every deep network, whether trained from scratch,
@@ -522,7 +542,7 @@ shown in Figure~\ref{fig:hypno}: the predicted hypnogram follows the reference t
 night's cycles, and the stage-probability ribbon exposes where the model is confident and where
 it hesitates.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
 \includegraphics[width=0.86\textwidth]{figures/fig_hypnogram.pdf}
 \caption{A representative held-out night (patient SN90, staging accuracy $0.80$).
@@ -531,7 +551,7 @@ it hesitates.
 black line is the maximum posterior, i.e.\ its confidence. Deep sleep aligns with low-frequency
 spectral power, and confidence falls at stage transitions.}
 \label{fig:hypno}
-\end{figure*}
+\end{figure}
 
 
 \subsection{Per-class Staging Performance}
@@ -760,7 +780,7 @@ questions at once, in the population where both matter. The learned per-epoch em
 (Fig.~\ref{fig:tsne}) separates cleanly by sleep stage while the respiratory structure stays
 diffuse, mirroring the strong staging and the modest respiratory AUC.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/fig_tsne.pdf}
 \caption{Two-dimensional t-SNE of the model's per-epoch embeddings (pooled test epochs).
@@ -768,7 +788,7 @@ diffuse, mirroring the strong staging and the modest respiratory AUC.
 N1 is diffuse. \textbf{Right:} coloured by respiratory-event label -- events are spread across
 the manifold, consistent with the modest detection AUC.}
 \label{fig:tsne}
-\end{figure*} Staging accuracy on this cohort saturates
+\end{figure} Staging accuracy on this cohort saturates
 below $0.75$ for every model family we evaluated, and the proposed model reaches $\mmAcc$ while
 adding a respiratory capability the staging models lack. The respiratory
 read-out does not depend on the labeling channel: it survives deletion of the airflow channel and
@@ -808,7 +828,7 @@ number further. Linking the multimodal representation to stroke severity and rec
 larger opportunity, and one the cardiorespiratory signal is well placed to serve.
 
 %=====================================================================
-\begin{table*}[t]
+\begin{table}[t]
 \caption{Recent single-channel sleep-staging methods: the accuracy each reports on healthy or
 general cohorts, set against its accuracy on the subacute-stroke cohort (iSLEEPS) for the two
 architectures we re-implemented. Healthy-cohort staging reaches $0.82$--$0.88$; the same
@@ -832,7 +852,7 @@ AT-BiLSTM & 2024 & Attention-augmented bidirectional LSTM, single-channel EEG. &
 \textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the full polysomnogram. & -- & $\mathbf{0.722}$ \\
 \bottomrule
 \end{tabular*}
-\end{table*}
+\end{table}
 
 \section{Conclusion}
 We built a model that reads the full polysomnogram of stroke patients and, from one pass,
@@ -863,7 +883,7 @@ The authors received no specific funding for this work.
 \section*{Acknowledgment}
 The authors thank the iSLEEPS investigators for releasing the corpus.
 
-\bibliographystyle{IEEEtran}
+\bibliographystyle{elsarticle-num}
 \bibliography{references}
 
 \end{document}
