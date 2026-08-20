@@ -1,0 +1,14 @@
+SUBMISSION LINKS
+================
+
+Overleaf (read link):
+  https://www.overleaf.com/read/jbmwndgzsqgz#79f973
+
+GitHub repository (public):
+  https://github.com/wshuv-o/isleeps-sleep-staging
+
+Co-author repositories (evidence of contributions):
+  https://github.com/EsmeAbha/iSleep_experiments
+  https://github.com/Imtiaj-Sajin/Ischemic-Stroke-research-works
+
+Target journal: IEEE Journal of Biomedical and Health Informatics (JBHI)

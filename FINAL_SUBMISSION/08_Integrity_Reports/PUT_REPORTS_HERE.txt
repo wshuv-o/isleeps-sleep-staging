@@ -1,0 +1,8 @@
+Place two PDFs in this folder before submitting:
+
+  1. AI similarity / AI-detection report for the manuscript
+  2. Plagiarism / text-similarity report
+
+Both must show the overall score and the flagged sections. If anything is
+flagged, add a short note explaining it (correctly quoted and cited material,
+or standard method descriptions).
