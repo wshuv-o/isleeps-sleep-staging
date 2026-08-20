@@ -73,3 +73,12 @@ extra/**/__pycache__/
 
 # notebook runtime outputs
 experiment_results.json
+
+# ---- submission bundle: keep the files its README advertises ----
+# The *.pptx / *.zip / *.npz rules above exist to keep decks, archives and the
+# 3.5 GB of preprocessed PSG out of git. These four are small deliverables the
+# MMNet_Submission README lists, so they are re-included explicitly.
+!MMNet_research/MMNet_Submission/MM_Net_presentation.pptx
+!MMNet_research/MMNet_Submission/paper/multimodal_source_overleaf.zip
+!MMNet_research/MMNet_Submission/all_codes/results/npz/predictions.npz
+!MMNet_research/MMNet_Submission/all_codes/results/npz/event_labels.npz
