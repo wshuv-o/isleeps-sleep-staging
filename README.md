@@ -1,95 +1,107 @@
-# HAG-Net — Interpretable Sleep Staging in Subacute Ischemic Stroke
+# Sleep staging and respiratory-event detection in subacute ischemic stroke
 
-Sleep-stage classification on **iSLEEPS**, the first public polysomnography corpus of
-subacute ischemic-stroke patients (99 usable subjects, 95,305 epochs, 5 AASM stages).
+Two research tracks on **iSLEEPS**, the first public polysomnography corpus of subacute ischemic-stroke patients (100 subjects; 99 usable after duplicate removal).
 
-## Results
+| Track | Paper | Headline |
+|---|---|---|
+| [`MMNet_research/`](MMNet_research/) | *A Physiologically Interpretable Multimodal Model for Joint Sleep Staging and Respiratory-Event Detection* | Staging **0.722** acc / κ **0.611**; respiratory **0.711** AUC — one model, both outputs |
+| [`HAGNet_research/`](HAGNet_research/) | *HAG-Net: Interpretable Sleep Staging in Subacute Ischemic Stroke* | Staging **0.746** acc / κ **0.642** (EEG-only, matches published SOTA) |
 
-Subject-independent 10-fold cross-validation (patient-exclusive), N = 99:
+MM-Net is the current submission. HAG-Net is the earlier EEG-only track.
 
-| Model | Acc | Macro-F1 | Cohen's κ |
-|---|---|---|---|
-| **Ours (+HMM)** | **0.7464** ± 0.016 | 0.6753 | **0.6415** |
-| Ours (no HMM) | 0.7375 | **0.6803** | 0.6342 |
-| Published LSTM baseline | 0.747 | 0.677 | 0.640 |
-| Published Transformer | 0.674 | 0.594 | 0.540 |
-| Published CNN-ResNet18 | 0.617 | 0.544 | 0.480 |
+---
 
-We **match** the published state of the art on accuracy. Differences on macro-F1 and
-κ are within the ±0.016 fold standard deviation and are reported as ties, not wins.
+## Environment
 
-What the model adds beyond the headline number:
+**Training (GPU) — used for all modelling**
 
-- **Calibrated uncertainty** — split-conformal prediction sets, empirical coverage
-  0.900 at α = 0.1, expected calibration error 0.038
-- **Lesion-severity biomarker** — inter-hemispheric spindle asymmetry correlates with
-  NIHSS stroke severity (Spearman ρ = 0.41, p = 0.006, n = 43)
-- **Statistical rigour** — subject-paired Wilcoxon with Bonferroni correction and
-  Cohen's d; per-patient evaluation showing the tightest spread of any model tested
-  (SD 0.091)
-- **A documented 13-lever negative search** (see `extra/search/`) establishing that
-  post-hoc decoding, calibration, class re-weighting and context width are exhausted
-  on this feature set
+| Component | Version |
+|---|---|
+| Python | 3.12.3 (conda) |
+| PyTorch | 2.5.0 + CUDA 12.4 |
+| NumPy / SciPy | 2.2.4 / 1.15.2 |
+| scikit-learn | 1.6.1 |
+| XGBoost / LightGBM | 3.3.0 / 4.6.0 |
+| MNE | 1.12.1 |
 
-## Repository layout
+**Hardware:** NVIDIA RTX 2060 (6 GB, compute capability 7.5), 16 GB system RAM, Windows 11.
 
-```
-data/         datasets (git-ignored: clinical patient data, not redistributed)
-model/        final model: HAG-Net architecture + its two training entry points
-processing/   preprocessing (EDF -> npz) and the production feature extractors
-utils/        folds/metrics, conformal calibration, significance tests, figures
-extra/        everything else: baselines, failed architectures, the lever search,
-              archived docs and figures
-paper/        LaTeX manuscript and its figures
-results/      per-experiment metrics (JSON)
-```
+> On Windows set `KMP_DUPLICATE_LIB_OK=TRUE` before training, or OpenMP raises a `libiomp5md.dll` double-initialisation error.
 
-## Pipeline
+**Preprocessing** runs on system Python 3.14 (NumPy 2.4.4, pandas 3.0.2, MNE 1.12.1, openpyxl 3.1.5) — no GPU needed. PyTorch has no CUDA wheel for 3.14, which is why training uses the 3.12 environment.
+
+Install: `pip install -r requirements.txt`
+
+---
+
+## Data
+
+iSLEEPS is public but **not redistributed here** — `data/` is git-ignored, as it is clinical patient data.
+
+1. Download the corpus (EDF recordings + annotation workbooks + `subject_description.xlsx`).
+2. Place it at `data/Dataset/`.
+3. Build the arrays:
 
 ```bash
-# 1. preprocess raw EDF -> data/processed7/SN*.npz  (7-channel montage)
-python processing/build_npz_full.py
-
-# 2. train the production ensemble (4 gradient boosters + HMM decoding)
-python model/train_ensemble_full.py --v2 --folds 10 --context 3 --tag ensemble7_v2
-
-# 3. train HAG-Net (asymmetry graph + selective SSM over the classical prior)
-python model/train_hagnet.py --folds 10 --epochs 50
-
-# 4. paper analyses
-python utils/conformal.py        # conformal prediction sets + ECE
-python utils/significance.py     # subject-paired Wilcoxon + Bonferroni + Cohen's d
-python utils/make_figures.py     # all manuscript figures (vector PDF)
+python MMNet_research/preprocessing/build_npz.py        # EEG/EOG/EMG -> data/processed7/
+python MMNet_research/preprocessing/build_multimodal.py # + cardiorespiratory -> data/multimodal/
+python MMNet_research/preprocessing/extract_mm_features.py  # -> data/mm_features/
 ```
 
-## Method
+This produces 100 subjects / 93,422 epochs at 100 Hz in 30-second epochs. Two known data facts are handled in code: **SN15 and SN28 are byte-identical** (same night, two IDs — collapsed to one patient and never split across folds), and several subjects lack N3 or REM entirely.
 
-Each 30-second epoch of the seven-channel montage (C4:M1, C3:M2, O2:M1, O1:M2,
-E1:M2, E2:M2, chin EMG) is mapped to 188 features: 161 spectral, Hjorth and
-time-domain descriptors plus 27 physiological event features quantifying sleep
-spindles, slow-wave activity, ocular movement and chin-muscle tone. Epochs are
-concatenated with their ±3 neighbours and classified by a class-balanced soft-voting
-ensemble of XGBoost, LightGBM, HistGradientBoosting and CatBoost. A hidden-Markov
-model with Viterbi decoding then enforces the grammar of sleep.
+---
 
-HAG-Net adds a hemispheric-asymmetry graph module (montage graph with homologous-pair
-asymmetry pooling over C4↔C3 and O2↔O1) and a bidirectional selective state-space
-temporal decoder, combined with the classical prior through a residual gate anchored
-at the prior at initialization.
+## Reproducing the paper
 
-## Honest notes
+Everything in the MM-Net paper is produced by three executed notebooks, committed **with their outputs** so results are visible without re-running:
 
-- On this 99-patient cohort the deep streams do **not** improve staging accuracy over
-  the gradient-boosting prior. Their value is the asymmetry biomarker and the
-  calibrated uncertainty. This is reported explicitly rather than hidden.
-- N1 (F1 ≈ 0.32) is the limiting class. Per-class decision-bias tuning raises N1 by
-  +0.031 but costs accuracy −0.018, i.e. gains are paid for one-for-one. N1 is an
-  information problem in these features, not a threshold problem.
-- Data are not redistributed here. iSLEEPS is available from its publication
-  (doi:10.1038/s41597-026-06747-w); Sleep-EDF from PhysioNet.
+```
+MMNet_research/MMNet_Submission/all_codes/notebooks/
+├── 1_MM_Net_reproduction.ipynb    model, 10-fold training, ablation grid, baselines
+├── 2_supplementary_analysis.ipynb retrain (seed 42), AHI, severity, clean figures
+└── 3_figure_hypnogram.ipynb       whole-night qualitative figure (SN90)
+```
 
-## Requirements
+Run top to bottom. Notebook 1 re-executes end to end in ~82 minutes on the hardware above.
 
-See `requirements.txt`. Experiments ran on a single NVIDIA RTX 2060 (6 GB) with
-GPU-accelerated boosting; `SN28` is a bit-identical duplicate of `SN15` and is
-excluded everywhere, giving N = 99.
+### Where each paper result comes from
+
+| Paper item | Value | Source |
+|---|---|---|
+| Headline staging | 0.722 acc / 0.651 mF1 / 0.611 κ | Notebook 1, training cell |
+| Headline respiratory | 0.711 AUC / 0.337 AP | Notebook 1, respiratory head |
+| Table V — staging benchmark | deep baselines 0.61–0.69 | Notebook 1 + `results/staging_benchmark.csv` |
+| Table VI — modality ablation | 9 leave-one-out conditions | Notebook 1, ablation grid |
+| Table VII — respiratory baselines | desat 0.596 / logreg 0.582 / gboost 0.670 | Notebook 1, `test/resp_baselines.py` |
+| Per-event-type AUC | hypopnea 0.692, obstructive 0.763, central 0.840 | Notebook 1 |
+| AHI association | ρ = 0.315, p = 0.0017, n = 96 | Notebook 2 |
+| Staging by severity | 0.770 → 0.708 | Notebook 2 |
+| Significance tests | respiratory p = 0.004; staging p = 0.91 | Notebook 1, Wilcoxon cells |
+| Figures 4–10 | — | `MMNet_research/figures/` (see its README) |
+
+Every number is produced by a live cell — none is read back from a cached JSON or CSV. The claim-by-claim audit is in [`VERIFICATION_LOG.md`](MMNet_research/MMNet_Submission/VERIFICATION_LOG.md), which records four corrections found during verification.
+
+---
+
+## Layout
+
+```
+MMNet_research/
+├── model/          MM-Net + raw multimodal CNN
+├── preprocessing/  EDF -> npz, neural + cardiorespiratory features
+├── train/          10-fold reproduction engine, training entry points
+├── test/           respiratory baselines, analyses
+├── figures/        figure scripts, .drawio sources, figures/README.md
+├── notebooks/      working copies of the executed notebooks
+├── paper/          multimodal.tex, references.bib, compiled PDF
+├── submission/     review report, response, contributions, compliance
+└── MMNet_Submission/   self-contained bundle (code + notebooks + results)
+
+HAGNet_research/    EEG-only track: model, preprocessing, train, paper
+data/               git-ignored (clinical data)
+```
+
+## Citation and availability
+
+iSLEEPS is publicly available; the accession is cited in the manuscript. The source cohort was collected under NIMHANS Institutional Ethics Committee approval — this work is a secondary analysis of that public release.
