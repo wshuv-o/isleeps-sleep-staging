@@ -13,6 +13,8 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
+% resolve figures/ locally (../figures) and on Overleaf (./figures)
+\graphicspath{{../}{./}}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
@@ -792,7 +794,8 @@ outcome: the second modality adds a new capability while leaving staging unchang
 clinical use, because a reader can trust that the respiratory output reflects breathing and the
 staging output reflects the brain.
 
-\textbf{Limitations.} The evidence comes from a single center and the $96$ patients with
+\subsection{Limitations}
+The evidence comes from a single center and the $96$ patients with
 complete cardiorespiratory channels; external, multi-center validation is required before
 clinical use. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
 screening-grade one, and it is scored at the epoch level rather than per event. Staging sits at
@@ -801,6 +804,7 @@ pipelines. Finally, the model is feature-based: it inherits the assumptions of t
 representations and is not an end-to-end raw-signal learner, a deliberate trade for data
 efficiency on a small cohort.
 
+\subsection{Future Work}
 Two directions follow naturally. Event-level metrics, such as sensitivity per event and false
 alarms per hour, would sit beside the epoch-level AUC and speak more directly to a sleep
 technician, and finer modeling of the breathing waveforms is likely to raise the respiratory
