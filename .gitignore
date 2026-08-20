@@ -82,3 +82,6 @@ experiment_results.json
 !MMNet_research/MMNet_Submission/paper/multimodal_source_overleaf.zip
 !MMNet_research/MMNet_Submission/all_codes/results/npz/predictions.npz
 !MMNet_research/MMNet_Submission/all_codes/results/npz/event_labels.npz
+
+# the assembled upload folder — the zip is the Overleaf project itself
+!FINAL_SUBMISSION/01_Overleaf_Project.zip
