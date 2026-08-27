@@ -1,14 +1,31 @@
 SUBMISSION LINKS
 ================
 
-Overleaf (read link):
+Overleaf (read link, opens without login):
   https://www.overleaf.com/read/jbmwndgzsqgz#79f973
 
 GitHub repository (public):
   https://github.com/wshuv-o/isleeps-sleep-staging
 
+My own branch:
+  https://github.com/wshuv-o/isleeps-sleep-staging/tree/suva-final-submission
+
+Notebook with saved outputs:
+  https://github.com/wshuv-o/isleeps-sleep-staging/blob/master/MMNet_research/MMNet_Submission/all_codes/notebooks/1_MM_Net_reproduction.ipynb
+
 Co-author repositories (evidence of contributions):
   https://github.com/EsmeAbha/iSleep_experiments
   https://github.com/Imtiaj-Sajin/Ischemic-Stroke-research-works
 
+Kaggle notebook:
+  [TO ADD]
+
+Google Colab notebook:
+  [TO ADD]
+
 Target journal: IEEE Journal of Biomedical and Health Informatics (JBHI)
+
+THREE PAPER VERSIONS SUBMITTED
+  02a_Paper_OLD_version.pdf          first version   (5 pages)
+  02b_Paper_HIGHLIGHTED_changes.pdf  latexdiff       (12 pages)
+  02c_Paper_FRESH_final.pdf          current version (11 pages)
