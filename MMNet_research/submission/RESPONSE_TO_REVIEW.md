@@ -13,7 +13,7 @@ Page references are to the revised manuscript (`02c_Paper_FRESH_final.pdf`). Eve
 
 We thank the reviewer for a report that engaged with our actual numbers rather than the narrative. The central criticism — that the empirical work was too thin to sustain the claims — was correct. The submitted version reported one ablation condition, no respiratory baseline, no significance test, no clinical validation, and 11 references.
 
-The revision is substantial: the manuscript grew from 5 to 11 pages, Results expanded from 2 subsections to 10, tables from 3 to 9, and references from 11 to 30. **Every new number is produced by a live cell** in the executed notebooks; none is copied from a cached file. The reproduction notebook re-runs end to end in 82.4 minutes.
+The revision is substantial: the manuscript grew from 5 to 11 pages, Results expanded from 2 subsections to 10, tables from 3 to 9, and references from 11 to 49. **Every new number is produced by a live cell** in the executed notebooks; none is copied from a cached file. The reproduction notebook re-runs end to end in 82.4 minutes.
 
 **We accept 10 findings in full and 2 in part** (Findings 1 and 9), with technical justification given below.
 
@@ -129,7 +129,7 @@ We took the reviewer's suggestion to state the negative architectural result pla
 
 **Accepted in part.**
 
-**Accepted.** The reference list grew from **11 to 30** entries in the manuscript, weighted to recent work (27 of 49 in the source bibliography are 2023 or later), including the EEG foundation-model literature the reviewer noted was missing. We added the comparison table the reviewer asked for (**Table VIII, p.9**), setting the accuracy recent methods report on healthy cohorts against their measured accuracy on this stroke cohort, and we benchmarked the standard single-channel architectures on our own folds (**Table IV, p.6**).
+**Accepted.** The reference list grew from **11 to 49** entries, weighted to recent work (27 of the 49, or 55%, are 2023 or later), including the EEG foundation-model literature the reviewer noted was missing. We added the comparison table the reviewer asked for (**Table VIII, p.9**), setting the accuracy recent methods report on healthy cohorts against their measured accuracy on this stroke cohort, and we benchmarked the standard single-channel architectures on our own folds (**Table IV, p.6**).
 
 **Where we differ.** The reviewer objected that our first-ness claim rested only on the dataset citation. We have narrowed the claim rather than removed it: the text now states that no prior method addresses *joint* staging and respiratory-event detection **on this corpus**, and supports it with the benchmark table showing that every published method evaluated here produces a staging output only. We think that is a defensible scoped claim supported by our own evidence rather than by a citation. We have also softened the sleep-disordered-breathing/recovery sentence in **§I** so the strength of the association matches what the cited studies report.
 
