@@ -85,3 +85,8 @@ experiment_results.json
 
 # the assembled upload folder — the zip is the Overleaf project itself
 !FINAL_SUBMISSION/01_Overleaf_Project.zip
+
+# model checkpoints cited as evidence (item 9)
+!MMNet_research/results/models/headline_concat_fold0.pt
+!MMNet_research/results/models/supp_headline_fold0.pt
+!HAGNet_research/model/pretrained_sedf.pt
