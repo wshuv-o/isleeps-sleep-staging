@@ -689,6 +689,30 @@ mild, dominant $81\%$ of events), $0.763$ on obstructive apneas, and $0.840$ on 
 It is strongest on the most severe events, and the overall AUC is held down by the abundant
 hypopneas.
 
+Figure~\ref{fig:rocpr} shows the operating characteristics behind these numbers, computed
+from the pooled held-out predictions of all ten folds. The precision--recall panel is the
+more informative of the two: respiratory events occupy $16\%$ of epochs, and under that
+imbalance a ROC curve flatters any detector. Read at fixed sensitivity, the trade-off is
+explicit --- at $0.80$ sensitivity the model holds $0.47$ specificity and $0.22$ precision,
+which is a screening signal rather than a scoring-grade detector, and we describe it as
+such. We also note that pooling every fold's epochs into a single curve is not the same
+estimator as averaging the ten per-fold scores: pooling weights folds by epoch count and
+mixes their score scales, giving a pooled AUC of $0.706$ against the cross-validated
+$\mmAuc \pm 0.034$ reported in Table~\ref{tab:resp}. Both are stated so the difference is
+visible rather than hidden; it is a fifth of one fold standard deviation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_roc_pr.pdf}
+\caption{Respiratory-event detection, operating characteristics, pooled over the ten
+patient-independent test folds. \textbf{(a)} ROC; the dashed line is chance.
+\textbf{(b)} Precision--recall; the dashed line is the $0.160$ event prevalence, the
+no-skill floor. Each panel reports the pooled value and the per-fold mean $\pm$ standard
+deviation, which differ because pooling is a different estimator from cross-validated
+averaging.}
+\label{fig:rocpr}
+\end{figure}
+
 \begin{table}[t]
 \caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
 on the $14$ cardiorespiratory features on the same folds; chance-level average precision equals the
