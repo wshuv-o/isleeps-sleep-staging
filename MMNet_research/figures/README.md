@@ -46,8 +46,16 @@ All are emitted as **vector PDF** via matplotlib's PDF backend (`savefig(..., fo
 | `fig_hypnogram.pdf` | `regen_hypno_fig.py` | `results/npz/predictions.npz` (patient SN90) | Fig. 5 |
 | `fig_sdb_burden.pdf` | `make_figures.py` | `subject_description.xlsx` (AASM AHI bands) | Fig. 2 |
 | `fig_training_curve.pdf` | `make_result_figs.py` | training history, fold 1 | Supp. |
+| `fig_roc_pr.pdf` | **notebook `4_roc_pr_curves.ipynb`** | `results/npz/predictions.npz` | Fig. 9 |
 
 **Changed by hand:** nothing in the plotted data. Manual work was confined to presentation — axis limits fixed to common ranges so panels compare directly, legend placement, and removal of baked-in titles so the LaTeX captions carry the description. `clean_extra_figs.py` strips titles and annotations from earlier drafts of these figures to enforce the graph-only style.
+
+
+> **`fig_roc_pr.pdf` is generated inside a notebook, not by a script.** Cells 3-5 of
+> `MMNet_Submission/all_codes/notebooks/4_roc_pr_curves.ipynb` load the pooled held-out
+> predictions, recompute every headline metric, draw both panels and write the vector PDF.
+> The notebook is committed with its outputs, so the numbers annotated on the figure can be
+> checked against the cell that produced them without re-running anything.
 
 ---
 
