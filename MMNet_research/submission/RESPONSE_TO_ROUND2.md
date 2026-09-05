@@ -12,7 +12,7 @@ Page references are to the revised manuscript, now 13 pages. Every number below 
 
 We thank the reviewer for a second reading that was as specific as the first. Four of the five remaining findings are addressed with new experiments rather than with text; the fifth we have declined, with our reasoning given.
 
-We also ran three experiments the reviewer did not ask for, because the second report's standard of evidence made their absence conspicuous. **Two of the three produced results that weaken claims we had been making**, and we report them as they came.
+We also ran four experiments the reviewer did not ask for, because the second report's standard of evidence made their absence conspicuous. **Two of the four produced results that weaken claims we had been making**, and we report them as they came; a third produced the strongest evidence in the manuscript.
 
 | # | Finding | Disposition | Where |
 |---|---|---|---|
@@ -24,6 +24,7 @@ We also ran three experiments the reviewer did not ask for, because the second r
 | — | *(unprompted)* seed stability | Added | §VI-A, p.5 |
 | — | *(unprompted)* calibration and conformal abstention | Added | §VI-M, p.10 |
 | — | *(unprompted)* data-efficiency learning curve | Added | §VI-L, p.10, Fig. 10 |
+| — | *(unprompted)* **external validation on an independent corpus** | Added | §VI-N, p.11, Table IX |
 
 ---
 
@@ -120,6 +121,47 @@ A single-seed headline invites the question of whether the result is a property 
 
 Ranking is nonetheless sound, which is what abstention needs. Split-conformal prediction, calibrated on each fold's validation patients, gives empirical coverage tracking the target (0.894 at a 0.90 target). At α = 0.10 the model returns a single stage for 45.8% of epochs and is right on **86.9%** of those, against **59.1%** elsewhere — the abstention selects genuinely hard epochs rather than hedging. It concentrates where a human scorer would expect: N1 receives a singleton set only 19% of the time, the lowest of any stage.
 
+### External validation on Sleep-EDF (§VI-N, p.11, Table IX)
+
+Neither review round asked for this, but the assignment guide requires in-domain **and**
+external validation, and every result to that point had been internal to one corpus. We
+trained a single model on all 96 iSLEEPS patients and ran it on Sleep-EDF Expanded with no
+dataset-specific tuning whatsoever — no fine-tuning, no threshold search, no re-fitted
+normalisation, and hidden-Markov transitions estimated from iSLEEPS alone.
+
+| Evaluation | Accuracy | Macro-F1 | κ |
+|---|---|---|---|
+| iSLEEPS, ten-fold (in-domain) | 0.7227 | 0.6510 | 0.6106 |
+| **Sleep-EDF, zero-shot (external)** | **0.8002** | **0.7086** | **0.7121** |
+| Difference | +0.078 | +0.058 | +0.102 |
+
+**The model performs better on the cohort it was not trained on**, and per-recording
+accuracy is 0.797 ± 0.057 across all 11 subjects (range 0.720–0.885), so the transfer is
+uniform rather than carried by a few easy nights.
+
+We think this is the most consequential number in the revision, because of what it rules
+out. A representation that had memorised corpus-specific artefacts — one centre's
+amplifiers, one scoring team's habits — would degrade out of corpus. Instead the same
+weights gain 0.10 of κ on healthy sleepers recorded in a different country, in a different
+decade, on a different montage. Read together with the flat staging learning curve, it
+supports the same conclusion by an independent route: **the ceiling reported throughout
+this paper belongs to stroke sleep, not to the model.**
+
+Two qualifications are stated in the manuscript rather than left to the reader. Accuracy
+across cohorts with different class balance is not directly comparable — Sleep-EDF carries
+less wake (16.3% against 26.6%) and more N2, both of which favour the external score;
+Cohen's κ corrects for chance agreement and still rises by 0.102, so the effect survives,
+but the accuracy gap overstates it. And per-stage recall shows transfer is uneven: wake
+(0.925) and N2 (0.943) survive almost intact and REM holds at 0.781, but N3 falls to 0.554
+with 44% of N3 epochs read as N2, and N1 to 0.247. The N3 loss is the montage confound made
+visible — slow-wave activity is frontally dominant, and the model was trained on central and
+occipital derivations while Sleep-EDF supplies a frontal one.
+
+The respiratory head could not be evaluated: Sleep-EDF carries no cardiorespiratory channels
+and no respiratory-event annotations. That limitation is now stated explicitly, along with
+the fact that no second public stroke polysomnography corpus exists against which it could
+be tested.
+
 ### Data efficiency (§VI-L, p.10, Fig. 10)
 
 We had been describing this cohort as data-limited. **The learning curve only partly supports that, and we have narrowed the claim accordingly.**
@@ -139,6 +181,6 @@ Staging's marginal gains are +0.021, +0.008, **+0.001** — the final quartile b
 
 ## Closing
 
-Of the three experiments we added unprompted, one strengthened the paper (seed stability), one produced a mixed result we had to write against ourselves (calibration: the model is overconfident), and one required us to retract a framing we had used since the first submission (data efficiency: staging is not data-limited). The event-level analysis requested under Finding 3 produced the weakest number in the paper.
+Of the four experiments we added unprompted, one strengthened the paper (seed stability), one produced a mixed result we had to write against ourselves (calibration: the model is overconfident), one required us to retract a framing we had used since the first submission (data efficiency: staging is not data-limited), and one — external validation — turned out to be the strongest evidence in the manuscript. The event-level analysis requested under Finding 3 produced the weakest number in it.
 
 We think the manuscript is more useful for containing them.
