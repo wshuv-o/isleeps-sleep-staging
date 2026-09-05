@@ -1,7 +1,7 @@
 %=====================================================================
 %DIF LATEXDIFF DIFFERENCE FILE
 %DIF DEL OLD_v1.tex       Thu Aug 27 22:48:19 2026
-%DIF ADD multimodal.tex   Sat Sep  5 10:06:36 2026
+%DIF ADD multimodal.tex   Sat Sep  5 11:28:04 2026
 %  IEEE journal manuscript. Compile with pdfLaTeX + BibTeX
 %  Order:  pdfLaTeX -> BibTeX -> pdfLaTeX -> pdfLaTeX
 %  Multimodal polysomnography: joint staging + respiratory-event detection.
@@ -1192,6 +1192,68 @@ one human scorers agree on least.
 
 }
 
+\subsection{\DIFadd{External Validation on an Independent Corpus}}
+\label{sec:external}
+\DIFadd{Ten-fold cross-validation is patient-independent but remains within one corpus, one centre
+and one acquisition protocol. We therefore trained a single model on all $96$ iSLEEPS
+patients and ran it on Sleep-EDF Expanded~\cite{kemp2000sleepedf} with no dataset-specific
+tuning: no fine-tuning, no threshold search, no re-fitted normalisation, and hidden-Markov
+transitions estimated from iSLEEPS alone. Sleep-EDF supplies EEG, EOG and EMG but no
+cardiorespiratory channels and no respiratory-event annotations, so the cardiorespiratory
+features are zeroed and only the staging head is evaluated --- which the ablation licenses,
+since removing that entire stream leaves staging unchanged ($p=0.91$).
+
+}
+
+\DIFadd{Across $11$ recordings and $11{,}272$ epochs the model reaches $0.800$ accuracy, $0.709$
+macro-F1 and $\kappa=0.712$, against $\mmAcc$, $\mmMf$ and $\mmK$ in-domain
+(Table~\ref{tab:ext}). Per-recording accuracy is $0.797 \pm 0.057$ with a range of
+$0.720$--$0.885$: the transfer is uniform, not carried by a few easy nights.
+
+}
+
+\DIFadd{\textbf{The model performs better on the cohort it was not trained on.} That inversion is
+the point. A representation that had memorised corpus-specific artefacts would degrade
+out of corpus; instead the same weights gain $0.10$ of $\kappa$ on healthy sleepers. The
+straightforward reading is that the features are physiological rather than corpus-specific,
+and that the ceiling reported throughout this paper is a property of \emph{stroke sleep}
+rather than of the model --- the same conclusion the learning curve reaches
+(Section~\ref{sec:curve}) by a different route.
+
+}
+
+\DIFadd{Two qualifications keep this honest. Accuracy across cohorts with different class balance
+is not directly comparable: Sleep-EDF contains less wake ($16.3\%$ against $26.6\%$) and
+more N2, both of which favour the external score. Cohen's $\kappa$ corrects for chance
+agreement and still rises by $0.102$, so the effect survives, but the accuracy gap
+overstates it. Second, per-stage recall shows where transfer is imperfect: wake ($0.925$)
+and N2 ($0.943$) transfer almost intact and REM holds at $0.781$, but N3 falls to $0.554$
+with $44\%$ of N3 epochs read as N2, and N1 to $0.247$. The N3 loss is the montage
+confound made visible --- slow-wave activity is frontally dominant, and a model trained on
+central and occipital derivations is reading a frontal one it never saw. N1 is the stage
+human scorers agree on least and is the model's weakest class in-domain as well.
+
+}
+
+\begin{table}[t]
+\caption{External validation. One model trained on all $96$ iSLEEPS patients, evaluated
+zero-shot on Sleep-EDF Expanded with no dataset-specific tuning. In-domain figures are the
+ten-fold patient-independent means.}
+\label{tab:ext}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Evaluation & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
+\midrule
+iSLEEPS, ten-fold (in-domain)      & $\mmAcc$ & $\mmMf$ & $\mmK$ \\
+Sleep-EDF, zero-shot (external)    & $\mathbf{0.800}$ & $\mathbf{0.709}$ & $\mathbf{0.712}$ \\
+\midrule
+Difference                          & $+0.078$ & $+0.058$ & $+0.102$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{\DIFadd{Model Complexity and Capability}}
 \DIFadd{Table~\ref{tab:cost} sets the proposed model beside representative alternatives on size and
 capability. A single compact network, under a million parameters and an order of magnitude
@@ -1270,8 +1332,12 @@ staging output reflects the brain.
 
 \DIFaddbegin \subsection{\DIFadd{Limitations}}
 \DIFadd{The evidence comes from a single center and the $96$ patients with
-complete cardiorespiratory channels; external, multi-center validation is required before
-clinical use. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
+complete cardiorespiratory channels. Section~
+ef}{\DIFadd{sec:external}} \DIFadd{shows the staging head
+transfers to an independent healthy corpus without tuning, but that corpus supplies no
+cardiorespiratory channels, so the respiratory head remains validated on one cohort only;
+multi-center validation on a second stroke cohort is required before clinical use, and no
+such public corpus currently exists. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
 screening-grade one, and it is scored at the epoch level rather than per event --- at
 event level it detects $55\%$ of events at $2.6$ false alarms per hour and under-counts
 the event rate by more than half, so it cannot substitute for a scored index. The
