@@ -47,6 +47,7 @@ All are emitted as **vector PDF** via matplotlib's PDF backend (`savefig(..., fo
 | `fig_sdb_burden.pdf` | `make_figures.py` | `subject_description.xlsx` (AASM AHI bands) | Fig. 2 |
 | `fig_training_curve.pdf` | `make_result_figs.py` | training history, fold 1 | Supp. |
 | `fig_roc_pr.pdf` | **notebook `4_roc_pr_curves.ipynb`** | `results/npz/predictions.npz` | Fig. 9 |
+| `fig_learning_curve.pdf` | **notebook `8_data_efficiency.ipynb`** | live training runs at 25/50/75/100% of training patients | Fig. 10 |
 
 **Changed by hand:** nothing in the plotted data. Manual work was confined to presentation — axis limits fixed to common ranges so panels compare directly, legend placement, and removal of baked-in titles so the LaTeX captions carry the description. `clean_extra_figs.py` strips titles and annotations from earlier drafts of these figures to enforce the graph-only style.
 

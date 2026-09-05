@@ -702,6 +702,18 @@ mild, dominant $81\%$ of events), $0.763$ on obstructive apneas, and $0.840$ on 
 It is strongest on the most severe events, and the overall AUC is held down by the abundant
 hypopneas.
 
+Scoring at the event level rather than the epoch level changes the picture, and not
+favourably. Grouping consecutive flagged epochs into events within each patient, a decision
+threshold of $0.5$ detects $55\%$ of scored events at $2.6$ false alarms per hour; lowering the
+threshold to $0.2$ raises event sensitivity to $86\%$ but flags $68\%$ of all epochs. More
+tellingly, the model recovers the wrong \emph{number} of events: a mean predicted rate of $4.5$
+events per hour against a scored $11.1$, and a per-patient rank correlation of only
+$\rho=0.142$ ($p=0.17$, $n=96$) --- far weaker than the $\rho=0.315$ obtained from the
+aggregated epoch probability. Consecutive events separated by a few epochs merge into one
+flagged run, so an epoch-level detector systematically under-counts. This is why we report a
+burden rather than an index, and why event-level scoring is the natural next step rather than a
+formality.
+
 Figure~\ref{fig:rocpr} shows the operating characteristics behind these numbers, computed
 from the pooled held-out predictions of all ten folds. The precision--recall panel is the
 more informative of the two: respiratory events occupy $16\%$ of epochs, and under that
@@ -811,6 +823,67 @@ Severe   & $\geq 30$  & 37 & $0.708 \pm 0.091$ \\
 \end{tabular}
 \end{table}
 
+\subsection{Permutation Importance: a Second, Independent Attribution}
+The ablation grid establishes what the model \emph{needs}: remove a modality, retrain, and
+observe which head suffers. A complementary question is what a \emph{trained} model actually
+uses. We therefore permute each modality's features across epochs at inference time --- the
+channel is still present, but no longer aligned to the epoch it describes --- and measure the
+drop, averaged over three shuffles and the ten fold models.
+
+The two methods can disagree, because a model may need a channel during training yet weight it
+lightly afterwards. Here they do not. Permuting the EEG features costs $0.225$ staging accuracy
+and only $0.038$ respiratory AUC; permuting SpO$_2$ costs $0.031$ respiratory AUC and
+\emph{nothing} in staging ($-0.001$). Across the seven modalities common to both analyses the
+rank correlation between permutation drop and ablation drop is $\rho=0.893$ ($p=0.007$) for
+respiratory AUC. Two methods that could have disagreed, applied to different objects --- one to
+retrained models, one to fixed ones --- order the modalities the same way. That is stronger
+evidence for the physiological attribution than either provides alone, and unlike an embedding
+projection it is a prediction that could have failed.
+
+\subsection{Data Efficiency: Which Ceiling Are We Against?}
+Staging on this corpus saturates near $0.72$--$0.75$ for every model family tried here and
+elsewhere. Whether that reflects the architecture or the cohort is testable: retrain the
+identical model on a shrinking fraction of the \emph{training patients}, always evaluating on
+the full held-out fold (Fig.~\ref{fig:curve}). Patients are subsampled rather than epochs,
+because epochs within a patient are heavily correlated.
+
+The two heads answer differently. Staging accuracy rises $0.693 \rightarrow 0.714 \rightarrow
+0.721 \rightarrow \mmAcc$ as training patients go from $19$ to $76$, with marginal gains of
+$+0.021$, $+0.008$ and $+0.001$: the final quartile buys $4\%$ of one fold standard deviation,
+which is flat within noise. Respiratory AUC over the same range rises $0.656 \rightarrow 0.685
+\rightarrow 0.696 \rightarrow \mmAuc$, and its final step of $+0.015$ is still close to half a
+fold standard deviation. \textbf{Staging has reached this cohort's ceiling; respiratory
+detection has not.} We draw the narrower conclusion the data support: more patients of this
+kind would improve breathing detection and would not improve staging, so the staging ceiling is
+a property of the labels and the injured brain rather than of the training-set size.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\columnwidth]{figures/fig_learning_curve.pdf}
+\caption{Learning curve over training-patient fraction, ten-fold patient-independent, error
+bars one standard deviation across folds. Staging (blue) flattens by $57$ patients; respiratory
+detection (orange) is still climbing at $76$.}
+\label{fig:curve}
+\end{figure}
+
+\subsection{Calibration and When the Model Declines to Commit}
+A clinical reader needs to know not only how often the model is right but whether it knows when
+it is likely to be wrong. Two measurements answer that, both computed on held-out epochs with
+the raw posteriors before HMM smoothing.
+
+The model is \emph{overconfident}: expected calibration error is $0.076$, and the gap runs one
+way in every confidence bin --- epochs it scores above $0.9$ are correct $88\%$ of the time.
+Stated confidences should therefore be read as ordered, not as probabilities.
+
+Ranking, however, is what abstention needs. Applying split-conformal prediction with the
+fold's validation patients as the calibration set gives empirical coverage that tracks the
+target closely ($0.894$ at a $0.90$ target, $0.943$ at $0.95$). At $\alpha=0.10$ the model
+returns a single stage for $45.8\%$ of epochs and is correct on $86.9\%$ of those, against
+$59.1\%$ on the epochs where it returns a larger set. The abstention is therefore selecting the
+genuinely hard epochs rather than merely hedging, and it concentrates where a scorer would
+expect: N1 receives a singleton set only $19\%$ of the time, the lowest of any stage and the
+one human scorers agree on least.
+
 \subsection{Model Complexity and Capability}
 Table~\ref{tab:cost} sets the proposed model beside representative alternatives on size and
 capability. A single compact network, under a million parameters and an order of magnitude
@@ -880,7 +953,11 @@ staging output reflects the brain.
 The evidence comes from a single center and the $96$ patients with
 complete cardiorespiratory channels; external, multi-center validation is required before
 clinical use. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
-screening-grade one, and it is scored at the epoch level rather than per event. Staging sits at
+screening-grade one, and it is scored at the epoch level rather than per event --- at
+event level it detects $55\%$ of events at $2.6$ false alarms per hour and under-counts
+the event rate by more than half, so it cannot substitute for a scored index. The
+staging head is also overconfident (expected calibration error $0.076$), so its
+posteriors should be used for ranking and abstention rather than read as probabilities. Staging sits at
 the cohort ceiling, so the model does not raise staging accuracy over strong classical
 pipelines. Finally, the model is feature-based: it inherits the assumptions of the engineered
 representations and is not an end-to-end raw-signal learner, a deliberate trade for data
