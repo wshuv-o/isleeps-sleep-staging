@@ -4,7 +4,7 @@
 **Manuscript ID:** MMNet-2026-0713.R2
 **Round:** Response to Minor Revision (previous: Overall 8/10)
 
-Page references are to the revised manuscript, now 13 pages. Every number below is produced by a live cell in a committed notebook; none is copied from a cached file.
+Page references are to the revised manuscript, now 14 pages. Every number below is produced by a live cell in a committed notebook; none is copied from a cached file.
 
 ---
 
@@ -17,14 +17,14 @@ We also ran four experiments the reviewer did not ask for, because the second re
 | # | Finding | Disposition | Where |
 |---|---|---|---|
 | 1 | Title undersells the contribution | **Declined**, with reasoning | — |
-| 2 | t-SNE does not earn its place | Accepted — replaced with permutation importance | §VI-K, p.9 |
-| 3 | Abstract more optimistic than limitations | Accepted in full | Abstract p.1; §VI-H p.7; §VII-A p.12 |
+| 2 | t-SNE does not earn its place | Accepted — replaced with permutation importance | §VI-J, p.9 |
+| 3 | Abstract more optimistic than limitations | Accepted in full | Abstract p.1; §VI-H p.7; §VII-A p.11 |
 | 4 | AHI association thinly interpreted | Accepted in full | §VI-I, p.9 |
 | 5 | Released per-fold cache disagrees with the run | Accepted in full | `results/revision/runs/` |
 | — | *(unprompted)* seed stability | Added | §VI-A, p.5 |
-| — | *(unprompted)* calibration and conformal abstention | Added | §VI-M, p.10 |
-| — | *(unprompted)* data-efficiency learning curve | Added | §VI-L, p.10, Fig. 10 |
-| — | *(unprompted)* **external validation on two independent corpora** | Added | §VI-N, p.11, Table IX |
+| — | *(unprompted)* calibration and conformal abstention | Added | §VI-K, p.9 |
+| — | *(unprompted)* data-efficiency learning curve | Added | §VI-K, p.9 |
+| — | *(unprompted)* **external validation on two independent corpora** | Added | §VI-M, p.10, Table X |
 
 ---
 
@@ -40,7 +40,7 @@ We agree that is the most transferable result. We have kept the current title be
 
 **Accepted.** The reviewer asked for something falsifiable, and specifically suggested permutation importance restricted to the respiratory head, to test whether the channels the ablation implicates are the ones the model actually weights.
 
-We ran it (**§VI-K, p.9**). Each modality's features are permuted across epochs at inference — the channel remains present but is no longer aligned to the epoch it describes — averaged over three shuffles and all ten fold models.
+We ran it (**§VI-J, p.9**). Each modality's features are permuted across epochs at inference — the channel remains present but is no longer aligned to the epoch it describes — averaged over three shuffles and all ten fold models.
 
 | Modality | Δ staging acc | Δ respiratory AUC |
 |---|---|---|
@@ -67,7 +67,7 @@ The t-SNE is retained but demoted: the attribution argument now rests on the abl
 
 The abstract now states the respiratory read-out is *"an epoch-level, screening-grade read-out rather than event-by-event scoring"* (**p.1**).
 
-We then went further and measured what event-level scoring would actually give (**§VI-H, p.7**). The result is worse than we would have guessed:
+We then went further and measured what event-level scoring would actually give (**§VI-H, p.6**). The result is worse than we would have guessed:
 
 | Threshold | Event sensitivity | False alarms/hour | % epochs flagged |
 |---|---|---|---|
@@ -115,13 +115,13 @@ A single-seed headline invites the question of whether the result is a property 
 
 **We also state a fact that does not flatter us:** seed 42, which we report throughout, has the *highest* respiratory AUC of the five. The seed mean is 0.705. The manuscript now tells the reader to treat 0.711 as the optimistic end of a 0.701–0.711 interval.
 
-### Calibration and abstention (§VI-M, p.10)
+### Calibration and abstention (§VI-K, p.9)
 
 **The model is overconfident.** Expected calibration error is 0.076 and the gap runs one way in every bin — epochs scored above 0.9 are correct 88% of the time. Stated confidences are ordered, not probabilities, and we now say so.
 
 Ranking is nonetheless sound, which is what abstention needs. Split-conformal prediction, calibrated on each fold's validation patients, gives empirical coverage tracking the target (0.894 at a 0.90 target). At α = 0.10 the model returns a single stage for 45.8% of epochs and is right on **86.9%** of those, against **59.1%** elsewhere — the abstention selects genuinely hard epochs rather than hedging. It concentrates where a human scorer would expect: N1 receives a singleton set only 19% of the time, the lowest of any stage.
 
-### External validation on two independent corpora (§VI-N, p.11, Table IX)
+### External validation on two independent corpora (§VI-M, p.10, Table X)
 
 Neither review round asked for this, but the assignment guide requires in-domain **and**
 external validation, and every result to that point had been internal to one corpus. We
@@ -174,7 +174,7 @@ occipital derivations while Sleep-EDF supplies a frontal one.
 
 We keep this in proportion: ISRUC contributes eight subjects, per-recording respiratory AUC spans 0.515–0.848 tracking event prevalence, and neither external corpus is a stroke cohort, so every stroke-specific claim still rests on iSLEEPS alone.
 
-### Data efficiency (§VI-L, p.10, Fig. 10)
+### Data efficiency (§VI-K, p.9)
 
 We had been describing this cohort as data-limited. **The learning curve only partly supports that, and we have narrowed the claim accordingly.**
 
