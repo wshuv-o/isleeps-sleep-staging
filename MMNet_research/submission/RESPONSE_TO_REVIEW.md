@@ -61,7 +61,7 @@ The revision is substantial: the manuscript grew from 5 to 11 pages, Results exp
 
 ## Finding 3 — The respiratory result has no baseline
 
-**Accepted in full.** Three reference points added on identical folds (**§VI-H, p.7; Table V, p.7**):
+**Accepted in full.** Three reference points added on identical folds (**§VI-H, p.6; Table V, p.7**):
 
 | Detector | Respiratory AUC |
 |---|---|
@@ -91,11 +91,11 @@ This pair is now central rather than incidental: it is the cleanest statement of
 
 **Accepted in full.** Three analyses added.
 
-**AHI association (§VI-I, p.8; Fig. 9).** Predicted per-patient event burden against the clinically scored index: **Spearman ρ = 0.315, p = 0.0017, n = 96**, with all three quantities stated. We report this as a modest association, not validation, and the section is titled accordingly. The discussion states plainly that the model tracks severity at group level and is not a substitute for a scored AHI.
+**AHI association (§VI-I, p.9; Fig. 9).** Predicted per-patient event burden against the clinically scored index: **Spearman ρ = 0.315, p = 0.0017, n = 96**, with all three quantities stated. We report this as a modest association, not validation, and the section is titled accordingly. The discussion states plainly that the model tracks severity at group level and is not a substitute for a scored AHI.
 
-**Severity stratification (§VI-I, p.8).** Staging accuracy by AASM band: 0.770 normal → 0.730 mild → 0.712 moderate → 0.708 severe.
+**Severity stratification (§VI-I, p.9).** Staging accuracy by AASM band: 0.770 normal → 0.730 mild → 0.712 moderate → 0.708 severe.
 
-**Per-event-type detection (§VI-H, p.7).** Hypopnea 0.692 (81.0% prevalence), obstructive apnea 0.763 (11.6%), central apnea 0.840 (5.8%). The pattern was invisible in the pooled number: detection is strongest on the most severe events, and hypopneas dominate the pooled label and drag the aggregate toward the hardest class. The reviewer's point about central events after stroke is addressed in the discussion.
+**Per-event-type detection (§VI-H, p.6).** Hypopnea 0.692 (81.0% prevalence), obstructive apnea 0.763 (11.6%), central apnea 0.840 (5.8%). The pattern was invisible in the pooled number: detection is strongest on the most severe events, and hypopneas dominate the pooled label and drag the aggregate toward the hardest class. The reviewer's point about central events after stroke is addressed in the discussion.
 
 ---
 
