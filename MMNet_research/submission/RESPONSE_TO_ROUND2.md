@@ -24,7 +24,7 @@ We also ran four experiments the reviewer did not ask for, because the second re
 | — | *(unprompted)* seed stability | Added | §VI-A, p.5 |
 | — | *(unprompted)* calibration and conformal abstention | Added | §VI-M, p.10 |
 | — | *(unprompted)* data-efficiency learning curve | Added | §VI-L, p.10, Fig. 10 |
-| — | *(unprompted)* **external validation on an independent corpus** | Added | §VI-N, p.11, Table IX |
+| — | *(unprompted)* **external validation on two independent corpora** | Added | §VI-N, p.11, Table IX |
 
 ---
 
@@ -121,7 +121,7 @@ A single-seed headline invites the question of whether the result is a property 
 
 Ranking is nonetheless sound, which is what abstention needs. Split-conformal prediction, calibrated on each fold's validation patients, gives empirical coverage tracking the target (0.894 at a 0.90 target). At α = 0.10 the model returns a single stage for 45.8% of epochs and is right on **86.9%** of those, against **59.1%** elsewhere — the abstention selects genuinely hard epochs rather than hedging. It concentrates where a human scorer would expect: N1 receives a singleton set only 19% of the time, the lowest of any stage.
 
-### External validation on Sleep-EDF (§VI-N, p.11, Table IX)
+### External validation on two independent corpora (§VI-N, p.11, Table IX)
 
 Neither review round asked for this, but the assignment guide requires in-domain **and**
 external validation, and every result to that point had been internal to one corpus. We
@@ -157,10 +157,22 @@ with 44% of N3 epochs read as N2, and N1 to 0.247. The N3 loss is the montage co
 visible — slow-wave activity is frontally dominant, and the model was trained on central and
 occipital derivations while Sleep-EDF supplies a frontal one.
 
-The respiratory head could not be evaluated: Sleep-EDF carries no cardiorespiratory channels
-and no respiratory-event annotations. That limitation is now stated explicitly, along with
-the fact that no second public stroke polysomnography corpus exists against which it could
-be tested.
+**A second corpus tests the respiratory head, which Sleep-EDF could not.** ISRUC-Sleep supplies every modality the model uses — including our four EEG derivations *verbatim* — and carries scored obstructive, central and mixed apneas and hypopneas.
+
+| Corpus | Cohort | Rec. | Accuracy | κ | Resp. AUC |
+|---|---|---|---|---|---|
+| iSLEEPS (in-domain) | stroke | 96 | 0.7227 | 0.6106 | 0.7111 |
+| Sleep-EDF | healthy | 11 | **0.800** | **0.712** | — |
+| ISRUC, night 1 | sleep-disordered | 8 | 0.664 | 0.557 | **0.721** |
+| ISRUC, night 2 | sleep-disordered | 8 | 0.597 | 0.454 | 0.720 |
+
+**The respiratory read-out transfers**: 0.721 AUC externally against 0.711 in-domain, and handicapped at that — ISRUC has no pulse channel and no separate effort trace, so two of the seven cardiorespiratory inputs were zero-filled.
+
+**Staging moves in opposite directions on the two corpora, and the data say why.** It rises on Sleep-EDF and falls 0.059 on ISRUC, which carries 15.6% N1 against iSLEEPS' 10.2% — N1 being the weakest stage in every cohort we have measured.
+
+**One prediction was tested and held.** We attributed poor Sleep-EDF N3 recall (0.554) to slow-wave activity being frontally dominant while the model was trained on central and occipital derivations. ISRUC matches our derivations exactly, and **N3 recall recovers to 0.654** while every other stage transfers worse. The prediction was made on one corpus and confirmed on another chosen for an unrelated reason.
+
+We keep this in proportion: ISRUC contributes eight subjects, per-recording respiratory AUC spans 0.515–0.848 tracking event prevalence, and neither external corpus is a stroke cohort, so every stroke-specific claim still rests on iSLEEPS alone.
 
 ### Data efficiency (§VI-L, p.10, Fig. 10)
 

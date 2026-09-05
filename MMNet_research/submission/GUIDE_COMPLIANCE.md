@@ -33,8 +33,9 @@ Section numbers refer to the compiled manuscript (`paper/multimodal.pdf`, IEEEtr
 | 19 | Concrete future work | **Present** | §VII-B `\subsection{Future Work}`. Event-level metrics (sensitivity per event, false alarms per hour), finer breathing-waveform modelling, and linking the multimodal representation to stroke severity and recovery |
 | 20 | Conclusion | **Present** | §VIII |
 | 21 | 40–60 IEEE references, mostly 2023–2026 | **Present** | 49 references; 27 (55%) from 2023 or later — 8×2023, 7×2024, 6×2025, 6×2026 |
+| 22 | In-domain **and external** validation | **Present** | Sec. VI-N: two public corpora, zero-shot, no dataset-specific tuning - Sleep-EDF (11 recordings, staging head) and ISRUC-Sleep (16 recordings, both heads) |
 
-**Summary: 21 Present, 0 Weak, 0 Missing.**
+**Summary: 22 Present, 0 Weak, 0 Missing.**
 
 ## Note on items 18 and 19
 

@@ -881,56 +881,73 @@ genuinely hard epochs rather than merely hedging, and it concentrates where a sc
 expect: N1 receives a singleton set only $19\%$ of the time, the lowest of any stage and the
 one human scorers agree on least.
 
-\subsection{External Validation on an Independent Corpus}
+\subsection{External Validation on Two Independent Corpora}
 \label{sec:external}
 Ten-fold cross-validation is patient-independent but remains within one corpus, one centre
 and one acquisition protocol. We therefore trained a single model on all $96$ iSLEEPS
-patients and ran it on Sleep-EDF Expanded~\cite{kemp2000sleepedf} with no dataset-specific
+patients and evaluated it, unchanged, on two public corpora with no dataset-specific
 tuning: no fine-tuning, no threshold search, no re-fitted normalisation, and hidden-Markov
-transitions estimated from iSLEEPS alone. Sleep-EDF supplies EEG, EOG and EMG but no
-cardiorespiratory channels and no respiratory-event annotations, so the cardiorespiratory
-features are zeroed and only the staging head is evaluated --- which the ablation licenses,
-since removing that entire stream leaves staging unchanged ($p=0.91$).
+transitions estimated from iSLEEPS alone (Table~\ref{tab:ext}).
 
-Across $11$ recordings and $11{,}272$ epochs the model reaches $0.800$ accuracy, $0.709$
-macro-F1 and $\kappa=0.712$, against $\mmAcc$, $\mmMf$ and $\mmK$ in-domain
-(Table~\ref{tab:ext}). Per-recording accuracy is $0.797 \pm 0.057$ with a range of
-$0.720$--$0.885$: the transfer is uniform, not carried by a few easy nights.
+The two corpora test different things. \textbf{Sleep-EDF Expanded}~\cite{kemp2000sleepedf}
+is healthy sleep recorded on a frontal montage (Fpz-Cz, Pz-Oz) with no cardiorespiratory
+channels, so it tests the staging head across both a cohort shift and a montage shift.
+\textbf{ISRUC-Sleep}~\cite{khalighi2016isruc} is a sleep-disorders cohort recorded on the
+same central and occipital derivations we use (C4, C3, O2, O1 against the contralateral
+mastoid), with SpO$_2$, airflow, effort and ECG, and with obstructive, central and mixed
+apneas and hypopneas scored --- so it tests the staging head \emph{without} a montage
+confound and provides the only external test of the respiratory head. ISRUC records each
+subject twice; respiratory-event prevalence is $10.1\%$ on the first night and $2.4\%$ on
+the second, so we report the two separately rather than pooling a difference that has
+nothing to do with the model.
 
-\textbf{The model performs better on the cohort it was not trained on.} That inversion is
-the point. A representation that had memorised corpus-specific artefacts would degrade
-out of corpus; instead the same weights gain $0.10$ of $\kappa$ on healthy sleepers. The
-straightforward reading is that the features are physiological rather than corpus-specific,
-and that the ceiling reported throughout this paper is a property of \emph{stroke sleep}
-rather than of the model --- the same conclusion the learning curve reaches
-(Section~\ref{sec:curve}) by a different route.
+\textbf{The respiratory read-out transfers.} On ISRUC night one the model reaches $0.721$
+AUC against $\mmAuc$ in-domain --- and it does so handicapped, because ISRUC provides no
+pulse channel and no separate effort trace, leaving two of the seven cardiorespiratory
+inputs zero-filled. A detector that had latched onto one centre's equipment would not
+survive that; this one does.
 
-Two qualifications keep this honest. Accuracy across cohorts with different class balance
-is not directly comparable: Sleep-EDF contains less wake ($16.3\%$ against $26.6\%$) and
-more N2, both of which favour the external score. Cohen's $\kappa$ corrects for chance
-agreement and still rises by $0.102$, so the effect survives, but the accuracy gap
-overstates it. Second, per-stage recall shows where transfer is imperfect: wake ($0.925$)
-and N2 ($0.943$) transfer almost intact and REM holds at $0.781$, but N3 falls to $0.554$
-with $44\%$ of N3 epochs read as N2, and N1 to $0.247$. The N3 loss is the montage
-confound made visible --- slow-wave activity is frontally dominant, and a model trained on
-central and occipital derivations is reading a frontal one it never saw. N1 is the stage
-human scorers agree on least and is the model's weakest class in-domain as well.
+\textbf{Staging moves in opposite directions on the two corpora, for reasons the data
+identify.} On Sleep-EDF the model \emph{gains} $0.102$ of $\kappa$ over its in-domain
+score. A representation that had memorised corpus-specific artefacts would degrade out of
+corpus, so the straightforward reading is that the features are physiological and that the
+ceiling reported throughout this paper is a property of \emph{stroke sleep} rather than of
+the model --- the same conclusion the learning curve reaches (Section~\ref{sec:curve}) by a
+different route. On ISRUC staging falls by $0.059$ accuracy, and the class mix explains
+much of it: ISRUC carries $15.6\%$ N1 against iSLEEPS' $10.2\%$, and N1 is the weakest
+stage in every cohort we have measured (recall $0.201$ on ISRUC, $0.247$ on Sleep-EDF, and
+the lowest per-class F1 in-domain).
+
+Comparing the two also isolates the montage effect. On Sleep-EDF, N3 recall collapses to
+$0.554$ with $44\%$ of N3 epochs read as N2, which we attributed to slow-wave activity
+being frontally dominant while the model was trained on central and occipital derivations.
+On ISRUC, where those derivations match ours exactly, \textbf{N3 recall recovers to
+$0.654$} while every other stage transfers worse than on Sleep-EDF. The prediction was
+made on one corpus and held on another chosen for an unrelated reason.
+
+Two limits keep this in proportion. Accuracy across cohorts with different class balance is
+not directly comparable, which is why $\kappa$ is reported alongside. And ISRUC contributes
+only eight subjects: per-recording accuracy spans $0.458$--$0.748$ and per-recording
+respiratory AUC spans $0.515$--$0.848$, the latter tracking event prevalence closely, so
+the low-prevalence nights give near-chance estimates.
 
 \begin{table}[t]
-\caption{External validation. One model trained on all $96$ iSLEEPS patients, evaluated
-zero-shot on Sleep-EDF Expanded with no dataset-specific tuning. In-domain figures are the
-ten-fold patient-independent means.}
+\caption{External validation on two public corpora. One model trained on all $96$ iSLEEPS
+patients, evaluated zero-shot with no dataset-specific tuning. In-domain figures are the
+ten-fold patient-independent means. Sleep-EDF has no cardiorespiratory channels, so the
+respiratory head cannot be scored there.}
 \label{tab:ext}
 \centering
 \small
-\begin{tabular}{lccc}
+\begin{tabular}{llccccc}
 \toprule
-Evaluation & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
+Corpus & Cohort & Rec. & Acc\,$\uparrow$ & $\kappa$\,$\uparrow$ & Resp.\ AUC\,$\uparrow$ \\
 \midrule
-iSLEEPS, ten-fold (in-domain)      & $\mmAcc$ & $\mmMf$ & $\mmK$ \\
-Sleep-EDF, zero-shot (external)    & $\mathbf{0.800}$ & $\mathbf{0.709}$ & $\mathbf{0.712}$ \\
+iSLEEPS (in-domain)   & stroke        & 96 & $\mmAcc$ & $\mmK$ & $\mmAuc$ \\
 \midrule
-Difference                          & $+0.078$ & $+0.058$ & $+0.102$ \\
+Sleep-EDF             & healthy       & 11 & $\mathbf{0.800}$ & $\mathbf{0.712}$ & --- \\
+ISRUC, night 1        & sleep-disord. &  8 & $0.664$ & $0.557$ & $\mathbf{0.721}$ \\
+ISRUC, night 2        & sleep-disord. &  8 & $0.597$ & $0.454$ & $0.720$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1002,11 +1019,13 @@ staging output reflects the brain.
 
 \subsection{Limitations}
 The evidence comes from a single center and the $96$ patients with
-complete cardiorespiratory channels. Section~ef{sec:external} shows the staging head
-transfers to an independent healthy corpus without tuning, but that corpus supplies no
-cardiorespiratory channels, so the respiratory head remains validated on one cohort only;
-multi-center validation on a second stroke cohort is required before clinical use, and no
-such public corpus currently exists. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
+complete cardiorespiratory channels. Section~\ref{sec:external} shows both heads
+transfer to independent corpora without tuning, but neither external corpus is a stroke
+cohort, so every stroke-specific claim rests on iSLEEPS alone; multi-center validation on
+a second stroke cohort is required before clinical use, and no such public corpus
+currently exists. The external respiratory result rests on eight subjects, two of whose
+seven cardiorespiratory inputs were unavailable, so it establishes that the read-out
+transfers rather than how well. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
 screening-grade one, and it is scored at the epoch level rather than per event --- at
 event level it detects $55\%$ of events at $2.6$ false alarms per hour and under-counts
 the event rate by more than half, so it cannot substitute for a scored index. The

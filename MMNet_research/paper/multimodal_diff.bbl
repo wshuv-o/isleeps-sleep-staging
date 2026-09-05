@@ -285,4 +285,9 @@ W.~Chen, Y.~Cai, A.~Li, Y.~Su, and K.~Jiang, ``Single-channel sleep {EEG}
   classification method based on {LSTM} and hidden markov model,'' \emph{Brain
   Sciences}, vol.~14, no.~11, p. 1087, 2024.
 
+\bibitem{khalighi2016isruc}
+S.~Khalighi, T.~Sousa, J.~M. Santos, and U.~Nunes, ``{ISRUC-Sleep}: A
+  comprehensive public dataset for sleep researchers,'' \emph{Computer Methods
+  and Programs in Biomedicine}, vol. 124, pp. 180--192, 2016.
+
 \end{thebibliography}
