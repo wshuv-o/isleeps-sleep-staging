@@ -77,7 +77,7 @@ Sections~I, V--VIII.\;
 \textbf{Esm-e Moula Chowdhury Abha} (Investigation, Software, Validation,
 Visualization, Writing -- original draft): trained and evaluated the deep
 comparison models -- DeepSleepNet, AttnSleep and the healthy-pretrained transfer
-model -- on matched folds; produced the architecture diagram (Fig.~3) via the
+model -- on matched folds; produced the architecture diagram (Fig.~2) via the
 draw.io vector pipeline; wrote Sections~II--III; produced Table~VIII and compiled
 the bibliography.\;
 \textbf{Md Imtiaj Alam Sajin} (Data curation, Software, Investigation,
@@ -109,7 +109,7 @@ drives a staging head and a respiratory head, with a direct connection that carr
 cardiorespiratory signal to the respiratory head so oxygen desaturation reaches the decision at
 full strength. We benchmark
 the model against deep-learning and classical baselines on iSLEEPS, the first public
-polysomnography corpus of subacute ischemic stroke (99 patients), all under patient-independent ten-fold
+polysomnography corpus of subacute ischemic stroke ($100$ patients, $99$ analysed), all under patient-independent ten-fold
 cross-validation. The single model stages sleep at $\mmAcc$ accuracy with Cohen's $\kappa$
 of $\mmK$, at the accuracy ceiling this cohort imposes on every model family, and it detects
 respiratory events at $\mmAuc$ area under the ROC curve --- an epoch-level, screening-grade
@@ -471,7 +471,7 @@ training seed can flatter a result, we retrained the headline configuration unde
 seeds on the same folds. Staging accuracy varies by $0.003$ across seeds against $0.032$
 across folds, and respiratory AUC by $0.004$ against $0.035$ --- roughly a tenth as much.
 The uncertainty in these results is therefore dominated by which patients fall in which
-fold, which is a property of a $96$-patient cohort, and not by the optimiser's starting
+fold, which is a property of a cohort this size, and not by the optimiser's starting
 point. We report the seed-$42$ run throughout for consistency with the released artifacts,
 and note that its respiratory AUC sits at the top of the five-seed range (seed mean
 $0.705$), so the reader should treat $\mmAuc$ as the optimistic end of a $0.701$--$0.711$
@@ -525,8 +525,7 @@ model against deep networks trained from scratch, transferred from healthy sleep
 the raw multichannel signal. ``feat'' marks engineered features; best per column in
 \textbf{bold}. Deep architectures built for healthy sleep lose $15$--$20$ points on this stroke
 cohort, while the compact feature-based model is the strongest here and the only one that also
-detects respiratory events (Table~\ref{tab:ablate}). Classical feature and ensemble pipelines,
-which reach a comparable staging ceiling, are summarised in the text.}
+detects respiratory events (Table~\ref{tab:ablate}). }
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c @{}}
@@ -886,7 +885,7 @@ one human scorers agree on least.
 Ten-fold cross-validation is patient-independent but remains within one corpus, one centre
 and one acquisition protocol. We therefore trained a single model on all $96$ iSLEEPS
 patients and evaluated it, unchanged, on two public corpora with no dataset-specific
-tuning: no fine-tuning, no threshold search, no re-fitted normalisation, and hidden-Markov
+tuning: no fine-tuning, no threshold search, no re-fitted model or decision threshold (per-recording feature standardisation is applied, as in training), and hidden-Markov
 transitions estimated from iSLEEPS alone (Table~\ref{tab:ext}).
 
 The two corpora test different things. \textbf{Sleep-EDF Expanded}~\cite{kemp2000sleepedf}
