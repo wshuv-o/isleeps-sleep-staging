@@ -112,8 +112,9 @@ the model against deep-learning and classical baselines on iSLEEPS, the first pu
 polysomnography corpus of subacute ischemic stroke (99 patients), all under patient-independent ten-fold
 cross-validation. The single model stages sleep at $\mmAcc$ accuracy with Cohen's $\kappa$
 of $\mmK$, at the accuracy ceiling this cohort imposes on every model family, and it detects
-respiratory events at $\mmAuc$ area under the ROC curve, a capability none of the staging
-models possess. The respiratory read-out is grounded in physiology: when we remove the
+respiratory events at $\mmAuc$ area under the ROC curve --- an epoch-level, screening-grade
+read-out rather than event-by-event scoring --- a capability none of the staging models
+possess. The respiratory read-out is grounded in physiology: when we remove the
 airflow channel from which the events were scored, detection holds at $\noflowAuc$, because
 the model reads oxygen desaturation, breathing effort, cardiac variability, and the cortical
 arousals that follow an obstructed breath. Each modality contributes where its physiology
@@ -464,6 +465,18 @@ early stopping. Staging is scored by accuracy, macro-F1 $\tfrac{1}{K}\sum_k\math
 Cohen's $\kappa$. The respiratory task is scored by the area under the ROC curve (AUC) and
 average precision (AP), which suits the $16\%$ event rate.
 
+Every number we report is a mean over the ten folds with its standard deviation, and the
+folds are fixed across all configurations so that comparisons are paired. Because a single
+training seed can flatter a result, we retrained the headline configuration under five
+seeds on the same folds. Staging accuracy varies by $0.003$ across seeds against $0.032$
+across folds, and respiratory AUC by $0.004$ against $0.035$ --- roughly a tenth as much.
+The uncertainty in these results is therefore dominated by which patients fall in which
+fold, which is a property of a $96$-patient cohort, and not by the optimiser's starting
+point. We report the seed-$42$ run throughout for consistency with the released artifacts,
+and note that its respiratory AUC sits at the top of the five-seed range (seed mean
+$0.705$), so the reader should treat $\mmAuc$ as the optimistic end of a $0.701$--$0.711$
+interval rather than as a point estimate.
+
 \subsection{Implementation and hyperparameters}
 The model is implemented in PyTorch and trained on a single NVIDIA RTX~2060 GPU (6\,GB) under
 Windows, with all randomness seeded to $42$ so that runs are deterministic and reproducible.
@@ -756,6 +769,19 @@ clinician's summary measure rather than only an epoch-level score. Staging, in t
 sleep-disordered breathing worsens: accuracy falls from $0.770$ in patients with a normal AHI to
 $0.708$ in the severe group (Table~\ref{tab:severity}). The pathology that motivates the second output also makes the first
 harder, which is the clinical reality of this cohort.
+
+The association is real but modest, and it is worth saying why rather than only that it is
+so. Three mechanisms plausibly cap it, and each is a property of the formulation rather
+than of the model. First, mean per-epoch probability is a poor estimator of an hourly event
+rate: a $30$-second epoch holding one hypopnea and one holding three both contribute a
+single positive, so the aggregate compresses exactly the variation the index is built from.
+Second, the clinical index is normalised by total sleep time, whereas our burden averages
+over every scored epoch including wake, and the two denominators diverge most in the
+patients with the most fragmented sleep --- which in this cohort is the severe group.
+Third, the AHI itself carries substantial night-to-night variability, so a single-night
+reference sets a ceiling on any correlation with it. We therefore read $\rho=0.315$ as
+evidence that the read-out tracks severity at the group level, and not as a claim that it
+estimates an index.
 
 \begin{figure}[t]
 \centering
