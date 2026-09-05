@@ -174,8 +174,8 @@ respiratory events at $\mmAuc$ AUC, with a direct cardiorespiratory path to the 
 head so oxygen-desaturation cues reach the decision undiminished (Section~\ref{sec:method}).
 \item[\textbf{C2.}] \textbf{Healthy-sleep deep models fail on the injured brain.} Deep networks trained from
 scratch, transferred from healthy sleep, or applied to the raw multichannel signal collapse to
-$0.61$--$0.69$ accuracy on this cohort (Table~\ref{tab:bench}), while classical pipelines
-saturate below $0.75$; the compact feature-based model reaches $\mmAcc$ and, uniquely, also
+$0.61$--$0.69$ accuracy on this cohort (Table~\ref{tab:bench}), well below the published
+single-channel baseline; the compact feature-based model reaches $\mmAcc$ and, uniquely, also
 produces a respiratory read-out. Staging accuracy here reflects a cohort ceiling; the joint respiratory output is what we contribute.
 \item[\textbf{C3.}] \textbf{A physiologically grounded respiratory read-out.}
 Removing the airflow channel from which the events were scored leaves detection at
@@ -516,11 +516,7 @@ Random seed & $42$ \\
 We compare the model against deep networks evaluated on the same folds: convolutional and
 recurrent networks trained from scratch (DeepSleepNet, AttnSleep, a four-channel CNN--BiLSTM), a
 network transferred from Sleep-EDF, and a raw-signal convolutional network on all $14$ channels,
-alongside the published single-channel baselines for the corpus~\cite{maiti2026isleeps}. We
-additionally evaluated a family of classical feature and ensemble pipelines (gradient boosting,
-a feature-sequence BiLSTM, a hemispheric graph-attention state-space model, and stacking and
-gradient-boosting ensembles); because these only confirm the staging ceiling discussed below,
-we report them in the text rather than tabulate them. All numbers are ten-fold
+alongside the published single-channel baselines for the corpus~\cite{maiti2026isleeps}. All numbers are ten-fold
 patient-independent, at the hidden-Markov operating point where a model provides one.
 
 \begin{table*}[t]
@@ -560,10 +556,10 @@ healthy sleepers. The compact, feature-based model reaches $\mmAcc$, above every
 which matches the concurrent finding that depth alone does not help on this
 cohort~\cite{bose2026gap}: with under a hundred patients a convolutional network cannot
 rediscover what decades of sleep science already encode in the features. Staging accuracy is
-nonetheless capped. The strongest classical pipelines we evaluated reach $0.735$ (a stacking
-ensemble) and $0.746$ (a gradient-boosting ensemble), and the published single-channel LSTM
-reaches $0.747$; no method exceeds $0.75$, so the task saturates on this cohort regardless of
-model family. We therefore do not position the model as a staging leader. What sets it apart is
+nonetheless capped: the published single-channel LSTM for this corpus reaches $0.747$, and
+no method we are aware of exceeds $0.75$ on it. Section~\ref{sec:curve} shows why --- the
+staging learning curve has flattened, so the ceiling is a property of this cohort rather than
+of any one model. We therefore do not position the model as a staging leader. What sets it apart is
 a second output: it is the only model that also detects respiratory events. A representative held-out night is
 shown in Figure~\ref{fig:hypno}: the predicted hypnogram follows the reference through the
 night's cycles, and the stage-probability ribbon exposes where the model is confident and where
@@ -841,6 +837,7 @@ evidence for the physiological attribution than either provides alone, and unlik
 projection it is a prediction that could have failed.
 
 \subsection{Data Efficiency: Which Ceiling Are We Against?}
+\label{sec:curve}
 Staging on this corpus saturates near $0.72$--$0.75$ for every model family tried here and
 elsewhere. Whether that reflects the architecture or the cohort is testable: retrain the
 identical model on a shrinking fraction of the \emph{training patients}, always evaluating on
@@ -958,8 +955,8 @@ event level it detects $55\%$ of events at $2.6$ false alarms per hour and under
 the event rate by more than half, so it cannot substitute for a scored index. The
 staging head is also overconfident (expected calibration error $0.076$), so its
 posteriors should be used for ranking and abstention rather than read as probabilities. Staging sits at
-the cohort ceiling, so the model does not raise staging accuracy over strong classical
-pipelines. Finally, the model is feature-based: it inherits the assumptions of the engineered
+the cohort ceiling, so the model does not raise staging accuracy above the published
+baseline for this corpus. Finally, the model is feature-based: it inherits the assumptions of the engineered
 representations and is not an end-to-end raw-signal learner, a deliberate trade for data
 efficiency on a small cohort.
 
