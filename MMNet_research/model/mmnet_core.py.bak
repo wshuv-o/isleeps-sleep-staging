@@ -113,11 +113,9 @@ class CrossFusion(nn.Module):
 
 class MMFeatureNet(nn.Module):
     def __init__(self, n_eeg=188, n_card=14, d=128, d_card=64, hidden=128, layers=2,
-                 n_cls=5, drop=0.3, fusion="concat", bypass=True, temporal="lstm"):
+                 n_cls=5, drop=0.3, fusion="concat"):
         super().__init__()
         self.fusion = fusion
-        self.bypass = bypass          # direct cardio -> respiratory head
-        self.temporal = temporal      # 'lstm' or 'none' (per-epoch only)
         self.eeg_enc = FeatMLP(n_eeg, d, drop); self.card_enc = FeatMLP(n_card, d_card, drop)
         if fusion == "cross":
             self.card_proj = nn.Linear(d_card, d); self.fuse = CrossFusion(d, drop=drop)
@@ -125,13 +123,8 @@ class MMFeatureNet(nn.Module):
             self.fuse = nn.Sequential(nn.Linear(d + d_card, d), nn.GELU(), nn.Dropout(drop))
         else:
             self.fuse = nn.Sequential(nn.Linear(d, d), nn.GELU(), nn.Dropout(drop))
-        if temporal == "lstm":
-            self.lstm = nn.LSTM(d, hidden, layers, batch_first=True, bidirectional=True,
-                                dropout=drop if layers > 1 else 0.0)
-        else:   # same output width, no cross-epoch context
-            self.lstm = None
-            self.per_epoch = nn.Sequential(nn.Linear(d, 2 * hidden), nn.GELU(),
-                                           nn.Dropout(drop))
+        self.lstm = nn.LSTM(d, hidden, layers, batch_first=True, bidirectional=True,
+                            dropout=drop if layers > 1 else 0.0)
         self.uses_cardio = fusion in ("cross", "concat")
         self.stage_head = nn.Linear(2*hidden, n_cls)
         self.apnea_head = nn.Sequential(nn.Linear(2*hidden + d_card, hidden), nn.GELU(),
@@ -142,11 +135,9 @@ class MMFeatureNet(nn.Module):
         if self.fusion == "cross": fz = self.fuse(e, self.card_proj(c))
         elif self.fusion == "concat": fz = self.fuse(torch.cat([e, c], -1))
         else: fz = self.fuse(e)
-        z = fz.reshape(B, Ln, -1)
-        h = self.lstm(z)[0] if self.lstm is not None else self.per_epoch(z)
+        h, _ = self.lstm(fz.reshape(B, Ln, -1))
         c_seq = c.reshape(B, Ln, -1)
-        if not self.uses_cardio or not self.bypass:
-            c_seq = torch.zeros_like(c_seq)
+        if not self.uses_cardio: c_seq = torch.zeros_like(c_seq)
         return self.stage_head(h), self.apnea_head(torch.cat([h, c_seq], -1)).squeeze(-1)
 
 print("parameters (concat):", f"{sum(p.numel() for p in MMFeatureNet(fusion='concat').parameters()):,}")
@@ -196,11 +187,10 @@ def hmm(A_log, pi_log, logp):
     for t in range(T-2,-1,-1): p[t] = bp[t+1,p[t+1]]
     return p
 
-def train_fold(tr, va, fusion, eeg_drop, card_drop, epochs=45, patience=8, bs=32, seed=42,
-               bypass=True, temporal="lstm", task="both"):
+def train_fold(tr, va, fusion, eeg_drop, card_drop, epochs=45, patience=8, bs=32, seed=42):
     torch.manual_seed(seed); np.random.seed(seed)
     Fe,Fc,Y,A,Mk = windows(tr, L//2, eeg_drop, card_drop); N = Fe.shape[0]
-    model = MMFeatureNet(fusion=fusion, bypass=bypass, temporal=temporal).to(DEV)
+    model = MMFeatureNet(fusion=fusion).to(DEV)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
     ce = nn.CrossEntropyLoss(weight=sqrt_cw(tr), reduction="none")
@@ -214,8 +204,7 @@ def train_fold(tr, va, fusion, eeg_drop, card_drop, epochs=45, patience=8, bs=32
             idx = perm[i:i+bs]; s_o, a_o = model(Fe[idx], Fc[idx]); m = Mk[idx].reshape(-1)
             ls = (ce(s_o.reshape(-1,5), Y[idx].reshape(-1))*m).sum()/m.sum().clamp(min=1)
             la = (bce(a_o.reshape(-1), A[idx].reshape(-1))*m).sum()/m.sum().clamp(min=1)
-            loss = ls if task == "stage" else la if task == "apnea" else ls + la
-            opt.zero_grad(); loss.backward(); nn.utils.clip_grad_norm_(model.parameters(),5.0); opt.step()
+            opt.zero_grad(); (ls+la).backward(); nn.utils.clip_grad_norm_(model.parameters(),5.0); opt.step()
         sch.step()
         acc = np.mean([(subj_infer(model,s,eeg_drop,card_drop)[0].argmax(1)==DATA[s][2]).mean() for s in va])
         if acc > best: best, bad, best_state = acc, 0, {k:v.detach().clone() for k,v in model.state_dict().items()}
@@ -271,8 +260,7 @@ def subj_embed(model, s):
         model(fe[i:i+32], fc[i:i+32]); out.append(cap["h"].reshape(-1, cap["h"].shape[-1]).cpu().numpy())
     hk.remove(); return np.concatenate(out)[:n]
 
-def run_10fold(fusion="concat", eeg_drop=(), card_drop=(), keep=False, seed=42,
-               bypass=True, temporal="lstm", task="both"):
+def run_10fold(fusion="concat", eeg_drop=(), card_drop=(), keep=False, seed=42):
     per_fold = []; ps = {}; E_h=[]; E_y=[]; E_a=[]; P=[[],[],[],[]]; m0=[None]
     for fi,(tr_all,te) in enumerate(FOLDS):
         rng = np.random.RandomState(100+fi); tr_all=list(tr_all); rng.shuffle(tr_all)
@@ -282,8 +270,7 @@ def run_10fold(fusion="concat", eeg_drop=(), card_drop=(), keep=False, seed=42,
             y = DATA[s][2]; pi[y[0]] += 1
             for x,z in zip(y[:-1],y[1:]): Am[x,z]+=1
         A_log = np.log(Am/Am.sum(1,keepdims=True)); pi_log = np.log(pi/pi.sum())
-        model = train_fold(tr, va, fusion, list(eeg_drop), list(card_drop), seed=seed,
-                           bypass=bypass, temporal=temporal, task=task)
+        model = train_fold(tr, va, fusion, list(eeg_drop), list(card_drop), seed=seed)
         if keep and fi==0: m0[0]=model
         yt,ph,ay,ap = [],[],[],[]
         for s in te:
