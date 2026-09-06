@@ -244,27 +244,6 @@ A.~L. Goldberger, L.~A.~N. Amaral, L.~Glass \emph{et~al.}, ``{PhysioBank},
   complex physiologic signals,'' \emph{Circulation}, vol. 101, no.~23, pp.
   e215--e220, 2000.
 
-\bibitem{chen2016xgboost}
-T.~Chen and C.~Guestrin, ``{XGBoost}: A scalable tree boosting system,'' in
-  \emph{Proceedings of the 22nd ACM SIGKDD International Conference on
-  Knowledge Discovery and Data Mining}, 2016, pp. 785--794.
-
-\bibitem{ke2017lightgbm}
-G.~Ke, Q.~Meng, T.~Finley \emph{et~al.}, ``{LightGBM}: A highly efficient
-  gradient boosting decision tree,'' in \emph{Advances in Neural Information
-  Processing Systems (NeurIPS)}, vol.~30, 2017.
-
-\bibitem{prokhorenkova2018catboost}
-L.~Prokhorenkova, G.~Gusev, A.~Vorobev, A.~V. Dorogush, and A.~Gulin,
-  ``{CatBoost}: Unbiased boosting with categorical features,'' in
-  \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~31,
-  2018.
-
-\bibitem{velickovic2018gat}
-P.~Veli{\v{c}}kovi{\'c}, G.~Cucurull, A.~Casanova, A.~Romero, P.~Li{\`o}, and
-  Y.~Bengio, ``Graph attention networks,'' in \emph{International Conference on
-  Learning Representations (ICLR)}, 2018, arXiv:1710.10903.
-
 \bibitem{angelopoulos2023conformal}
 A.~N. Angelopoulos and S.~Bates, ``Conformal prediction: A gentle
   introduction,'' \emph{Foundations and Trends in Machine Learning}, vol.~16,
