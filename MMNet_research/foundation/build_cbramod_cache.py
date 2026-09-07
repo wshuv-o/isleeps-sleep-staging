@@ -42,9 +42,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", required=True, choices=["pretrained", "random"])
     ap.add_argument("--bs", type=int, default=64)
+    ap.add_argument("--pool", default="mean", choices=["mean", "mean_std", "mean_std_minmax"],
+                    help="how the 30 one-second patches are collapsed per epoch")
+    ap.add_argument("--suffix", default="", help="cache subdirectory suffix")
     a = ap.parse_args()
 
-    out_dir = os.path.join(REPO, "data", "cbramod_emb", a.variant)
+    out_dir = os.path.join(REPO, "data", "cbramod_emb", a.variant + a.suffix)
     os.makedirs(out_dir, exist_ok=True)
     m = encoder(a.variant)
 
@@ -63,9 +66,21 @@ def main():
         with torch.no_grad():
             for i in range(0, n, a.bs):
                 o = m(torch.tensor(xr[i:i + a.bs]).to(DEV))     # [b,7,30,200]
-                chunks.append(o.mean(dim=2).half().cpu().numpy())  # pool patches -> [b,7,200]
+                # Mean over the 30 one-second patches discards all within-epoch
+                # temporal structure: a K-complex in second 3 and one in second 27
+                # produce the same vector. Higher-order statistics keep some of it
+                # -- std captures how much the second-by-second representation
+                # varies across the epoch, min/max capture transients that an
+                # average washes out.
+                parts = [o.mean(dim=2)]
+                if a.pool in ("mean_std", "mean_std_minmax"):
+                    parts.append(o.std(dim=2))
+                if a.pool == "mean_std_minmax":
+                    parts.append(o.amax(dim=2)); parts.append(o.amin(dim=2))
+                chunks.append(torch.cat(parts, dim=-1).half().cpu().numpy())
         emb = np.concatenate(chunks)
-        assert emb.shape == (n, 7, 200) and len(y) == n, (emb.shape, len(y))
+        mult = {"mean": 1, "mean_std": 2, "mean_std_minmax": 4}[a.pool]
+        assert emb.shape == (n, 7, 200 * mult) and len(y) == n, (emb.shape, len(y))
         np.savez_compressed(dst, emb=emb, y=y)
         done += 1
         print("[ok] %-6s %5d epochs -> %s" % (sid, n, emb.shape), flush=True)

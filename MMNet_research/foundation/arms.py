@@ -36,47 +36,65 @@ def _zscore(x):
     return (x - x.mean(0)) / (x.std(0) + 1e-6)
 
 
-def load_arm(C, variant):
-    """variant: 'A' (published 188 features), a cbramod_emb subdirectory name, or
-    'A+<name>' to concatenate the engineered features with that embedding.
-
-    The concatenation exists because arm B matched arm A on accuracy while beating
-    it on macro-F1: same accuracy with a different error profile suggests the two
-    representations carry different information. If the union beats both, they are
-    complementary; if it matches them, they encode the same thing and the ceiling
-    is a property of the signal rather than of either representation.
-    """
-    if variant == "A":
-        return {s: C.DATA[s] for s in C.SUBS}, 188
-    if variant.startswith("A+"):
-        emb, dim = load_arm(C, variant[2:])
-        data = {}
-        for sid, (e, fc, y, a) in emb.items():
-            feats = C.DATA[sid][0]          # already per-subject z-scored by load_data
-            if len(feats) != len(e):
-                raise ValueError("SN%d: %d feature rows vs %d embedding rows"
-                                 % (sid, len(feats), len(e)))
-            data[sid] = (np.concatenate([feats, e], axis=1), fc, y, a)
-        return data, dim + 188
-    data, dim = {}, None
-    for f in sorted(glob.glob(os.path.join(EMB, variant, "SN*.npz")),
+def _load_one(C, name):
+    """One representation -> ({sid: [n, d] float32}, d)."""
+    if name == "A":
+        return {sid: C.DATA[sid][0] for sid in C.SUBS}, 188
+    out, dim = {}, None
+    for f in sorted(glob.glob(os.path.join(EMB, name, "SN*.npz")),
                     key=lambda p: int(os.path.basename(p)[2:-4])):
         sid = int(os.path.basename(f)[2:-4])
         if sid in C.DUP or sid not in C.DATA:
             continue
         d = np.load(f)
         e = d["emb"].astype(np.float32).reshape(len(d["emb"]), -1)
-        _, fc, y, a = C.DATA[sid]
-        # the embedding and the feature cache must describe the same epochs
+        y = C.DATA[sid][2]
         if len(e) != len(y):
-            raise ValueError("SN%d: %d embedded epochs vs %d in mm_features" % (sid, len(e), len(y)))
+            raise ValueError("SN%d/%s: %d embedded epochs vs %d in mm_features"
+                             % (sid, name, len(e), len(y)))
         if not np.array_equal(d["y"], y):
-            raise ValueError("SN%d: label mismatch between cbramod_emb and mm_features" % sid)
-        data[sid] = (_zscore(e), fc, y, a)
+            raise ValueError("SN%d/%s: label mismatch against mm_features" % (sid, name))
+        out[sid] = _zscore(e)
         dim = e.shape[1]
-    if not data:
-        raise ValueError("no subjects found for variant %r under %s" % (variant, EMB))
-    return data, dim
+    if not out:
+        raise ValueError("no subjects for representation %r under %s" % (name, EMB))
+    return out, dim
+
+
+def load_arm(C, variant):
+    """variant: '+'-joined representation names.
+
+    'A'                     the published 188 engineered features
+    'pretrained'            frozen CBraMod embedding
+    'labram'                frozen LaBraM embedding
+    'A+pretrained'          their concatenation, and so on for any combination
+
+    Each representation is z-scored per subject exactly as load_data() z-scores
+    the 188 features, so no representation is advantaged by scale before they are
+    concatenated. Labels always come from mm_features, so only the EEG
+    representation differs between arms.
+
+    The combination exists because arm B matched arm A on accuracy while beating
+    it on macro-F1: equal accuracy with a different error profile implies the two
+    carry different information. If a union beats its constituents they are
+    complementary; if it matches them, they encode the same thing.
+    """
+    parts = [p for p in variant.split("+") if p]
+    if len(parts) == 1 and parts[0] == "A":
+        return {sid: C.DATA[sid] for sid in C.SUBS}, 188
+    loaded, dims = [], []
+    for name in parts:
+        rep, d = _load_one(C, name)
+        loaded.append(rep); dims.append(d)
+    common = sorted(set.intersection(*(set(r) for r in loaded)) & set(C.SUBS))
+    data = {}
+    for sid in common:
+        fe = np.concatenate([r[sid] for r in loaded], axis=1).astype(np.float32)
+        _, fc, y, a = C.DATA[sid]
+        if len(fe) != len(y):
+            raise ValueError("SN%d: %d rows after concatenation vs %d labels" % (sid, len(fe), len(y)))
+        data[sid] = (fe, fc, y, a)
+    return data, int(sum(dims))
 
 
 # mmnet_core hardcodes the 188-wide EEG block in four places -- windows(),
