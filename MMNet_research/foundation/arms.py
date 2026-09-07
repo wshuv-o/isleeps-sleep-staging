@@ -87,9 +87,16 @@ def load_arm(C, variant):
 # construction, and the substitution count is asserted so a future edit to
 # mmnet_core cannot silently change what gets patched.
 _WIDTH_PATCHED = {"windows": 1, "subj_infer": 2, "infer_arrays": 2, "subj_embed": 2}
+# the cardio width literal (14) sits in exactly the same places as the EEG one
+_CARD_PATCHED = {"windows": 1, "subj_infer": 2, "infer_arrays": 2, "subj_embed": 2}
 
 
-def _recompile_with_width(C, n_eeg):
+def _recompile_with_width(C, n_eeg, n_card=None):
+    """Substitute the hardcoded feature widths in mmnet_core's own source.
+
+    n_card is only patched when the cardio stream has been widened by clinical
+    covariates; leaving it None keeps the published 14.
+    """
     import inspect
     import re
     import textwrap
@@ -100,8 +107,14 @@ def _recompile_with_width(C, n_eeg):
         if n != expected:
             raise RuntimeError("%s: replaced %d occurrences of 188, expected %d -- "
                                "mmnet_core changed, re-check the patch" % (name, n, expected))
+        if n_card is not None:
+            exp_c = _CARD_PATCHED[name]
+            src, nc = re.subn(r"(?<![\w.])14(?![\w.])", str(n_card), src)
+            if nc != exp_c:
+                raise RuntimeError("%s: replaced %d occurrences of 14, expected %d -- "
+                                   "mmnet_core changed, re-check the patch" % (name, nc, exp_c))
         ns = dict(C.__dict__)
-        exec(compile(src, "<%s:width=%d>" % (name, n_eeg), "exec"), ns)
+        exec(compile(src, "<%s:eeg=%d,card=%s>" % (name, n_eeg, n_card), "exec"), ns)
         out[name] = ns[name]
     return out
 
@@ -116,8 +129,15 @@ class arm:
     other and Arm A always means the same thing.
     """
 
-    def __init__(self, C, variant):
-        self.C, self.variant = C, variant
+    def __init__(self, C, variant, covars=None):
+        """covars: None, or a list of clinical covariate names from clinical.py.
+
+        Covariates are appended to the CARDIO stream, not the EEG one, because
+        they are predictors of sleep-disordered breathing and the respiratory
+        head is the one the learning curve says still has headroom. They reach
+        that head both through card_enc and through the validated bypass.
+        """
+        self.C, self.variant, self.covars = C, variant, covars
 
     def __enter__(self):
         C = self.C
@@ -125,13 +145,29 @@ class arm:
         for name in _WIDTH_PATCHED:
             self._saved[name] = getattr(C, name)
         data, dim = load_arm(C, self.variant)
-        if self.variant != "A":
+        n_card = None
+        if self.covars is not None:
+            import clinical
+            table, used = clinical.load_table(self.covars)
+            n_card = 14 + 2 * len(used)          # values + missingness indicators
+            wide = {}
+            for sid, (fe, fc, y, a) in data.items():
+                if sid not in table:
+                    raise KeyError("SN%d has no metadata row" % sid)
+                cov = np.tile(table[sid], (len(y), 1))
+                wide[sid] = (fe, np.concatenate([fc, cov], axis=1).astype(np.float32), y, a)
+            data = wide
+            self.covar_names = used
+        if self.variant != "A" or n_card is not None:
             C.DATA = data
-            for name, fn in _recompile_with_width(C, dim).items():
+            for name, fn in _recompile_with_width(C, dim, n_card).items():
                 setattr(C, name, fn)
             net = self._saved["MMFeatureNet"]
-            C.MMFeatureNet = lambda **kw: net(n_eeg=dim, **kw)
-        self.dim = dim
+            kw_fixed = {"n_eeg": dim}
+            if n_card is not None:
+                kw_fixed["n_card"] = n_card
+            C.MMFeatureNet = lambda **kw: net(**{**kw_fixed, **kw})
+        self.dim, self.n_card = dim, (n_card if n_card is not None else 14)
         return self
 
     def __exit__(self, *exc):
