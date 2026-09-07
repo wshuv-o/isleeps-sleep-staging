@@ -64,7 +64,8 @@ If `arch list` lacks `sm_120`, the wheel is wrong — you have a cu124 build. Re
 the cu128 index.
 
 On Windows also set `KMP_DUPLICATE_LIB_OK=TRUE`, or MNE and PyTorch will collide over
-OpenMP.
+OpenMP. Every shell block in this document is **bash** (Git Bash on Windows); the
+cmd.exe and PowerShell equivalents are given inline where the variable is first set.
 
 ---
 
@@ -107,7 +108,8 @@ Expect `x (n_epochs, 7, 3000)` at 100 Hz, channels
 ## 3. Confirm the baseline runs before changing anything
 
 ```bash
-set KMP_DUPLICATE_LIB_OK=TRUE
+export KMP_DUPLICATE_LIB_OK=TRUE      # cmd.exe: set KMP_DUPLICATE_LIB_OK=TRUE
+                                      # PowerShell: $env:KMP_DUPLICATE_LIB_OK="TRUE"
 python -c "
 import sys, time; sys.path.insert(0,'MMNet_research/model')
 import mmnet_core as C
@@ -221,8 +223,10 @@ Then the comparison that matters, on the pooled 30 folds:
 - Paired Wilcoxon with Holm correction, and TOST against a margin of one fold SD
   (≈0.034 staging, ≈0.033 AUC) for any claim of no difference.
 
-Notebook `12_multiseed_ablation.ipynb` already implements `holm()` and `tost()` — copy them
-rather than rewriting.
+`MMNet_research/MMNet_Submission/all_codes/notebooks/12_multiseed_ablation.ipynb`
+already implements `holm()` and `tost()` — copy them rather than rewriting. Note that all
+experiment notebooks live under `MMNet_research/MMNet_Submission/all_codes/notebooks/`,
+**not** under `MMNet_research/notebooks/`, which holds older working copies.
 
 ---
 
@@ -231,10 +235,14 @@ rather than rewriting.
 - **All training runs inside a notebook**, executed with outputs saved. Not scripts with
   pasted results.
   ```bash
-  python -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=36000 <nb>.ipynb
+  cd MMNet_research/MMNet_Submission/all_codes/notebooks
+  python -m nbconvert --to notebook --execute --inplace \
+         --ExecutePreprocessor.timeout=36000 <nb>.ipynb
   ```
 - Checkpoint after every run so a killed session does not lose hours. See how
-  `12_multiseed_ablation.ipynb` writes its JSON after each condition.
+  `MMNet_research/MMNet_Submission/all_codes/notebooks/12_multiseed_ablation.ipynb`
+  writes its JSON after each condition — two sessions were killed mid-sweep during this
+  project and lost nothing because of it.
 - Report negative results as they come. Three findings already in this paper came out
   against us and are stated in the manuscript.
 - Commits on this repo are authored as `EsmeAbha <esmechowdhuryabha@gmail.com>`.
