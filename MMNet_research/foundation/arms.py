@@ -37,9 +37,27 @@ def _zscore(x):
 
 
 def load_arm(C, variant):
-    """variant: 'A' (published 188 features) or a cbramod_emb subdirectory name."""
+    """variant: 'A' (published 188 features), a cbramod_emb subdirectory name, or
+    'A+<name>' to concatenate the engineered features with that embedding.
+
+    The concatenation exists because arm B matched arm A on accuracy while beating
+    it on macro-F1: same accuracy with a different error profile suggests the two
+    representations carry different information. If the union beats both, they are
+    complementary; if it matches them, they encode the same thing and the ceiling
+    is a property of the signal rather than of either representation.
+    """
     if variant == "A":
         return {s: C.DATA[s] for s in C.SUBS}, 188
+    if variant.startswith("A+"):
+        emb, dim = load_arm(C, variant[2:])
+        data = {}
+        for sid, (e, fc, y, a) in emb.items():
+            feats = C.DATA[sid][0]          # already per-subject z-scored by load_data
+            if len(feats) != len(e):
+                raise ValueError("SN%d: %d feature rows vs %d embedding rows"
+                                 % (sid, len(feats), len(e)))
+            data[sid] = (np.concatenate([feats, e], axis=1), fc, y, a)
+        return data, dim + 188
     data, dim = {}, None
     for f in sorted(glob.glob(os.path.join(EMB, variant, "SN*.npz")),
                     key=lambda p: int(os.path.basename(p)[2:-4])):
