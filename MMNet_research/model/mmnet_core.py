@@ -285,17 +285,22 @@ def run_10fold(fusion="concat", eeg_drop=(), card_drop=(), keep=False, seed=42,
         model = train_fold(tr, va, fusion, list(eeg_drop), list(card_drop), seed=seed,
                            bypass=bypass, temporal=temporal, task=task)
         if keep and fi==0: m0[0]=model
-        yt,ph,ay,ap = [],[],[],[]
+        yt,ph,ay,ap,pr = [],[],[],[],[]
         for s in te:
             sp,apn = subj_infer(model,s,list(eeg_drop),list(card_drop)); y=DATA[s][2]
             pred = hmm(A_log,pi_log,np.log(sp+EPS))
+            pr.append(sp.argmax(1))          # pre-HMM, per-epoch argmax
             ps[f"SN{s}"]=dict(acc=float(accuracy_score(y,pred)),kappa=float(cohen_kappa_score(y,pred)),apnea=apn.tolist())
             yt.append(y); ph.append(pred); ay.append(DATA[s][3]); ap.append(apn)
             if keep: E_h.append(subj_embed(model,s)); E_y.append(y); E_a.append(DATA[s][3])
         yt,ph = np.concatenate(yt),np.concatenate(ph); ay,ap = np.concatenate(ay),np.concatenate(ap)
+        prc = np.concatenate(pr)
         if keep:
             P[0].append(yt); P[1].append(ph); P[2].append(ay); P[3].append(ap)
-        per_fold.append(dict(acc=accuracy_score(yt,ph),mf1=f1_score(yt,ph,average='macro',zero_division=0),
+        per_fold.append(dict(acc_raw=accuracy_score(yt,prc),
+            mf1_raw=f1_score(yt,prc,average='macro',zero_division=0),
+            kappa_raw=cohen_kappa_score(yt,prc),
+            acc=accuracy_score(yt,ph),mf1=f1_score(yt,ph,average='macro',zero_division=0),
             kappa=cohen_kappa_score(yt,ph),pcf=f1_score(yt,ph,average=None,labels=range(5),zero_division=0).tolist(),
             auc=roc_auc_score(ay,ap) if len(np.unique(ay))>1 else np.nan,
             ap=average_precision_score(ay,ap) if len(np.unique(ay))>1 else np.nan))
