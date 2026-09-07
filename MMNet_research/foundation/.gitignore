@@ -1,0 +1,3 @@
+# third-party CBraMod code and weights, fetched by fetch_cbramod.sh
+models/
+*.pth
