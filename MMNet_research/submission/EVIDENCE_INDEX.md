@@ -24,7 +24,8 @@ All in the public repository, `github.com/wshuv-o/isleeps-sleep-staging`:
 | Artifact | Path | What it evidences |
 |---|---|---|
 | Executed notebooks with saved outputs | `MMNet_Submission/all_codes/notebooks/` | Every figure and number traceable to a cell; notebook 1 re-runs end to end in 82.4 min |
-| Per-fold result caches | `all_codes/results/engine_cache_per_fold/` | Raw ten-fold outputs for the headline, attention variant, SpO2 ablation and neural-only runs |
+| Per-fold results (reported run) | `all_codes/results/headline_concat_per_fold.csv` | Ten folds of the headline run; means reconcile with `headline_metrics.csv` (0.7227 / 0.6510 / 0.6106 / 0.7111 / 0.3367) |
+| Superseded engine cache | `all_codes/results/engine_cache_per_fold/` | An earlier engine run kept for provenance; **not** the reported numbers — see that directory's note in `all_codes/results/README.md` |
 | Prediction artifacts | `all_codes/results/npz/predictions.npz` | Pooled `y_true` / `y_pred` / `apnea_score` over 89,532 epochs — a grader can recompute the headline directly |
 | Summary CSVs | `all_codes/results/*.csv` | Benchmark, ablation grid, per-class F1, per-event-type AUC, severity, AHI |
 
