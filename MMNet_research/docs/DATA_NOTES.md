@@ -58,14 +58,26 @@ Close match to the published balance → pipeline validated.
 - Per-subject distributions are highly variable (e.g. SN19 is 84% wake, SN34 has 4 N1
   epochs) — expected for disrupted stroke sleep; weight loss / report per-class.
 
-## 5. Clinical metadata (TODO-0) — BLOCKED
+## 5. Clinical metadata — AVAILABLE (this section was wrong)
 
-- `subject_description.xlsx` (**63 columns, all 100 subjects**) is documented to contain
-  demographics (Age, Sex, BMI…), clinical params (AHI, cardiovascular disease, blood sugar…),
+- `subject_description.xlsx` (**63 columns, all 100 subjects**) contains demographics
+  (Age, Sex, BMI…), clinical params (AHI, cardiovascular disease, blood sugar…),
   comorbidities/risk factors, and **lesion location + stroke characteristics**.
-- It is **NOT in the Zenodo release** — only on **iHUB-Data** (free registration):
-  https://india-data.org/dataset-details/0b801dfa-4e42-4ec6-9c56-c6892b907ed2
-- Until downloaded, **Pillar (ii) / E3 (lesion-aware error analysis) is blocked.**
+- It is **not** in the Zenodo release, but it **is** in the Figshare release, which is
+  public, CC BY 4.0 and needs no registration:
+  **Figshare article 29253068**, DOI `10.6084/m9.figshare.29253068.v2` —
+  https://figshare.com/articles/dataset/iSLEEPS_Polysomnography_Dataset_for_Sleep_Analysis_in_Indian_Ischemic_Stroke_Patients/29253068
+- That release is 198 files / 17.5 GB: **97 EDF recordings spanning SN1–SN100**, 100
+  annotation workbooks, and `subject_description.xlsx`.
+- **Figshare is missing SN2, SN13 and SN17**; `data/zenodo/` supplies exactly those three.
+  Figshare (97) + Zenodo = the 100-subject cohort, which is why `build_npz_full.py` globs
+  both `data/zenodo/` and `data/full100/` and takes the first source that has a subject.
+- This section previously said the full cohort and the metadata were **iHUB-Data only** and
+  that lesion-aware analysis was **BLOCKED**. That was wrong, and acting on it cost real
+  time: a run was scoped to the 40-subject Zenodo subset on the belief that nothing larger
+  could be downloaded. The iHUB-Data mirror
+  (https://india-data.org/dataset-details/0b801dfa-4e42-4ec6-9c56-c6892b907ed2) exists but is
+  not the only route and is not needed.
 - Parser ready: `python metadata/parse_subject_description.py --xlsx data/subject_description.xlsx`
   — reports per-column missingness and flags hemisphere / location / NIHSS-mRS / onset-time fields.
 
