@@ -8,29 +8,43 @@ published claim false or unsupported if left undone.
 
 ---
 
-## 0. The one decision everything else waits on
+## 0. RESOLVED — the cardio branch, settled 8 Sep
 
-The cardio result depends on a control still running at the time of writing.
+The control ran. The gain is **not** a foundation-model result, and the
+decomposition is now complete, three seeds x ten folds per rung, every step
+significant after Holm:
 
-| outcome | what it licenses |
-|---|---|
-| random-init MOMENT ≈ 0.70 AUC | the +0.11 is **pretraining** — headline claim, C5 becomes major |
-| ≈ 0.75 | partly capacity, partly pretraining — real but modest |
-| ≈ 0.81 | it is **dimensionality**, not learning — claim shrinks to "a wider cardio input helps" |
+| cardio representation | resp AUC | step | p |
+|---|---|---|---|
+| 14 engineered features | 0.6977 | — | — |
+| random nonlinear expansion of those 14 | 0.7153 | +0.0176 | 0.0002 |
+| random linear projection of raw signal | 0.7312 | +0.0159 | 0.0087 |
+| learned CNN, 0.155 M, trained | 0.7816 | +0.0504 | <0.00001 |
+| random deep transformer, 341 M, **untrained** | 0.7947 | +0.0131 | 0.0155 |
+| pretrained MOMENT, 341 M | **0.8058** | +0.0110 | 0.0009 |
 
-Result: `results/revision/runs/foundation/sweep_shards/*moment_random*`
+**No architectural claim.** A CNN designed for cardiorespiratory physiology and
+trained end to end is *significantly worse* than the same architecture with
+random weights. Do not write "we designed the encoder"; the data refuses it.
 
-**Do not write any cardio claim into the manuscript before reading this.**
+**What to claim instead**, supported on both branches:
 
-There is also a live tension to resolve, not a bug: MOMENT *alone* matches
-MOMENT+features on the cardio branch (0.8058 vs 0.8078), so the 14 engineered
-cardiorespiratory features are redundant once it is present. That improves the
-number and weakens C3/C4's physiological-grounding argument at the same time.
-Decide deliberately whether the paper leads with the interpretable configuration
-(0.71 AUC, SpO2 attribution validated) or the performant one (0.81, 1024-d
-embedding), or presents both as a frontier.
+1. *The engineered cardiorespiratory features are the bottleneck.* A trained CNN
+   beats them by 0.0839, the pretrained encoder by 0.1081, both p < 0.00001.
+2. *16% of that gap needs no new information at all* — a random nonlinear
+   expansion of the same 14 features recovers it, so the published FeatMLP leaves
+   nonlinear structure unextracted in features already computed. Cheapest fix
+   available.
+3. *On 99 patients a representation must be imported, not learned.* Three
+   independent instances: fine-tuning CBraMod loses to freezing it; a trained CNN
+   loses to an untrained deep network; frozen and random rich representations win
+   on both branches.
 
----
+Unresolved and still a judgement call: MOMENT alone matches MOMENT plus the
+engineered features (0.8058 vs 0.8078), so the interpretable configuration and
+the performant one are different models. Decide whether the paper leads with
+0.71 AUC and validated SpO2 attribution, or 0.81 with a 1024-d embedding, or
+presents both as a frontier.
 
 ## 1. Blocking — manuscript claims that are now false or unsupported
 
