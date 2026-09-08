@@ -93,6 +93,30 @@ Two consequences worth knowing before you lose an hour:
 
 `numba` stays blocked, so YASA and antropy are unavailable on this box.
 
+### Raw-signal arms are bounded by host RAM, not VRAM
+
+`mmnet_core.windows()` materialises every overlapping training window in numpy
+before moving it to the GPU. That is invisible for the 188-d features (~126 MB)
+but decides how many workers a raw-signal arm can run:
+
+| arm | per-worker window tensor | where it lives |
+|---|---|---|
+| 188-d features | ~0.13 GB | fine anywhere |
+| raw cardio, 7 x 750 | **~2.9 GB** | host RAM, then GPU |
+| raw EEG, 7 x 3000 | **~14 GB** | does not fit on a 16 GB card at all |
+
+So:
+
+* **Raw cardio: two workers, not three.** Three exhausted system RAM and killed a
+  run with `numpy._core._exceptions._ArrayMemoryError: Unable to allocate
+  2.87 GiB for an array with shape (7330, 20, 5250)`. The GPU was fine; the host
+  was not.
+* **Raw EEG needs a streaming loader** (`MMNet_research/foundation/stream.py`),
+  which holds the signal per subject and indexes windows on the fly.
+
+Check host RAM, not just `nvidia-smi`, before raising worker counts on any arm
+that feeds raw signal.
+
 Confirm the policy and see what it rejected with:
 
 ```powershell
