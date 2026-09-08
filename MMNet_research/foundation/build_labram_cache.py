@@ -72,14 +72,24 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", required=True, choices=["labram", "labram_random"])
     ap.add_argument("--bs", type=int, default=32)
+    # --source/--out let the same builder serve the external corpora, whose
+    # arrays live outside data/processed7 (see EXTERNAL_VALIDATION_INSTRUCTIONS.md)
+    ap.add_argument("--source", default=None,
+                    help="directory of per-recording npz with an 'x' array; defaults to processed7")
+    ap.add_argument("--out", default=None,
+                    help="output directory; defaults to data/cbramod_emb/<variant>")
     a = ap.parse_args()
 
-    out_dir = os.path.join(REPO, "data", "cbramod_emb", a.variant)
+    src_dir = os.path.abspath(a.source) if a.source else P7
+    out_dir = os.path.abspath(a.out) if a.out else os.path.join(REPO, "data", "cbramod_emb", a.variant)
     os.makedirs(out_dir, exist_ok=True)
     m = encoder(pretrained=(a.variant == "labram"))
 
-    files = sorted(glob.glob(os.path.join(P7, "SN*.npz")),
-                   key=lambda p: int(os.path.basename(p)[2:-4]))
+    # external corpora do not use SN<k> names, so glob everything and sort plainly
+    files = sorted(glob.glob(os.path.join(src_dir, "*.npz")))
+    if not files:
+        raise SystemExit("no .npz under %s" % src_dir)
+    print("source: %s  (%d recordings)" % (src_dir, len(files)), flush=True)
     t0 = time.time(); done = 0
     for p in files:
         sid = os.path.basename(p)[:-4]
@@ -87,6 +97,9 @@ def main():
         if os.path.exists(dst) and os.path.getsize(dst) > 1000:
             done += 1; continue
         d = np.load(p)
+        if "x" not in d:
+            print("[skip] %s: no raw 'x' array (external caches must carry it)" % sid, flush=True)
+            continue
         e = embed(m, d["x"].astype(np.float32), bs=a.bs)
         assert len(e) == len(d["y"]), (e.shape, d["y"].shape)
         np.savez_compressed(dst, emb=e.astype(np.float16), y=d["y"])
