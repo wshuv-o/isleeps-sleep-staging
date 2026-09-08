@@ -64,7 +64,42 @@ If `arch list` lacks `sm_120`, the wheel is wrong — you have a cu124 build. Re
 the cu128 index.
 
 On Windows also set `KMP_DUPLICATE_LIB_OK=TRUE`, or MNE and PyTorch will collide over
-OpenMP. Every shell block in this document is **bash** (Git Bash on Windows); the
+OpenMP.
+
+### Smart App Control blocks unsigned scientific wheels
+
+This machine has Windows **Smart App Control** enabled
+(`HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy` -> `VerifiedAndReputablePolicyState = 1`).
+It refuses to load compiled extensions it does not consider reputable, and several
+scientific wheels are exactly that. Observed blocks: `numba._devicearray`,
+`scipy.fftpack.convolve`, `scipy.spatial._distance_wrap`,
+`scipy.interpolate._rbfinterp_pythran`. A block surfaces as
+
+```
+ImportError: DLL load failed while importing <name>: An Application Control policy has blocked this file.
+```
+
+and it takes sklearn and anything importing `scipy.stats` down with it.
+
+Two consequences worth knowing before you lose an hour:
+
+* **Pin versions that are widely deployed.** `scipy==1.15.2` (the version this
+  project is documented against) loads; `scipy 1.18.1` does not. Reputation is
+  per-build, so the newest release is the most likely to be blocked.
+* **Never run `pip install --force-reinstall --no-cache-dir` to fix an import
+  error.** Reputation attaches to the installed files; replacing them with a
+  fresh download can turn a partial block into a total one. That happened here
+  and cost more than the original failure.
+
+`numba` stays blocked, so YASA and antropy are unavailable on this box.
+
+Confirm the policy and see what it rejected with:
+
+```powershell
+Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy' |
+  Select-Object VerifiedAndReputablePolicyState
+Get-WinEvent -LogName 'Microsoft-Windows-CodeIntegrity/Operational' -MaxEvents 10
+``` Every shell block in this document is **bash** (Git Bash on Windows); the
 cmd.exe and PowerShell equivalents are given inline where the variable is first set.
 
 ---
