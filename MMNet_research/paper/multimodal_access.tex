@@ -36,12 +36,24 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue,breaklinks=true]{hyperref}
 
-% Headline numbers -- live-reproduced by revision/MM_Net_reproduction.ipynb (10-fold).
-\newcommand{\mmAcc}{0.722}
-\newcommand{\mmMf}{0.651}
-\newcommand{\mmK}{0.611}
-\newcommand{\mmAuc}{0.711}
-\newcommand{\mmAp}{0.337}
+% Headline numbers.
+%
+% FINAL MODEL (8 Sep 2026), three seeds x ten patient-independent folds:
+%   neural stream  188 engineered features + frozen LaBraM embedding (200-d)
+%   cardio stream  learned CNN over the raw 7-channel signal (0.155 M params)
+%   temporal       BiLSTM, concat fusion, validated bypass, HMM Viterbi decode
+% Source: results/revision/runs/final/final_model.json
+% Previous feature-only values kept in comments so the diff is auditable.
+\newcommand{\mmAcc}{0.740}   % was 0.722 (feature-only configuration)
+\newcommand{\mmMf}{0.671}    % was 0.651
+\newcommand{\mmK}{0.635}     % was 0.611
+\newcommand{\mmAuc}{0.782}   % was 0.711
+\newcommand{\mmAp}{0.418}    % was 0.337
+
+% \stale{...} marks a number NOT yet regenerated for the final model. Red is a
+% to-do list, not a style choice: every instance must be re-run or removed
+% before submission.
+\newcommand{\stale}[1]{\textcolor{red}{#1}}
 \newcommand{\eegAuc}{0.673}
 \newcommand{\noflowAuc}{0.704}
 
@@ -592,13 +604,13 @@ where the errors land: N1 is absorbed mainly into Wake and N2, and part of N3 is
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.82\columnwidth]{figures/fig_confusion.pdf}
-\caption{Row-normalised confusion matrix for the proposed model (pooled ten-fold test epochs,
+\caption{\stale{[STALE -- confusion matrix not yet regenerated for the final model]} Row-normalised confusion matrix for the proposed model (pooled ten-fold test epochs,
 hidden-Markov operating point). Errors concentrate on N1, which is absorbed into Wake and N2.}
 \label{fig:confusion}
 \end{figure}
 
 \begin{table}[t]
-\caption{Per-class staging F1 (Wake, N1, N2, N3, REM), ten-fold patient-independent, at the
+\caption{\stale{[STALE -- per-class F1 not yet regenerated for the final model]} Per-class staging F1 (Wake, N1, N2, N3, REM), ten-fold patient-independent, at the
 hidden-Markov operating point, for the proposed model and the raw-signal deep network. Best per
 column in \textbf{bold}.}
 \label{tab:perclass}
@@ -618,7 +630,7 @@ MM-Net (neural only)              & 0.77 & 0.24 & 0.78 & 0.68 & 0.70 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_mm_perclass.pdf}
-\caption{Per-class staging F1 for the neural-only and the neural-plus-cardiorespiratory
+\caption{\stale{[STALE -- per-class F1, neural-only comparison not yet regenerated for the final model]} Per-class staging F1 for the neural-only and the neural-plus-cardiorespiratory
 model. Adding the cardiorespiratory channels leaves every stage at its full level, including
 Wake and REM.}
 \label{fig:perclassfig}
@@ -648,14 +660,14 @@ comes from the added modality, and the fusion mechanism has little effect.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.98\columnwidth]{figures/fig_ablation.pdf}
-\caption{Modality-ablation grid. Staging accuracy (blue) and respiratory AUC (red) as each
+\caption{\stale{[STALE -- modality ablation grid not yet regenerated for the final model]} Modality-ablation grid. Staging accuracy (blue) and respiratory AUC (red) as each
 modality is removed in turn. Removing SpO$_2$ or the whole cardiorespiratory stream lowers
 respiratory AUC and leaves staging flat; removing the ocular channel lowers staging.}
 \label{fig:ablationfig}
 \end{figure}
 
 \begin{table}[t]
-\caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent. Each row removes
+\caption{\stale{[STALE -- modality ablation table not yet regenerated for the final model]} Modality-ablation grid (leave-one-out), ten-fold patient-independent. Each row removes
 one modality and keeps the rest. Cardiorespiratory ablations (SpO$_2$, all cardiorespiratory)
 move respiratory AUC and leave staging flat; the ocular (EOG) ablation does the reverse. Largest
 effect per column in \textbf{bold}.}
@@ -729,7 +741,7 @@ visible rather than hidden; it is a fifth of one fold standard deviation.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_roc_pr.pdf}
-\caption{Respiratory-event detection, operating characteristics, pooled over the ten
+\caption{\stale{[STALE -- operating characteristics not yet regenerated for the final model]} Respiratory-event detection, operating characteristics, pooled over the ten
 patient-independent test folds. \textbf{(a)} ROC; the dashed line is chance.
 \textbf{(b)} Precision--recall; the dashed line is the $0.160$ event prevalence, the
 no-skill floor. Each panel reports the pooled value and the per-fold mean $\pm$ standard
@@ -739,7 +751,7 @@ averaging.}
 \end{figure}
 
 \begin{table}[t]
-\caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
+\caption{\stale{[STALE -- respiratory detection table not yet regenerated for the final model]} Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
 on the $14$ cardiorespiratory features on the same folds; chance-level average precision equals the
 event prevalence, $0.160$. \textit{(b)} The proposed model's AUC by event type -- the rarer, more
 severe events are detected best. Best per column in \textbf{bold}.}
@@ -798,14 +810,14 @@ estimates an index.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_ahi.pdf}
-\caption{Predicted per-patient event burden (mean respiratory probability) against the clinical
+\caption{\stale{[STALE -- AHI scatter not yet regenerated for the final model]} Predicted per-patient event burden (mean respiratory probability) against the clinical
 apnea-hypopnea index, coloured by AASM severity band. The positive association (Spearman
 $\rho=0.315$, $n=96$) shows the model's output tracks a clinician's summary measure.}
 \label{fig:ahi}
 \end{figure}
 
 \begin{table}[t]
-\caption{Sleep-staging accuracy by sleep-disordered-breathing severity (AASM AHI bands),
+\caption{\stale{[STALE -- severity table not yet regenerated for the final model]} Sleep-staging accuracy by sleep-disordered-breathing severity (AASM AHI bands),
 ten-fold patient-independent; mean\,$\pm$\,SD across patients ($N=96$). Staging degrades
 monotonically as severity rises.}
 \label{tab:severity}
@@ -861,7 +873,7 @@ a property of the labels and the injured brain rather than of the training-set s
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_learning_curve.pdf}
-\caption{Learning curve over training-patient fraction, ten-fold patient-independent, error
+\caption{\stale{[STALE -- learning curve not yet regenerated for the final model]} Learning curve over training-patient fraction, ten-fold patient-independent, error
 bars one standard deviation across folds. Staging (blue) flattens by $57$ patients; respiratory
 detection (orange) is still climbing at $76$.}
 \label{fig:curve}
@@ -936,7 +948,7 @@ respiratory AUC spans $0.515$--$0.848$, the latter tracking event prevalence clo
 the low-prevalence nights give near-chance estimates.
 
 \begin{table}[t]
-\caption{External validation on two public corpora. One model trained on all $96$ iSLEEPS
+\caption{\stale{[STALE -- external validation not yet regenerated for the final model]} External validation on two public corpora. One model trained on all $96$ iSLEEPS
 patients, evaluated zero-shot with no dataset-specific tuning. In-domain figures are the
 ten-fold patient-independent means. Sleep-EDF has no cardiorespiratory channels, so the
 respiratory head cannot be scored there.}
@@ -983,6 +995,25 @@ Raw multimodal CNN                        & 14\,ch      & 0.95\,M     & stage + 
 \end{table}
 
 %=====================================================================
+% =========================================================================
+% REVISION STATUS, 8 September 2026 -- REMOVE BEFORE SUBMISSION
+%
+% The model changed. Headline macros (mmAcc, mmMf, mmK, mmAuc, mmAp) now carry
+% the final configuration's values, re-run over three seeds and ten folds.
+%
+% Anything wrapped in \stale{} is still showing numbers from the previous
+% feature-only model. Each must be regenerated or removed. Red is a to-do list.
+%
+% Regenerable on the 5080 from results/revision/runs/final/predictions_seed42.npz:
+%   confusion matrix, per-class F1, AHI scatter, severity table,
+%   operating characteristics, per-event-type AUC
+% Needs its own re-run:
+%   modality ablation grid (card_drop must be remapped to raw channel layout),
+%   learning curve
+% CANNOT be run on the 5080 -- data/isruc_mm and data/sleep_edf_mm absent:
+%   external validation. See foundation/EXTERNAL_VALIDATION_INSTRUCTIONS.md
+% =========================================================================
+
 \section{Discussion}
 The result is a single model that reads the whole sleeping body and speaks to two clinical
 questions at once, in the population where both matter. The learned per-epoch embedding

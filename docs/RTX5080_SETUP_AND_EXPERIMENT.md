@@ -64,7 +64,66 @@ If `arch list` lacks `sm_120`, the wheel is wrong — you have a cu124 build. Re
 the cu128 index.
 
 On Windows also set `KMP_DUPLICATE_LIB_OK=TRUE`, or MNE and PyTorch will collide over
-OpenMP. Every shell block in this document is **bash** (Git Bash on Windows); the
+OpenMP.
+
+### Smart App Control blocks unsigned scientific wheels
+
+This machine has Windows **Smart App Control** enabled
+(`HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy` -> `VerifiedAndReputablePolicyState = 1`).
+It refuses to load compiled extensions it does not consider reputable, and several
+scientific wheels are exactly that. Observed blocks: `numba._devicearray`,
+`scipy.fftpack.convolve`, `scipy.spatial._distance_wrap`,
+`scipy.interpolate._rbfinterp_pythran`. A block surfaces as
+
+```
+ImportError: DLL load failed while importing <name>: An Application Control policy has blocked this file.
+```
+
+and it takes sklearn and anything importing `scipy.stats` down with it.
+
+Two consequences worth knowing before you lose an hour:
+
+* **Pin versions that are widely deployed.** `scipy==1.15.2` (the version this
+  project is documented against) loads; `scipy 1.18.1` does not. Reputation is
+  per-build, so the newest release is the most likely to be blocked.
+* **Never run `pip install --force-reinstall --no-cache-dir` to fix an import
+  error.** Reputation attaches to the installed files; replacing them with a
+  fresh download can turn a partial block into a total one. That happened here
+  and cost more than the original failure.
+
+`numba` stays blocked, so YASA and antropy are unavailable on this box.
+
+### Raw-signal arms are bounded by host RAM, not VRAM
+
+`mmnet_core.windows()` materialises every overlapping training window in numpy
+before moving it to the GPU. That is invisible for the 188-d features (~126 MB)
+but decides how many workers a raw-signal arm can run:
+
+| arm | per-worker window tensor | where it lives |
+|---|---|---|
+| 188-d features | ~0.13 GB | fine anywhere |
+| raw cardio, 7 x 750 | **~2.9 GB** | host RAM, then GPU |
+| raw EEG, 7 x 3000 | **~14 GB** | does not fit on a 16 GB card at all |
+
+So:
+
+* **Raw cardio: two workers, not three.** Three exhausted system RAM and killed a
+  run with `numpy._core._exceptions._ArrayMemoryError: Unable to allocate
+  2.87 GiB for an array with shape (7330, 20, 5250)`. The GPU was fine; the host
+  was not.
+* **Raw EEG needs a streaming loader** (`MMNet_research/foundation/stream.py`),
+  which holds the signal per subject and indexes windows on the fly.
+
+Check host RAM, not just `nvidia-smi`, before raising worker counts on any arm
+that feeds raw signal.
+
+Confirm the policy and see what it rejected with:
+
+```powershell
+Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy' |
+  Select-Object VerifiedAndReputablePolicyState
+Get-WinEvent -LogName 'Microsoft-Windows-CodeIntegrity/Operational' -MaxEvents 10
+``` Every shell block in this document is **bash** (Git Bash on Windows); the
 cmd.exe and PowerShell equivalents are given inline where the variable is first set.
 
 ---

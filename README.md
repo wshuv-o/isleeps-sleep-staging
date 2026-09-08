@@ -39,14 +39,34 @@ Install: `pip install -r requirements.txt`
 iSLEEPS is public but **not redistributed here** — `data/` is git-ignored, as it is clinical patient data.
 
 1. Download the corpus (EDF recordings + annotation workbooks + `subject_description.xlsx`).
-2. Place it at `data/Dataset/`.
+2. Place the recordings so that **both** raw layouts below are satisfied — the two build
+   stages read different directories (see [`MMNet_research/docs/DATA_NOTES.md`](MMNet_research/docs/DATA_NOTES.md)):
+   - `build_npz_full.py` globs `data/zenodo/` (the 40-subject open subset) and
+     `data/full100/` (the full cohort, iHUB-Data only), or whatever `--raw` you pass;
+   - `build_multimodal.py` globs `data/Dataset/` **recursively** for `*.edf` / `*.xlsx`,
+     hard-coded with no flag to change it.
+
+   The simplest arrangement is the recordings under `data/Dataset/` and `--raw data/Dataset`
+   passed to `build_npz_full.py`, which satisfies both from one copy.
 3. Build the arrays:
 
 ```bash
-python MMNet_research/preprocessing/build_npz.py        # EEG/EOG/EMG -> data/processed7/
-python MMNet_research/preprocessing/build_multimodal.py # + cardiorespiratory -> data/multimodal/
+# 7-channel EEG/EOG/EMG -> data/processed7/
+# (build_npz.py is the older 4-channel EEG-only variant and writes data/processed/ instead)
+python MMNet_research/preprocessing/build_npz_full.py --raw data/Dataset --out data/processed7
+python MMNet_research/preprocessing/build_multimodal.py     # + cardiorespiratory -> data/multimodal/
 python MMNet_research/preprocessing/extract_mm_features.py  # -> data/mm_features/
 ```
+
+> **Output paths.** All three scripts resolve their defaults relative to `MMNet_research/`,
+> not the repository root, so run without arguments they write to `MMNet_research/data/...`
+> while `mmnet_core` reads repo-root `data/`. Pass `--raw`/`--out` as above for
+> `build_npz_full.py`; `build_multimodal.py` and `extract_mm_features.py` have no such flags
+> (their `ROOT` is hard-coded), so either run them with `MMNet_research/data` symlinked to
+> the repo-root `data/`, or move their output afterwards.
+
+> **Extra dependency.** `build_multimodal.py` reads the cardiorespiratory channels with
+> `pyedflib`, which is not in `requirements.txt`: `pip install pyedflib`.
 
 This produces 100 subjects / 93,422 epochs at 100 Hz in 30-second epochs. Two known data facts are handled in code: **SN15 and SN28 are byte-identical** (same night, two IDs — collapsed to one patient and never split across folds), and several subjects lack N3 or REM entirely.
 
