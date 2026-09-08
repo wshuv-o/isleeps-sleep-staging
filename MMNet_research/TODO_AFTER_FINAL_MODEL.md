@@ -4,7 +4,10 @@ Working checklist from the RTX 5080 session (7-8 Sep 2026). Everything on branch
 `foundation-model-experiment`; `master` is untouched at `9db9d3d`.
 
 Items are ordered by consequence, not by effort. **Blocking** items make a
-published claim false or unsupported if left undone.
+manuscript claim false or unsupported if left undone.
+
+Terminology: MM-Net is **under review (round-2 revision), not published**.
+"Current manuscript" below means the configuration the submitted paper reports.
 
 ---
 
@@ -32,7 +35,7 @@ random weights. Do not write "we designed the encoder"; the data refuses it.
 1. *The engineered cardiorespiratory features are the bottleneck.* A trained CNN
    beats them by 0.0839, the pretrained encoder by 0.1081, both p < 0.00001.
 2. *16% of that gap needs no new information at all* — a random nonlinear
-   expansion of the same 14 features recovers it, so the published FeatMLP leaves
+   expansion of the same 14 features recovers it, so the manuscript's FeatMLP leaves
    nonlinear structure unextracted in features already computed. Cheapest fix
    available.
 3. *On 99 patients a representation must be imported, not learned.* Three
@@ -54,8 +57,8 @@ presents both as a frontier.
       with the sharper and better-supported version: *training from scratch*
       fails on 99 patients; pretraining transfers; the two prior sources are
       complementary. `paper/multimodal_access.tex` lines ~180-184.
-- [ ] **Update the headline numbers** if the final model changes: published
-      0.7275 acc / 0.6536 mF1 / 0.7070 AUC -> best configuration found
+- [ ] **Update the headline numbers** if the final model changes: current
+      manuscript 0.7275 acc / 0.6536 mF1 / 0.7070 AUC -> best configuration found
       0.7485 / 0.6620, and the cardio branch pending the control above.
 - [ ] **Add C5** for representational complementarity. Two independently
       pretrained encoders (CBraMod, LaBraM) each add significantly to the
