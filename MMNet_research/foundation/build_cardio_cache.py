@@ -46,11 +46,20 @@ def encoder(model_id="AutonLab/MOMENT-1-large", device="cuda", pretrained=True, 
     if not pretrained:
         # Arm-D equivalent for this branch: identical architecture, random weights,
         # so a gain can be attributed to pretraining rather than to capacity.
-        for p in m.parameters():
-            if p.dim() > 1:
-                torch.nn.init.xavier_uniform_(p)
-            else:
-                torch.nn.init.zeros_(p)
+        #
+        # Each module is reset with its OWN default initialiser rather than by a
+        # blanket rule over parameter shapes. A blanket "xavier for dim>1, zeros
+        # otherwise" is wrong and silently catastrophic here: it zeroes LayerNorm
+        # gamma, every LayerNorm then outputs exactly zero, and the encoder emits
+        # an all-zero embedding. That control would appear to prove pretraining
+        # matters while actually comparing against a zero vector.
+        n_reset = 0
+        for mod in m.modules():
+            if hasattr(mod, "reset_parameters"):
+                mod.reset_parameters()
+                n_reset += 1
+        print("random init: reset %d modules with their default initialisers" % n_reset,
+              flush=True)
     return m.to(device).eval()
 
 
