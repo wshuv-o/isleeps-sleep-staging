@@ -202,7 +202,22 @@ class arm:
                 wide[sid] = (fe, np.concatenate([fc, cov], axis=1).astype(np.float32), y, a)
             data = wide
             self.covar_names = used
-        if self.cardio is not None:
+        if self.cardio == "raw_cnn":
+            # The cardio branch sees the RAW signal and a learned CNN encoder
+            # replaces FeatMLP. Everything else -- EEG streams, fusion, heads --
+            # is untouched, so the encoder is the only variable, exactly as on
+            # the EEG side.
+            import cardio_cnn
+            table = cardio_cnn.raw_cardio_table(C, os.path.join(REPO, "data", "multimodal"))
+            wide = {}
+            for sid, (fe, fc, y, a) in data.items():
+                if sid not in table:
+                    continue
+                wide[sid] = (fe, table[sid], y, a)
+            data = wide
+            n_card = cardio_cnn.N_CH * cardio_cnn.N_T
+            self._cardio_cnn = True
+        elif self.cardio is not None:
             cemb, cdim = self._load_cardio(C, self.cardio)
             common = sorted(set(data) & set(cemb))
             wide = {}
@@ -223,7 +238,18 @@ class arm:
             kw_fixed = {"n_eeg": dim}
             if n_card is not None:
                 kw_fixed["n_card"] = n_card
-            C.MMFeatureNet = lambda **kw: net(**{**kw_fixed, **kw})
+            use_cnn = getattr(self, "_cardio_cnn", False)
+
+            def make(**kw):
+                m = net(**{**kw_fixed, **kw})
+                if use_cnn:
+                    # swap FeatMLP for the convolutional encoder; d_card keeps the
+                    # published 64 so the fusion and bypass widths are unchanged
+                    import cardio_cnn
+                    m.card_enc = cardio_cnn.CardioCNN(d=64, drop=kw.get("drop", 0.3)).to(C.DEV)
+                return m
+
+            C.MMFeatureNet = make
         self.dim, self.n_card = dim, (n_card if n_card is not None else 14)
         return self
 
