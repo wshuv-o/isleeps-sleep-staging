@@ -54,15 +54,18 @@ class config:
     """
 
     def __init__(self, C, variant, d=128, hidden=128, layers=2, drop=0.3,
-                 lr=1e-3, wd=1e-4):
+                 lr=1e-3, wd=1e-4, cardio=None, cardio_mode="concat"):
         self.C, self.variant = C, variant
+        self.cardio, self.cardio_mode = cardio, cardio_mode
         self.hp = dict(d=d, hidden=hidden, layers=layers, drop=drop, lr=lr, wd=wd)
 
     def __enter__(self):
         C = self.C
-        self._arm = arms.arm(C, self.variant)
+        self._arm = arms.arm(C, self.variant, cardio=self.cardio,
+                             cardio_mode=self.cardio_mode)
         self._arm.__enter__()
         self.dim = self._arm.dim
+        self.n_card = self._arm.n_card
         self._net, self._train = C.MMFeatureNet, C.train_fold
         net, hp, dim = self._net, self.hp, self.dim
 

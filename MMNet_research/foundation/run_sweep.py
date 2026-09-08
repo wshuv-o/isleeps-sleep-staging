@@ -38,10 +38,12 @@ cfg = {cfg}
 key, dst = "{key}", r"{dst}"
 t0 = time.time()
 with sweep.config(C, cfg["arm"], hidden=cfg["hidden"], drop=cfg["drop"],
-                  lr=cfg["lr"], wd=cfg["wd"]) as h:
+                  lr=cfg["lr"], wd=cfg["wd"],
+                  cardio=cfg.get("cardio"),
+                  cardio_mode=cfg.get("cardio_mode", "concat")) as h:
     r = C.run_10fold(fusion="concat", temporal=cfg["temporal"], seed=cfg["seed"])
 rec = dict(cfg)
-rec.update({{"eeg_dim": h.dim,
+rec.update({{"eeg_dim": h.dim, "card_dim": h.n_card,
             "acc":   [f["acc"]   for f in r["per_fold"]],
             "mf1":   [f["mf1"]   for f in r["per_fold"]],
             "kappa": [f["kappa"] for f in r["per_fold"]],
@@ -55,8 +57,11 @@ print("DONE %s acc %.4f auc %.4f [%.1f min]"
 
 
 def key_of(c):
-    return "%s|t=%s|h%d|dr%g|lr%g|wd%g|s%d" % (
+    base = "%s|t=%s|h%d|dr%g|lr%g|wd%g|s%d" % (
         c["arm"], c["temporal"], c["hidden"], c["drop"], c["lr"], c["wd"], c["seed"])
+    if c.get("cardio"):
+        base += "|c=%s-%s" % (c["cardio"], c.get("cardio_mode", "concat"))
+    return base
 
 
 def grid(seeds):
