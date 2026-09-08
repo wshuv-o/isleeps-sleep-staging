@@ -147,7 +147,28 @@ class arm:
     other and Arm A always means the same thing.
     """
 
-    def __init__(self, C, variant, covars=None):
+    def _load_cardio(self, C, name):
+        """Frozen cardiorespiratory embedding, z-scored per subject like the rest."""
+        import glob as _glob
+        base = os.path.join(os.path.dirname(EMB), "cardio_emb", name)
+        out, dim = {}, None
+        for f in sorted(_glob.glob(os.path.join(base, "SN*.npz")),
+                        key=lambda p: int(os.path.basename(p)[2:-4])):
+            sid = int(os.path.basename(f)[2:-4])
+            if sid in C.DUP or sid not in C.DATA:
+                continue
+            d = np.load(f)
+            e = d["emb"].astype(np.float32)
+            if len(e) != len(C.DATA[sid][2]):
+                raise ValueError("SN%d: %d cardio-embedded epochs vs %d labels"
+                                 % (sid, len(e), len(C.DATA[sid][2])))
+            out[sid] = _zscore(e)
+            dim = e.shape[1]
+        if not out:
+            raise ValueError("no cardio embeddings under %s" % base)
+        return out, dim
+
+    def __init__(self, C, variant, covars=None, cardio=None, cardio_mode="concat"):
         """covars: None, or a list of clinical covariate names from clinical.py.
 
         Covariates are appended to the CARDIO stream, not the EEG one, because
@@ -156,6 +177,11 @@ class arm:
         that head both through card_enc and through the validated bypass.
         """
         self.C, self.variant, self.covars = C, variant, covars
+        # cardio: None keeps the published 14 engineered cardiorespiratory features.
+        # A name loads a frozen time-series-foundation embedding of the raw
+        # cardiorespiratory signal; 'concat' appends it to the 14, 'replace' uses it
+        # alone, which distinguishes "adds information" from "supersedes them".
+        self.cardio, self.cardio_mode = cardio, cardio_mode
 
     def __enter__(self):
         C = self.C
@@ -176,6 +202,19 @@ class arm:
                 wide[sid] = (fe, np.concatenate([fc, cov], axis=1).astype(np.float32), y, a)
             data = wide
             self.covar_names = used
+        if self.cardio is not None:
+            cemb, cdim = self._load_cardio(C, self.cardio)
+            common = sorted(set(data) & set(cemb))
+            wide = {}
+            for sid in common:
+                fe, fc, y, a = data[sid]
+                e = cemb[sid]
+                fc = np.concatenate([fc, e], axis=1) if self.cardio_mode == "concat" else e
+                wide[sid] = (fe, fc.astype(np.float32), y, a)
+            data = wide
+            n_card = (14 + cdim) if self.cardio_mode == "concat" else cdim
+            if self.covars is not None:
+                raise ValueError("covars and cardio embeddings not supported together")
         if self.variant != "A" or n_card is not None:
             C.DATA = data
             for name, fn in _recompile_with_width(C, dim, n_card).items():
