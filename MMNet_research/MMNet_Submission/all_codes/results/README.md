@@ -36,12 +36,32 @@ print(accuracy_score(P["y_true"], P["y_pred"]))         # ~0.72 staging
 print(roc_auc_score(P["apnea_true"], P["apnea_score"])) # ~0.71 respiratory
 ```
 
-## Reproduction-engine cache (`engine_cache_per_fold/`)
+## Per-fold results for the reported run (`headline_concat_per_fold.csv`)
 
-Per-fold CSVs + raw JSON from the `mmnet_repro.py` reproduction engine
-(`headline_concat`, `attention_cross`, `neural_only`, `loo_spo2`, `resp_baselines`). These are
-separate engine runs and differ from the notebook in the third decimal (GPU non-determinism);
-the notebook run is the one reported in the paper.
+Ten-fold values for the headline configuration, from the run reported in the paper
+(notebook `5_reproduction_and_seed_stability.ipynb`). Fold means reconcile with
+`headline_metrics.csv`: accuracy 0.7227, macro-F1 0.6510, kappa 0.6106,
+respiratory AUC 0.7111, AP 0.3367. **This is the authoritative per-fold file.**
+
+## Superseded engine cache (`engine_cache_per_fold/`)
+
+Per-fold CSVs + raw JSON from an **earlier** `mmnet_repro.py` engine run
+(`headline_concat`, `attention_cross`, `neural_only`, `loo_spo2`, `resp_baselines`),
+retained for provenance. **These are not the reported numbers and should not be used
+to check the paper.**
+
+Its headline gives accuracy 0.7217, macro-F1 0.6459 and respiratory AUC 0.7066,
+against the reported 0.7227 / 0.6510 / 0.7111. An earlier version of this README
+attributed the gap to GPU non-determinism in the third decimal. That is wrong and
+is corrected here: the fold means agree to about 0.005 only because per-fold errors
+cancel. Individual folds differ by up to 0.061 accuracy, 0.073 kappa and 0.070
+respiratory AUC -- roughly twice the paper's own fold SD of 0.034 -- which is a
+different training run, not run-to-run jitter.
+
+The JSON files in that directory also predate a schema change (`apnea_auc`/`apnea_ap`
+rather than `auc`/`ap`) and have no regenerated counterpart for the non-headline
+configurations. Nothing in the paper depends on them: the figures, `test/analysis.py`
+and the reproduction notebooks all read `results/revision/runs/`.
 
 ## `experiment_json/` — raw output of every benchmarked model (evidence for the tables)
 
