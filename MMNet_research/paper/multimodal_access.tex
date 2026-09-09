@@ -605,7 +605,7 @@ where the errors land: N1 is absorbed mainly into Wake and N2, and part of N3 is
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.82\columnwidth]{figures/fig_confusion.pdf}
-\caption{\stale{[STALE -- confusion matrix not yet regenerated for the final model]} Row-normalised confusion matrix for the proposed model (pooled ten-fold test epochs,
+\caption{Row-normalised confusion matrix for the proposed model (pooled ten-fold test epochs,
 hidden-Markov operating point). Errors concentrate on N1, which is absorbed into Wake and N2.}
 \label{fig:confusion}
 \end{figure}
@@ -676,9 +676,11 @@ modality, and the fusion mechanism has little effect.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.98\columnwidth]{figures/fig_ablation.pdf}
-\caption{\stale{[STALE -- modality ablation grid not yet regenerated for the final model]} Modality-ablation grid. Staging accuracy (blue) and respiratory AUC (red) as each
-modality is removed in turn. Removing SpO$_2$ or the whole cardiorespiratory stream lowers
-respiratory AUC and leaves staging flat; removing the ocular channel lowers staging.}
+\caption{Modality-ablation grid. Staging accuracy (blue) and respiratory AUC (red) as each
+modality is removed in turn. Removing the neural channels lowers staging and leaves respiratory
+AUC flat; removing cardiorespiratory channels does the reverse. Within the cardiorespiratory
+stream only effort matters individually, yet removing the stream entirely costs far more than
+the sum of its parts.}
 \label{fig:ablationfig}
 \end{figure}
 
@@ -729,7 +731,7 @@ desaturation follows it by several breaths.
 \subsection{Respiratory Baselines and Per-event-type Detection}
 The respiratory task needs real competitors (Table~\ref{tab:resp}), on the same folds and the same $14$
 cardiorespiratory features. A clinical desaturation rule reaches $0.596$ AUC, logistic
-regression $0.582$, and gradient boosting $0.670$; a random classifier scores $0.160$ average
+regression $0.582$, and gradient boosting $0.670$; a random classifier scores $0.157$ average
 precision, the event prevalence. The proposed model reaches $\mmAuc$ AUC and $\mmAp$ average
 precision, above gradient boosting but by a modest margin, so the contribution is the joint
 single pass and the physiological attribution above; we do not claim state-of-the-art
@@ -765,9 +767,9 @@ visible rather than hidden; it is a fifth of one fold standard deviation.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_roc_pr.pdf}
-\caption{\stale{[STALE -- operating characteristics not yet regenerated for the final model]} Respiratory-event detection, operating characteristics, pooled over the ten
+\caption{Respiratory-event detection, operating characteristics, pooled over the ten
 patient-independent test folds. \textbf{(a)} ROC; the dashed line is chance.
-\textbf{(b)} Precision--recall; the dashed line is the $0.160$ event prevalence, the
+\textbf{(b)} Precision--recall; the dashed line is the $0.157$ event prevalence, the
 no-skill floor. Each panel reports the pooled value and the per-fold mean $\pm$ standard
 deviation, which differ because pooling is a different estimator from cross-validated
 averaging.}
@@ -775,10 +777,13 @@ averaging.}
 \end{figure}
 
 \begin{table}[t]
-\caption{\stale{[STALE -- respiratory detection table not yet regenerated for the final model]} Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
+\caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
 on the $14$ cardiorespiratory features on the same folds; chance-level average precision equals the
-event prevalence, $0.160$. \textit{(b)} The proposed model's AUC by event type -- the rarer, more
-severe events are detected best. Best per column in \textbf{bold}.}
+event prevalence, $0.157$. \textit{(b)} The proposed model's AUC by event type -- the rarer, more
+severe events are detected best. Best per column in \textbf{bold}.
+\stale{[Panel (b) is from the previous configuration: the per-event-type labels were not
+retained with the final model's predictions, so it has not been regenerated. Panel (a) is
+current.]}}
 \label{tab:resp}
 \centering
 \small
@@ -834,7 +839,7 @@ estimates an index.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_ahi.pdf}
-\caption{\stale{[STALE -- AHI scatter not yet regenerated for the final model]} Predicted per-patient event burden (mean respiratory probability) against the clinical
+\caption{Predicted per-patient event burden (mean respiratory probability) against the clinical
 apnea-hypopnea index, coloured by AASM severity band. The positive association (Spearman
 $\rho=0.491$, $n=99$) shows the model's output tracks a clinician's summary measure.}
 \label{fig:ahi}
@@ -907,7 +912,7 @@ artefact of the full sample.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_learning_curve.pdf}
-\caption{\stale{[STALE -- learning curve not yet regenerated for the final model]} Learning curve over training-patient fraction, ten-fold patient-independent, error
+\caption{Learning curve over training-patient fraction, ten-fold patient-independent, error
 bars one standard deviation across folds. Staging (blue) flattens by $57$ patients; respiratory
 detection (orange) is still climbing at $76$.}
 \label{fig:curve}
@@ -982,10 +987,15 @@ respiratory AUC spans $0.515$--$0.848$, the latter tracking event prevalence clo
 the low-prevalence nights give near-chance estimates.
 
 \begin{table}[t]
-\caption{\stale{[STALE -- external validation not yet regenerated for the final model]} External validation on two public corpora. One model trained on all $96$ iSLEEPS
+\caption{External validation on two public corpora. One model trained on all $99$ iSLEEPS
 patients, evaluated zero-shot with no dataset-specific tuning. In-domain figures are the
 ten-fold patient-independent means. Sleep-EDF has no cardiorespiratory channels, so the
-respiratory head cannot be scored there.}
+respiratory head cannot be scored there and that branch is fed zeros; training with the branch
+zeroed as well gives $0.774$, confirming the figure is not an artefact of the train/test
+mismatch. Both external corpora use a different montage from iSLEEPS, so these are lower bounds
+on transfer rather than clean estimates of it.
+\stale{[The two ISRUC rows are from the previous configuration and have not been regenerated;
+that corpus was not reachable from the training machine.]}}
 \label{tab:ext}
 \centering
 \small
@@ -993,9 +1003,9 @@ respiratory head cannot be scored there.}
 \toprule
 Corpus & Cohort & Rec. & Acc\,$\uparrow$ & $\kappa$\,$\uparrow$ & Resp.\ AUC\,$\uparrow$ \\
 \midrule
-iSLEEPS (in-domain)   & stroke        & 96 & $\mmAcc$ & $\mmK$ & $\mmAuc$ \\
+iSLEEPS (in-domain)   & stroke        & 99 & $\mmAcc$ & $\mmK$ & $\mmAuc$ \\
 \midrule
-Sleep-EDF             & healthy       & 11 & $\mathbf{0.800}$ & $\mathbf{0.712}$ & --- \\
+Sleep-EDF             & healthy       & 40 & $\mathbf{0.794}$ & $\mathbf{0.717}$ & --- \\
 ISRUC, night 1        & sleep-disord. &  8 & $0.664$ & $0.557$ & $\mathbf{0.721}$ \\
 ISRUC, night 2        & sleep-disord. &  8 & $0.597$ & $0.454$ & $0.720$ \\
 \bottomrule
