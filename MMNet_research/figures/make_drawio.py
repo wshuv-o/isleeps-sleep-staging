@@ -28,6 +28,7 @@ Invoke through the long path.
 """
 import base64
 import html
+import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -122,15 +123,60 @@ def stack(prefix, items, x, y, w, pal, h=30, gap=8):
 
 DASHED_FROZEN = "dashed=1;dashPattern=6 4;"
 
-# The generator's img() reads from arch_assets/; the encoder blocks live one
-# level up in figures/, so they get their own loader rather than being copied.
-def img_here(i, asset, x, y, w, h):
-    d = os.path.join(HERE, asset)
-    b64 = base64.b64encode(open(d, "rb").read()).decode()
-    _cell(i, "", x, y, w, h,
-          f"shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;"
-          f"imageAspect=0;aspect=fixed;image=data:image/png,{b64};")
+# ---------------------------------------------------------------- layer blocks
+# Drawn with draw.io's own `cube` primitive rather than pasted in as rendered
+# images, so every block stays selectable, movable and recolourable in the
+# editor. An earlier revision embedded matplotlib PNGs, which looked similar and
+# was useless the moment anyone wanted to change a label.
+C_IN, C_CONV, C_NORM = "#C8CCD2", "#2F4FD0", "#ECEFF2"
+C_POOL, C_FC, C_OUT = "#E34EE0", "#3FAE5A", "#F0A03C"
+SPINE = ["#D92B2B", "#F0821E", "#F5D020", "#3FAE5A"]     # tinted leading edges
+KIND_COLOR = {"in": C_IN, "conv": C_CONV, "norm": C_NORM,
+              "pool": C_POOL, "fc": C_FC, "out": C_OUT}
 
+
+def cube(i, x, y, w, h, fill, size=9):
+    """One feature-map sheet: draw.io's cube shape, seen at a slight angle."""
+    _cell(i, "", x, y, w, h,
+          f"shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;"
+          f"darkOpacity=0.06;darkOpacity2=0.12;fillColor={fill};"
+          f"strokeColor=#2B2F33;size={size};")
+
+
+def layer_row(prefix, stages, x0, ybase, pitch=74, hmax=104, plane_w=7,
+              plane_step=5, main_w=22, flat_w=26):
+    """A horizontal run of layer blocks with shape above and operation below.
+
+    stages: (kind, shape_label, op_label, height_frac, n_planes). A conv is a
+    BANK -- several thin sheets with tinted edges then the body -- because a
+    convolution emits many maps and a single sheet would say it emits one.
+    Returns the ids, so the caller can wire the row into the main flow.
+    """
+    ids = []
+    for k, (kind, shape, op, hf, npl) in enumerate(stages):
+        x = x0 + k * pitch
+        h = max(16, int(round(hmax * hf)))
+        y = ybase - h
+        if kind == "conv":
+            for j in range(npl):
+                cube(f"{prefix}{k}s{j}", x + j * plane_step, y, plane_w, h,
+                     SPINE[j % len(SPINE)], size=5)
+            bx = x + npl * plane_step
+            cid = f"{prefix}{k}"
+            cube(cid, bx, y, main_w, h, C_CONV)
+            wtot = npl * plane_step + main_w
+        else:
+            cid = f"{prefix}{k}"
+            w = flat_w if kind in ("norm", "pool") else flat_w - 4
+            cube(cid, x, y, w, h, KIND_COLOR[kind])
+            wtot = w
+        ids.append(cid)
+        txt(f"{prefix}{k}_sh", f"<b>{shape}</b>", x - 16, y - 22, wtot + 32, 14, size=8)
+        txt(f"{prefix}{k}_op", op, x - 18, ybase + 6, wtot + 36, 24, size=8)
+    for a, b in zip(ids[:-1], ids[1:]):
+        edge(f"{prefix}_{a}_{b}", a, b, w=1.0, color="#5A6570",
+             exit_=(1, 0.75), entry=(0, 0.75))
+    return ids
 
 # ===================================================================== title
 txt("title", "<b>Two-stream multimodal multi-task network</b>  ·  "
@@ -148,7 +194,14 @@ node("eeg_fnd", "<b>Frozen LaBraM</b> &#10052;<br>z<sup>fnd</sup> &#8712; &#8477
 ell("catE", "C", 382, 126, 26, 26)
 node("eeg_enc", "<b>EEG encoder</b>  &#966;<sub>eeg</sub><br>"
      "FeatMLP: 388 &#8594; e &#8712; &#8477;<sup>128</sup> · 66,816 p", 428, 106, 200, 66, EEG)
-img_here("eeg_iso", "eeg_encoder_iso.png", 418, 186, 330, 148)
+_u = lambda n: math.log10(n) / math.log10(388.0)
+layer_row("fe", [("in", "388", "input", _u(388), 1),
+                 ("fc", "128", "Linear W&#8321;", _u(128), 1),
+                 ("norm", "128", "LN + GELU", _u(128), 1),
+                 ("fc", "128", "Linear W&#8322;", _u(128), 1),
+                 ("norm", "128", "LN + GELU", _u(128), 1),
+                 ("out", "128", "e", _u(128), 1)],
+          x0=428, ybase=330, pitch=62, hmax=96)
 
 # =========================================== CARDIORESPIRATORY LANE (lower)
 img("car_img", "cardio_signals.png", 30, 388, 140, 104)
@@ -160,9 +213,18 @@ node("car_feat", "<b>Raw cardiorespiratory tensor</b><br>"
 node("car_enc", "<b>Cardio encoder</b>  &#966;<sub>car</sub><br>"
      "CardioCNN: 7&#215;750 &#8594; c &#8712; &#8477;<sup>64</sup> · 155,232 p",
      428, 402, 200, 76, CAR)
-img_here("car_iso", "cardio_encoder_iso.png", 418, 492, 340, 152)
+_t = lambda n: math.log10(n) / math.log10(750.0)
+layer_row("cc", [("in", "7&#215;750", "raw", _t(750), 1),
+                 ("conv", "48&#215;375", "Conv 25, s2<br>BN+GELU", _t(375), 4),
+                 ("pool", "48&#215;93", "Pool 4", _t(93), 1),
+                 ("conv", "96&#215;93", "Conv 15<br>BN+GELU", _t(93), 5),
+                 ("pool", "96&#215;23", "Pool 4", _t(23), 1),
+                 ("conv", "96&#215;23", "Conv 7<br>BN+GELU", _t(23), 5),
+                 ("pool", "192", "mean &#8853; max", _t(4), 1),
+                 ("out", "64", "Linear", _t(3), 1)],
+          x0=196, ybase=628, pitch=74, hmax=104)
 txt("car_iso_cap", "<i>replaces the 14 engineered cardiorespiratory features</i>",
-    418, 648, 340, 14, size=8)
+    196, 664, 560, 14, size=8)
 
 # ================================================ CONVERGE, then L to R
 ell("concatC", "C", 786, 282, 26, 26)
@@ -193,8 +255,6 @@ edge("e9", "car_enc", "rsp_head", dashed=True, color="#C4763A",
      exit_=(1, 0.25), entry=(0, 0.5))
 txt("bypass_lbl", "<i>direct c<sub>t</sub></i>", 1150, 404, 90, 16, size=10)
 # each encoder box is expanded by the isometric block beneath it
-txt("eeg_iso_cap", "<i>encoder expanded</i>", 418, 176, 330, 12, size=8)
-txt("car_iso_cap2", "<i>encoder expanded</i>", 418, 482, 340, 12, size=8)
 
 # ======================================== the one side panel: fusion detail
 panel("cf_panel", "Cross-modal fusion &#8212; the one block detailed separately",
