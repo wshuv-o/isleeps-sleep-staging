@@ -368,11 +368,12 @@ event (Fig.~\ref{fig:arch}).
 \caption{The two-stream, multi-task model. Expert physiological features and a frozen
 self-supervised embedding are concatenated into a 388-dimensional neural input; the
 cardiorespiratory stream is the raw $7\times750$ tensor read by a learned convolutional
-encoder. Both encoders are drawn with their internals expanded as isometric layer blocks, since
-each is instantiated once. Block height encodes units for the multilayer perceptron and
-temporal length for the convolutional stack, whose depth encodes channels, so the trade
-that stack makes is visible: time resolution is spent to buy channels,
-$750\rightarrow23$ samples against $7\rightarrow96$ channels. The two embeddings are fused and read across the night by a bidirectional LSTM. A
+encoder. Both encoders are drawn with their internals expanded, since each is instantiated
+once. Layer shapes are given above each block and the operation below it; block height
+encodes units for the multilayer perceptron and temporal length for the convolutional
+stack, so the trade that stack makes is visible --- time resolution is spent to buy
+channels, $750\rightarrow23$ samples against $7\rightarrow96$. The governing equations
+are given in the text rather than on the figure. The two embeddings are fused and read across the night by a bidirectional LSTM. A
 staging head reads the recurrent state; a respiratory head reads it together with a direct
 copy of the cardiorespiratory embedding, so desaturation and effort cues reach the
 respiratory decision without passing through the staging-oriented fusion. Cross-modal
