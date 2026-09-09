@@ -3,7 +3,7 @@ Labels use HTML formatting (<br>, <sub>, <sup>, <b>) so draw.io renders line bre
 and proper sub/superscripts."""
 import os, html
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "paper", "figures", "mm_architecture.drawio")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mm_architecture.drawio")
 
 # palette
 EEG = ("#D8ECD9", "#4E8A52"); CAR = ("#F7DFC9", "#C4763A")
@@ -40,21 +40,30 @@ R = "&#8477;"  # placeholder not used; we use ℝ directly below
 
 # ===== title =====
 txt("title", "<b>Two-stream multimodal multi-task network</b><br>"
-    "f<sub>θ</sub> : (f<sup>eeg</sup>, f<sup>car</sup>) → (ŷ<sup>stg</sup>, ŷ<sup>apn</sup>)   ·   856,326 parameters",
+    "f<sub>θ</sub> : (f<sup>eeg</sup>, z<sup>fnd</sup>, x<sup>car</sup>) → (ŷ<sup>stg</sup>, ŷ<sup>apn</sup>)"
+    "   ·   2,764,774 trainable + 5,819,936 frozen",
     40, 8, 620, 44, size=12)
+txt("newkey", "<i><font color=\"#C0392B\">red outline = new since submission</font></i>", 420, 40, 260, 20, size=10)
 
 # ===== PANEL A: main flow =====
-node("eeg_feat", "<b>EEG features</b><br>f<sup>eeg</sup> ∈ ℝ<sup>188</sup><br>band power, spindle, Hjorth", 60, 70, 190, 74, EEG)
-node("car_feat", "<b>Cardio features</b><br>f<sup>car</sup> ∈ ℝ<sup>14</sup><br>SpO<sub>2</sub>, effort, HRV, airflow", 340, 70, 190, 74, CAR)
-node("eeg_enc", "<b>EEG encoder</b>  φ<sub>eeg</sub><br>FeatMLP → e ∈ ℝ<sup>128</sup><br>41,216 p", 60, 210, 190, 74, EEG)
-node("car_enc", "<b>Cardio encoder</b>  φ<sub>car</sub><br>FeatMLP → c ∈ ℝ<sup>64</sup><br>5,376 p", 340, 210, 190, 74, CAR)
+node("eeg_feat", "<b>Expert physiology</b><br>f<sup>eeg</sup> ∈ ℝ<sup>188</sup><br>band power, spindle, Hjorth", 20, 70, 175, 74, EEG)
+# NEW: the second, imported prior. Frozen -- red stroke marks it as new since submission.
+node("eeg_fnd", "<b>Frozen LaBraM</b><br>z<sup>fnd</sup> ∈ ℝ<sup>200</sup> · 5.82 M frozen<br>4 EEG channels, no gradient",
+     205, 70, 175, 74, ("#D4E2F5", "#C0392B"), extra="strokeWidth=2;")
+node("car_feat", "<b>Raw cardio tensor</b><br>x<sup>car</sup> ∈ ℝ<sup>7×750</sup> = 5250<br>per-subject z-score, no summary",
+     420, 70, 190, 74, CAR)
+ell("catE", "C", 185, 158, 30, 30)
+node("eeg_enc", "<b>EEG encoder</b>  φ<sub>eeg</sub><br>FeatMLP: 388 → e ∈ ℝ<sup>128</sup><br>66,816 p", 105, 210, 190, 74, EEG)
+node("car_enc", "<b>Cardio encoder</b>  φ<sub>car</sub><br>CardioCNN → c ∈ ℝ<sup>64</sup><br>3 conv stages · 155,232 p",
+     420, 210, 190, 74, ("#F7DFC9", "#C0392B"), extra="strokeWidth=2;")
 ell("concatC", "C", 280, 310, 30, 30)
 node("fusion", "<b>Cross-modal fusion</b><br>2 tokens → attention → z ∈ ℝ<sup>128</sup><br>99,456 p", 175, 360, 240, 74, FUS)
-node("bilstm", "<b>BiLSTM</b>  (2 layers, bidirectional)<br>context L = 20 epochs · h<sub>t</sub> ∈ ℝ<sup>256</sup><br>659,456 p", 155, 490, 280, 74, LSTM)
-node("stg_head", "<b>Staging head</b><br>ŷ<sub>t</sub><sup>stg</sup> = softmax(W<sub>s</sub> h<sub>t</sub>)<br>+ HMM Viterbi decode<br>1,285 p", 60, 640, 195, 96, STG)
-node("rsp_head", "<b>Respiratory head</b><br>ŷ<sub>t</sub><sup>apn</sup> = σ(W<sub>2</sub>[h<sub>t</sub> ; c<sub>t</sub>])<br>direct cardio bypass<br>41,217 p", 335, 640, 195, 96, RSP)
+node("bilstm", "<b>BiLSTM</b>  (2 layers, bidirectional)<br>context L = 20 epochs · h<sub>t</sub> ∈ ℝ<sup>512</sup><br>2,367,488 p", 155, 490, 280, 74, LSTM)
+node("stg_head", "<b>Staging head</b><br>ŷ<sub>t</sub><sup>stg</sup> = softmax(W<sub>s</sub> h<sub>t</sub>)<br>+ HMM Viterbi decode<br>2,565 p", 60, 640, 195, 96, STG)
+node("rsp_head", "<b>Respiratory head</b><br>ŷ<sub>t</sub><sup>apn</sup> = σ(W<sub>2</sub>[h<sub>t</sub> ; c<sub>t</sub>])<br>direct cardio bypass<br>147,969 p", 335, 640, 195, 96, RSP)
 
-edge("e1", "eeg_feat", "eeg_enc"); edge("e2", "car_feat", "car_enc")
+edge("e1a", "eeg_feat", "catE"); edge("e1b", "eeg_fnd", "catE"); edge("e1", "catE", "eeg_enc")
+edge("e2", "car_feat", "car_enc")
 edge("e3", "eeg_enc", "fusion"); edge("e4", "car_enc", "fusion")
 edge("e5", "fusion", "bilstm")
 edge("e6", "bilstm", "stg_head"); edge("e7", "bilstm", "rsp_head")
@@ -74,7 +83,7 @@ for cid, lab in fe_items:
     small(cid, lab, 745, yy, 160, 32, EEG); yy += 44
 for a, b in zip(fe_items[:-1], fe_items[1:]):
     edge("fe_" + a[0] + b[0], a[0], b[0])
-txt("fe_cap", "<i>EEG: 188 → 128   ·   Cardio: 14 → 64</i>", 710, 422, 230, 20)
+txt("fe_cap", "<i>EEG branch only: 388 → 128<br>cardio uses CardioCNN (panel C)</i>", 710, 418, 230, 32)
 
 # Cross-modal fusion (4 heads drawn)
 panel("cf_panel", "Cross-modal fusion", 700, 490, 340, 470)
@@ -96,6 +105,22 @@ edge("cf_c_add", "cf_concat", "cf_add")
 edge("cf_add_ln", "cf_add", "cf_ln"); edge("cf_ln_ff", "cf_ln", "cf_ff"); edge("cf_ff_fuse", "cf_ff", "cf_fuse")
 edge("cf_resid", "cf_tok", "cf_add", color="#666666")
 
+# ===== PANEL C: CardioCNN, the block that replaced the 14 engineered features =====
+panel("cc_panel", "CardioCNN  (replaces the 14 engineered cardio features)", 1060, 50, 300, 410)
+txt("cc_note", "<i>kernels sized to respiratory physiology:<br>events last 10–30 s, so kernels are wide<br>"
+    "and the stack downsamples hard</i>", 1070, 82, 280, 46)
+cc_items = [("cc1", "Conv(7→48, k=25, s=2)  BN  GELU"), ("cc2", "MaxPool 4  ·  Dropout"),
+            ("cc3", "Conv(48→96, k=15)  BN  GELU"), ("cc4", "MaxPool 4  ·  Dropout"),
+            ("cc5", "Conv(96→96, k=7)  BN  GELU"), ("cc6", "concat [mean , max]"),
+            ("cc7", "Linear → LayerNorm → GELU")]
+yy = 140
+for cid, lab in cc_items:
+    small(cid, lab, 1080, yy, 260, 32, CAR); yy += 42
+for a, b in zip(cc_items[:-1], cc_items[1:]):
+    edge("cc_" + a[0] + b[0], a[0], b[0])
+txt("cc_cap", "<i>5250 → c ∈ ℝ<sup>64</sup>  ·  at 25 Hz a 25-sample kernel is one second</i>",
+    1070, 436, 280, 20)
+
 # ===== objective footer =====
 txt("obj", "Joint objective:   L = CE<sub>√w</sub>(ŷ<sup>stg</sup>, y<sup>stg</sup>) + "
      "λ BCE<sub>pw</sub>(ŷ<sup>apn</sup>, y<sup>apn</sup>),   λ = 1",
@@ -104,7 +129,7 @@ txt("obj", "Joint objective:   L = CE<sub>√w</sub>(ŷ<sup>stg</sup>, y<sup>stg
 xml = ('<mxfile host="app.diagrams.net">'
        '<diagram name="MM-Net architecture" id="mmnet">'
        '<mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" '
-       'connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1040" '
+       'connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1420" pageHeight="1040" '
        'math="0" shadow="0"><root>'
        '<mxCell id="0"/><mxCell id="1" parent="0"/>'
        + "".join(cells) +
