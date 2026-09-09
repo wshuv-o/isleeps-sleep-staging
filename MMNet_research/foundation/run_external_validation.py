@@ -128,16 +128,22 @@ def main():
         finally:
             if restore:
                 restore()
+        # subj_infer here is not mmnet_core's function but a recompiled copy with
+        # the width literals substituted (arms._recompile_with_width), and it was
+        # compiled against ns = dict(C.__dict__) -- a SNAPSHOT. Rebinding C.DATA
+        # therefore never reaches it, which is why the first attempt raised
+        # KeyError: 'SC4001'. The snapshot holds the same dict OBJECT that
+        # arms.arm installed, so mutating that object in place is visible.
         saved = dict(C.DATA)
         try:
-            C.DATA = {**saved, **ext}     # so subj_infer can address external records
+            C.DATA.update(ext)
             yt, yp, at, ascore = [], [], [], []
             for rec in ext:
                 sp, apn = C.subj_infer(model, rec, [], [])
                 yt.append(ext[rec][2]); yp.append(sp.argmax(1))
                 at.append(ext[rec][3]); ascore.append(apn)
         finally:
-            C.DATA = saved
+            C.DATA.clear(); C.DATA.update(saved)
 
     yt, yp = np.concatenate(yt), np.concatenate(yp)
     at, ascore = np.concatenate(at), np.concatenate(ascore)
