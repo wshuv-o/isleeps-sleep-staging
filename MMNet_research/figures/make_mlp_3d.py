@@ -49,13 +49,52 @@ def _darken(hexc, f):
     r, g, b = [int(hexc[i:i+2], 16) for i in (1, 3, 5)]
     return "#%02x%02x%02x" % tuple(int(c * (1 - f)) for c in (r, g, b))
 
-# EEG encoder  phi_eeg : 188 -> 128
-draw_mlp([("input", 188, "in"), ("Linear", 128, "linear"), ("LN+GELU", 128, "act"),
-          ("Linear", 128, "linear"), ("LN+GELU", 128, "act"), ("z_e", 128, "out")],
-         "EEG encoder  (phi_eeg, FeatMLP):  188 -> 128", "eeg_mlp_3d.png", "#4c9a63")
+def draw_cnn(stages, title, fname, base):
+    """Conv stack as 3D slabs. stages: (label, channels, length, kind).
 
-# Cardio encoder  phi_car : 14 -> 64
-draw_mlp([("input", 14, "in"), ("Linear", 64, "linear"), ("LN+GELU", 64, "act"),
-          ("Linear", 64, "linear"), ("LN+GELU", 64, "act"), ("z_c", 64, "out")],
-         "Cardio encoder  (phi_car, FeatMLP):  14 -> 64", "cardio_mlp_3d.png", "#d08a3e")
+    A 1-D conv stack has two quantities an MLP does not, and both have to be
+    legible or the picture says nothing: the slab's HEIGHT encodes the temporal
+    length and its DEPTH encodes the channel count, so the reader sees the trade
+    the architecture makes -- time is spent to buy channels. Both are log-scaled,
+    because 750 -> 23 samples and 7 -> 96 channels do not fit a linear axis
+    together without one of them collapsing to a line.
+    """
+    fig = plt.figure(figsize=(11.0, 2.9)); ax = fig.add_subplot(111, projection="3d")
+    colmap = {"in": "#c9ccd1", "conv": base, "pool": _lighten(base, 0.45),
+              "out": _darken(base, 0.15)}
+    gap, x = 1.5, 0.0
+    for lab, ch, ln, kind in stages:
+        dz = 0.7 + 3.0 * (np.log10(ln) / np.log10(750))          # height ~ time
+        dy = 0.7 + 2.2 * (np.log10(ch) / np.log10(192))          # depth  ~ channels
+        dx = 0.5 if kind in ("conv", "out", "in") else 0.3
+        cuboid(ax, x, dx, dy, dz, colmap[kind])
+        ax.text(x + dx / 2, 0, dz + 0.30,
+                ("%d×%d" % (ch, ln)) if ln > 1 else str(ch),
+                ha="center", va="bottom", fontsize=9, fontweight="bold", color="#111")
+        ax.text(x + dx / 2, 0, -0.62, lab, ha="center", va="top",
+                fontsize=8.0, color="#333")
+        x += dx + gap
+    ax.set_title(title, fontsize=13, fontweight="bold", color=_darken(base, 0.2),
+                 pad=0, y=0.98)
+    ax.set_xlim(0, x); ax.set_ylim(-2.2, 2.2); ax.set_zlim(-1.3, 4.2)
+    ax.set_box_aspect((x, 2.4, 2.6)); ax.view_init(elev=16, azim=-74)
+    ax.set_axis_off()
+    fig.savefig(os.path.join(HERE, fname), dpi=200, bbox_inches="tight",
+                pad_inches=0.05, transparent=True)
+    plt.close(fig); print("wrote", fname)
+
+
+# EEG encoder  phi_eeg : 388 -> 128   (188 engineered + 200 frozen LaBraM)
+draw_mlp([("[f_eeg ; z_fnd]", 388, "in"), ("Linear", 128, "linear"), ("LN+GELU", 128, "act"),
+          ("Linear", 128, "linear"), ("LN+GELU", 128, "act"), ("e", 128, "out")],
+         "EEG encoder  (phi_eeg, FeatMLP):  388 -> 128", "eeg_mlp_3d.png", "#4c9a63")
+
+# Cardio encoder  phi_car : CardioCNN over the raw 7 x 750 tensor -> 64
+# lengths follow the real module: 750 -(s=2)-> 375 -(pool 4)-> 93 -(pool 4)-> 23
+draw_cnn([("raw x_car", 7, 750, "in"), ("Conv k=25 s=2", 48, 375, "conv"),
+          ("MaxPool 4", 48, 93, "pool"), ("Conv k=15", 96, 93, "conv"),
+          ("MaxPool 4", 96, 23, "pool"), ("Conv k=7", 96, 23, "conv"),
+          ("mean+max", 192, 1, "pool"), ("c", 64, 1, "out")],
+         "Cardio encoder  (phi_car, CardioCNN):  7x750 -> 64",
+         "cardio_cnn_3d.png", "#d08a3e")
 print("done")
