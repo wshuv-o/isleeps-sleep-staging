@@ -88,14 +88,20 @@ presents both as a frontier.
 
 ## 3. Figures
 
-- [ ] Swap `figures/fig_architecture.pdf` (line 354) for **v4**. Editable source
-      is `figures/mm_architecture_v4.drawio`; export PDF from draw.io, or use the
-      matplotlib `fig_architecture_v4.pdf` the builder also emits.
-      **Do not use v3** -- it draws a model we never ran (two interchangeable SSL
-      encoders, engineered cardio features, a dashed BiLSTM annotated with a
-      trade-off measured on a superseded config, and an EEG encoder parameter
-      count that was only the first Linear). v4's counts are asserted against the
-      live modules at build time.
+- [ ] **Export the architecture figure.** The paper's own figure was updated in
+      place: `figures/make_drawio.py` -> `figures/mm_architecture.drawio`, which
+      now carries the frozen-LaBraM block feeding a 388-d concat, the CardioCNN
+      block and detail panel in place of the 14 engineered features, and the
+      trained model's parameter counts (EEG encoder 66,816; cardio 155,232;
+      BiLSTM 2,367,488 at h in R^512; heads 2,565 / 147,969). No draw.io CLI on
+      the training box, so it must be opened at diagrams.net and exported over
+      `figures/fig_architecture.pdf`.
+      Ignore `mm_architecture_v3.*` -- it draws a model we never ran.
+      **Known mismatch, deliberately left:** the fusion block still shows
+      cross-modal attention (99,456 p) while every reported number uses
+      `fusion="concat"` (24,704 p). This predates the session; resolving it
+      changes what the paper claims the architecture is, so it is an author
+      decision. See README.
 - [ ] Swap Fig. 9 for `fig_attribution_agreement.pdf` (see Finding 2).
 - [ ] Regenerate any figure whose underlying run changed.
 

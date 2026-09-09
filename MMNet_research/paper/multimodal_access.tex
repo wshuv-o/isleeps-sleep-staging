@@ -611,9 +611,11 @@ hidden-Markov operating point). Errors concentrate on N1, which is absorbed into
 \end{figure}
 
 \begin{table}[t]
-\caption{\stale{[STALE -- per-class F1 not yet regenerated for the final model]} Per-class staging F1 (Wake, N1, N2, N3, REM), ten-fold patient-independent, at the
+\caption{Per-class staging F1 (Wake, N1, N2, N3, REM), ten-fold patient-independent, at the
 hidden-Markov operating point, for the proposed model and the raw-signal deep network. Best per
-column in \textbf{bold}.}
+column in \textbf{bold}. \stale{[The neural-only row is from the previous configuration; the
+ablation grid did not retain per-class F1, so it has not been regenerated and is not directly
+comparable to the row below it.]}}
 \label{tab:perclass}
 \centering
 \setlength{\tabcolsep}{6pt}
@@ -623,7 +625,7 @@ Model & W\,$\uparrow$ & N1\,$\uparrow$ & N2\,$\uparrow$ & N3\,$\uparrow$ & R\,$\
 \midrule
 Raw multimodal CNN                & 0.74 & \textbf{0.37} & 0.73 & 0.56 & 0.67 \\
 MM-Net (neural only)              & 0.77 & 0.24 & 0.78 & 0.68 & 0.70 \\
-\textbf{MM-Net (neural + cardio)} & \textbf{0.77} & 0.27 & \textbf{0.78} & \textbf{0.68} & \textbf{0.72} \\
+\textbf{MM-Net (neural + cardio)} & \textbf{0.78} & 0.31 & \textbf{0.80} & \textbf{0.71} & \textbf{0.75} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -839,8 +841,8 @@ $\rho=0.491$, $n=99$) shows the model's output tracks a clinician's summary meas
 \end{figure}
 
 \begin{table}[t]
-\caption{\stale{[STALE -- severity table not yet regenerated for the final model]} Sleep-staging accuracy by sleep-disordered-breathing severity (AASM AHI bands),
-ten-fold patient-independent; mean\,$\pm$\,SD across patients ($N=96$). Staging degrades
+\caption{Sleep-staging accuracy by sleep-disordered-breathing severity (AASM AHI bands),
+ten-fold patient-independent; mean\,$\pm$\,SD across patients ($N=99$). Staging degrades
 monotonically as severity rises.}
 \label{tab:severity}
 \centering
@@ -849,10 +851,10 @@ monotonically as severity rises.}
 \toprule
 AHI band & AHI (events/h) & Patients & Staging acc\,$\uparrow$ \\
 \midrule
-Normal   & $<5$       & 14 & $0.770 \pm 0.064$ \\
-Mild     & $5$--$15$  & 22 & $0.730 \pm 0.077$ \\
-Moderate & $15$--$30$ & 23 & $0.712 \pm 0.103$ \\
-Severe   & $\geq 30$  & 37 & $0.708 \pm 0.091$ \\
+Normal   & $<5$       & 15 & $0.769 \pm 0.049$ \\
+Mild     & $5$--$15$  & 23 & $0.747 \pm 0.069$ \\
+Moderate & $15$--$30$ & 23 & $0.722 \pm 0.088$ \\
+Severe   & $\geq 30$  & 38 & $0.719 \pm 0.100$ \\
 \bottomrule
 \end{tabular}
 \end{table}

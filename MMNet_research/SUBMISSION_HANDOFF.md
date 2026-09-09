@@ -293,10 +293,16 @@ Writing only. None of these needs a GPU.
 5. **Repoint `fig_attribution_agreement.py`** at the final-model inputs,
    regenerate, rewrite the caption per section 6, swap in at
    `paper/multimodal_access.tex:994` (referee Finding 2).
-6. **Swap the architecture figure** at `paper/multimodal_access.tex:354` for
-   `figures/mm_architecture_v4.drawio` (export from draw.io) or the
-   ready-made `figures/fig_architecture_v4.pdf`. **Do not use v3** — it draws a
-   model that was never trained.
+6. **Export the architecture figure.** `figures/mm_architecture.drawio` --- the
+   paper's own figure, updated in place by `figures/make_drawio.py` --- now
+   carries the frozen-LaBraM block, the CardioCNN panel and the trained model's
+   parameter counts. There is no draw.io CLI on the training box, so it still
+   has to be opened at diagrams.net and exported over
+   `figures/fig_architecture.pdf`. Ignore `mm_architecture_v3.*`.
+
+   Note the fusion block still shows cross-modal attention (99,456 p) while every
+   reported number uses `fusion="concat"` (24,704 p). That mismatch predates this
+   session; see the README for the two ways to resolve it.
 7. **Remove the `\stale{}` red marking** from the 11 captions once each number
    is updated. `\stale` is defined in the preamble; delete the wrapper, keep the
    text.

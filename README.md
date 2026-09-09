@@ -86,9 +86,23 @@ consistent but not individually significant.
   [`MMNet_research/foundation/ISRUC_INSTRUCTIONS.md`](MMNet_research/foundation/ISRUC_INSTRUCTIONS.md).
   Takes ~10 minutes once the data exists. **Dropping it is defensible** —
   Sleep-EDF already provides an external corpus. Do not delay submission for it.
-- **Architecture figure**: swap in `figures/mm_architecture_v4.drawio` (or the
-  ready-made `figures/fig_architecture_v4.pdf`). **Do not use v3** — it draws a
-  model that was never trained.
+- **Architecture figure**: `figures/mm_architecture.drawio` — the paper's own
+  figure, updated in place — has the frozen-LaBraM block, the CardioCNN block
+  and the new parameter counts. **It still needs exporting to PDF from
+  diagrams.net** (no draw.io CLI on the training box) and overwriting
+  `figures/fig_architecture.pdf`. Regenerate the source with
+  `python MMNet_research/figures/make_drawio.py`. Ignore `mm_architecture_v3.*`
+  — it draws a model that was never trained.
+- **Pre-existing inconsistency I did not silently "fix".** The architecture
+  figure and §4.2 describe *cross-modal attention* fusion (99,456 p), but every
+  reported number — submitted **and** final — comes from `fusion="concat"`
+  (24,704 p), and the figure's BiLSTM was drawn at `hidden=128` while the model
+  uses 256. I corrected the BiLSTM and head counts to the trained model but
+  **left the fusion block as attention**, because changing it alters what the
+  paper claims the architecture *is*, which is your call. Either re-draw the
+  fusion as concatenation and adjust §4.2, or state explicitly that the reported
+  configuration uses concatenation and that attention performs equivalently
+  (which §5 already says).
 - `\stale{}` red markers remain on figures whose underlying runs changed; remove
   each wrapper as its figure is regenerated.
 
