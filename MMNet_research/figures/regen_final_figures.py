@@ -122,6 +122,71 @@ def fig_ahi(out):
     return rho, p, len(xs)
 
 
+def fig_ablation(out):
+    """Grouped bars: what each modality's removal costs each head.
+
+    Drawn from the 27-shard grid, not the seed-42 predictions, because the
+    ablation is a retraining experiment rather than a view of one model.
+    """
+    import glob
+    rows = {}
+    for p in glob.glob(os.path.join(FINAL, "ablation_shards", "*.json")):
+        for _, r in json.load(open(p)).items():
+            rows.setdefault(r["condition"], []).append(r)
+    fm = json.load(open(os.path.join(FINAL, "final_model.json")))
+    base_a = float(np.mean(np.concatenate([fm[k]["acc"] for k in sorted(fm)])))
+    base_u = float(np.nanmean(np.concatenate([fm[k]["auc"] for k in sorted(fm)])))
+    order = ["-EEG", "-EOG", "-EMG", "-SpO2", "-pulse/HRV", "-ECG",
+             "-airflow", "-effort", "-all cardio"]
+    labels = ["EEG", "EOG", "EMG", "SpO$_2$", "pulse/HRV", "ECG",
+              "airflow", "effort", "all cardio"]
+    da, du = [], []
+    for c in order:
+        rs = sorted(rows[c], key=lambda x: x["seed"])
+        da.append(base_a - float(np.mean(np.concatenate([r["acc"] for r in rs]))))
+        du.append(base_u - float(np.nanmean(np.concatenate([r["auc"] for r in rs]))))
+    x = np.arange(len(order)); w = 0.38
+    fig, ax = plt.subplots(figsize=(7.0, 3.0))
+    ax.bar(x - w / 2, da, w, color="#4a72b0", label="staging accuracy")
+    ax.bar(x + w / 2, du, w, color="#b8607a", label="respiratory AUC")
+    ax.axhline(0, color="0.3", lw=0.8)
+    ax.set_xticks(x); ax.set_xticklabels(labels, rotation=30, ha="right")
+    ax.set_ylabel("drop when removed")
+    ax.legend(frameon=False, fontsize=8)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight"); plt.close(fig)
+    return dict(zip(labels, zip(np.round(da, 4), np.round(du, 4))))
+
+
+def fig_learning_curve(out):
+    """Both heads against training-set size, mean +- SD over the ten folds."""
+    import glob
+    pts = []
+    for f in sorted(glob.glob(os.path.join(FINAL, "lc_shards", "*.json"))):
+        v = list(json.load(open(f)).values())
+        pts.append((float(np.mean([x["n_train"] for x in v])),
+                    np.array([x["acc"] for x in v]),
+                    np.array([x["auc"] for x in v])))
+    pts.sort(key=lambda t: t[0])
+    n = [p[0] for p in pts]
+    fig, ax = plt.subplots(figsize=(4.2, 3.1))
+    for vals, colour, lab in ((1, "#4a72b0", "staging accuracy"),
+                              (2, "#b8607a", "respiratory AUC")):
+        m = np.array([np.nanmean(p[vals]) for p in pts])
+        s = np.array([np.nanstd(p[vals], ddof=1) for p in pts])
+        ax.plot(n, m, "o-", color=colour, lw=1.6, ms=4, label=lab)
+        ax.fill_between(n, m - s, m + s, color=colour, alpha=0.15, linewidth=0)
+    ax.set_xlabel("training patients")
+    ax.set_ylabel("score")
+    ax.legend(frameon=False, fontsize=8, loc="lower right")
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight"); plt.close(fig)
+    return [(int(p[0]), round(float(np.mean(p[1])), 4), round(float(np.nanmean(p[2])), 4))
+            for p in pts]
+
+
 def main():
     P = np.load(os.path.join(FINAL, "predictions_seed42.npz"))
     C = np.load(os.path.join(FINAL, "curves_seed42.npz"))
@@ -135,6 +200,14 @@ def main():
 
     rho, p, n = fig_ahi(os.path.join(HERE, "fig_ahi.pdf"))
     print("fig_ahi.pdf         rho %.3f  p %.3g  n %d" % (rho, p, n))
+
+    d = fig_ablation(os.path.join(HERE, "fig_ablation.pdf"))
+    print("fig_ablation.pdf    (acc drop, auc drop):")
+    for k, v in d.items():
+        print("      %-12s %+.4f  %+.4f" % (k, v[0], v[1]))
+
+    lc = fig_learning_curve(os.path.join(HERE, "fig_learning_curve.pdf"))
+    print("fig_learning_curve.pdf  n_train / acc / auc:", lc)
 
     print("\nNOT regenerated: fig_mm_perclass.pdf -- the ablation grid did not "
           "store per-class F1, so the neural-only comparison does not exist.")
