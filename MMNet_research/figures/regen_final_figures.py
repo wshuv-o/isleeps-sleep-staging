@@ -187,6 +187,35 @@ def fig_learning_curve(out):
             for p in pts]
 
 
+def fig_perclass(out):
+    """Per-class F1, neural-only against neural+cardio.
+
+    Needs neural_only_pcf.json, which exists only because the ablation grid did
+    not retain per-class F1 and the condition had to be re-run. Returns None if
+    that run has not finished, so this script stays usable without it.
+    """
+    src = os.path.join(FINAL, "neural_only_pcf.json")
+    if not os.path.exists(src):
+        return None
+    no = json.load(open(src))
+    if not no:
+        return None
+    npcf = np.concatenate([no[k]["pcf"] for k in sorted(no)], axis=0).mean(0)
+    fpcf = np.array([json.load(open(os.path.join(FINAL, "derived_seed42.json")))
+                     ["per_class_f1"][s] for s in STAGES])
+    x = np.arange(5); w = 0.38
+    fig, ax = plt.subplots(figsize=(4.6, 3.0))
+    ax.bar(x - w / 2, npcf, w, color="#8a9099", label="neural only")
+    ax.bar(x + w / 2, fpcf, w, color="#4a72b0", label="neural + cardiorespiratory")
+    ax.set_xticks(x); ax.set_xticklabels(STAGES)
+    ax.set_ylabel("per-class F1"); ax.set_ylim(0, 1)
+    ax.legend(frameon=False, fontsize=8)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight"); plt.close(fig)
+    return {STAGES[i]: (round(float(npcf[i]), 4), round(float(fpcf[i]), 4)) for i in range(5)}
+
+
 def main():
     P = np.load(os.path.join(FINAL, "predictions_seed42.npz"))
     C = np.load(os.path.join(FINAL, "curves_seed42.npz"))
@@ -209,8 +238,11 @@ def main():
     lc = fig_learning_curve(os.path.join(HERE, "fig_learning_curve.pdf"))
     print("fig_learning_curve.pdf  n_train / acc / auc:", lc)
 
-    print("\nNOT regenerated: fig_mm_perclass.pdf -- the ablation grid did not "
-          "store per-class F1, so the neural-only comparison does not exist.")
+    pc = fig_perclass(os.path.join(HERE, "fig_mm_perclass.pdf"))
+    if pc is None:
+        print("\nSKIPPED fig_mm_perclass.pdf -- run foundation/run_neural_only_pcf.py first")
+    else:
+        print("fig_mm_perclass.pdf  (neural-only, full):", pc)
 
 
 if __name__ == "__main__":

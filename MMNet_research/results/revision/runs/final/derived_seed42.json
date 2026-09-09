@@ -112,5 +112,28 @@
    "sd": 0.1001,
    "n": 38
   }
- }
+ },
+ "per_event_type_auc": {
+  "hypopnea": {
+   "n_positive": 11605,
+   "auc": 0.7475
+  },
+  "obstructive": {
+   "n_positive": 1661,
+   "auc": 0.8977
+  },
+  "central": {
+   "n_positive": 831,
+   "auc": 0.9351
+  },
+  "mixed": {
+   "n_positive": 67,
+   "auc": 0.955
+  },
+  "rera": {
+   "n_positive": 219,
+   "auc": 0.74
+  }
+ },
+ "per_event_type_note": "96 subjects aligned; negatives are epochs with no scored event"
 }

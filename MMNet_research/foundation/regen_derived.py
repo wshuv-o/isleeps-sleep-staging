@@ -98,20 +98,36 @@ def main():
         k: dict(acc=round(float(np.mean(v)), 4), sd=round(float(np.std(v, ddof=1)), 4), n=len(v))
         for k, v in sorted(sev_acc.items(), key=lambda kv: SEV_NAMES.index(kv[0]))}
 
-    # ---- per-event-type AUC, if the event labels are available -------------
+    # ---- per-event-type AUC ------------------------------------------------
+    # Aligned PER SUBJECT, not by pooling. The earlier version concatenated all
+    # 97 event-label subjects in sorted key order and compared the length to the
+    # pooled prediction vector, which is in FOLD order over 99 subjects. The
+    # lengths never matched, so every event type was silently skipped and the
+    # table was reported as un-regenerable. per_subject_seed42.json carries each
+    # patient's own apnea scores, which sidesteps the ordering entirely.
     ev = os.path.join(REPO, "MMNet_research", "MMNet_Submission", "all_codes",
                       "results", "npz", "event_labels.npz")
     if os.path.exists(ev):
         E = np.load(ev)
         cols = ["any", "hypopnea", "obstructive", "central", "mixed", "rera"]
+        common = [s for s in ps if s in E.files and len(ps[s]["apnea"]) == len(E[s])]
+        score = np.concatenate([np.asarray(ps[s]["apnea"], float) for s in common])
+        lab = np.concatenate([np.asarray(E[s], int) for s in common])
         per_type = {}
         for i, name in enumerate(cols[1:], start=1):
-            lab = np.concatenate([E[k][:, i] for k in sorted(E.files)]) if E.files and E[E.files[0]].ndim == 2 else None
-            if lab is None or len(lab) != len(asc) or len(np.unique(lab)) < 2:
+            pos = lab[:, i] == 1
+            # negatives are epochs with NO scored event, so each type is judged
+            # against clean breathing rather than against the other event types
+            neg = lab[:, 0] == 0
+            m = pos | neg
+            if pos.sum() < 20 or neg.sum() < 20:
                 continue
-            per_type[name] = round(float(roc_auc_score(lab, asc)), 4)
-        if per_type:
-            out["per_event_type_auc"] = per_type
+            per_type[name] = dict(
+                n_positive=int(pos.sum()),
+                auc=round(float(roc_auc_score(pos[m].astype(int), score[m])), 4))
+        out["per_event_type_auc"] = per_type
+        out["per_event_type_note"] = (
+            "%d subjects aligned; negatives are epochs with no scored event" % len(common))
     else:
         out["per_event_type_auc"] = "event_labels.npz not found -- not regenerated"
 
