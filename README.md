@@ -86,13 +86,21 @@ consistent but not individually significant.
   [`MMNet_research/foundation/ISRUC_INSTRUCTIONS.md`](MMNet_research/foundation/ISRUC_INSTRUCTIONS.md).
   Takes ~10 minutes once the data exists. **Dropping it is defensible** —
   Sleep-EDF already provides an external corpus. Do not delay submission for it.
-- **Architecture figure**: `figures/mm_architecture.drawio` — the paper's own
-  figure, updated in place — has the frozen-LaBraM block, the CardioCNN block
-  and the new parameter counts. **It still needs exporting to PDF from
-  diagrams.net** (no draw.io CLI on the training box) and overwriting
-  `figures/fig_architecture.pdf`. Regenerate the source with
-  `python MMNet_research/figures/make_drawio.py`. Ignore `mm_architecture_v3.*`
-  — it draws a model that was never trained.
+- **Architecture figure — done.** `figures/fig_architecture.pdf` is exported
+  from `figures/mm_architecture.drawio` and carries the frozen-LaBraM block, the
+  CardioCNN block and panel, the real parameter counts, and the signal
+  thumbnails. Regenerate the source with
+  `python MMNet_research/figures/make_drawio.py`, then export with the draw.io
+  desktop CLI:
+
+  ```
+  draw.io.exe --no-sandbox --disable-gpu --export --format pdf --crop       --output fig_architecture.pdf mm_architecture.drawio
+  ```
+
+  **Gotcha that cost an hour:** if any path contains a Windows 8.3 short name
+  (`ESMEAB~1`), the `~` percent-encodes and Electron refuses to load its own
+  `export3.html` with `ERR_BLOCKED_BY_CLIENT`. Invoke via the long path.
+  Ignore `mm_architecture_v3.*` — it draws a model that was never trained.
 - **Pre-existing inconsistency I did not silently "fix".** The architecture
   figure and §4.2 describe *cross-modal attention* fusion (99,456 p), but every
   reported number — submitted **and** final — comes from `fusion="concat"`

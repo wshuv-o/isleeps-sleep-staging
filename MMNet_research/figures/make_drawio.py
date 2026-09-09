@@ -27,12 +27,33 @@ def small(i, label, x, y, w, h, pal):
 def ell(i, label, x, y, w, h, pal=WHITE):
     _cell(i, label, x, y, w, h,
           f"ellipse;whiteSpace=wrap;html=1;fillColor={pal[0]};strokeColor={pal[1]};fontSize=14;fontStyle=1;")
+def img(i, asset, x, y, w, h):
+    """Embed a PNG from arch_assets/ as a base64 data URI.
+
+    The signal thumbnails were originally dropped into draw.io by hand and never
+    saved back -- mm_architecture.drawio carried zero image references, so
+    regenerating it silently lost them. Embedding keeps the .drawio
+    self-contained and the generator authoritative.
+    """
+    import base64
+    d = os.path.join(os.path.dirname(os.path.abspath(__file__)), "arch_assets", asset)
+    b64 = base64.b64encode(open(d, "rb").read()).decode()
+    _cell(i, "", x, y, w, h,
+          f"shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;"
+          f"imageAspect=0;aspect=fixed;image=data:image/png,{b64};")
+
 def txt(i, label, x, y, w, h, italic=False, size=11):
     _cell(i, label, x, y, w, h,
           f"text;html=1;align=center;verticalAlign=middle;fontSize={size};{'fontStyle=2;' if italic else ''}")
-def edge(i, s, t, dashed=False, color="#333333"):
+def edge(i, s, t, dashed=False, color="#333333", exit_=None, entry=None):
     st = f"edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor={color};strokeWidth=1.5;"
     if dashed: st += "dashed=1;"
+    # Fixed anchors where the router's default choice is misleading. Left to
+    # itself it exits car_enc's LEFT side at the encoder centre-line, which puts
+    # the segment exactly on eeg_enc's right edge and reads as a wire between
+    # the two encoders.
+    if exit_: st += f"exitX={exit_[0]};exitY={exit_[1]};exitDx=0;exitDy=0;"
+    if entry: st += f"entryX={entry[0]};entryY={entry[1]};entryDx=0;entryDy=0;"
     cells.append(f'<mxCell id="{i}" style="{st}" edge="1" parent="1" source="{s}" target="{t}">'
                  f'<mxGeometry relative="1" as="geometry"/></mxCell>')
 
@@ -43,32 +64,39 @@ txt("title", "<b>Two-stream multimodal multi-task network</b><br>"
     "f<sub>θ</sub> : (f<sup>eeg</sup>, z<sup>fnd</sup>, x<sup>car</sup>) → (ŷ<sup>stg</sup>, ŷ<sup>apn</sup>)"
     "   ·   2,764,774 trainable + 5,819,936 frozen",
     40, 8, 620, 44, size=12)
-txt("newkey", "<i><font color=\"#C0392B\">red outline = new since submission</font></i>", 420, 40, 260, 20, size=10)
+txt("newkey", "<i><font color=\"#C0392B\">red outline = new since submission</font></i>", 1060, 14, 300, 20, size=10)
 
 # ===== PANEL A: main flow =====
-node("eeg_feat", "<b>Expert physiology</b><br>f<sup>eeg</sup> ∈ ℝ<sup>188</sup><br>band power, spindle, Hjorth", 20, 70, 175, 74, EEG)
+# real iSLEEPS signal previews (make_arch_assets.py), one per stream
+img("eeg_img", "eeg_traces.png", 60, 62, 150, 116)
+img("car_img", "cardio_signals.png", 420, 62, 165, 120)
+txt("eeg_img_cap", "<i>7-channel neural montage</i>", 45, 182, 180, 16, size=10)
+txt("car_img_cap", "<i>7-channel cardiorespiratory</i>", 415, 186, 180, 16, size=10)
+
+node("eeg_feat", "<b>Expert physiology</b><br>f<sup>eeg</sup> ∈ ℝ<sup>188</sup><br>band power, spindle, Hjorth", 20, 220, 175, 74, EEG)
 # NEW: the second, imported prior. Frozen -- red stroke marks it as new since submission.
 node("eeg_fnd", "<b>Frozen LaBraM</b><br>z<sup>fnd</sup> ∈ ℝ<sup>200</sup> · 5.82 M frozen<br>4 EEG channels, no gradient",
-     205, 70, 175, 74, ("#D4E2F5", "#C0392B"), extra="strokeWidth=2;")
+     205, 220, 175, 74, ("#D4E2F5", "#C0392B"), extra="strokeWidth=2;")
 node("car_feat", "<b>Raw cardio tensor</b><br>x<sup>car</sup> ∈ ℝ<sup>7×750</sup> = 5250<br>per-subject z-score, no summary",
-     420, 70, 190, 74, CAR)
-ell("catE", "C", 185, 158, 30, 30)
-node("eeg_enc", "<b>EEG encoder</b>  φ<sub>eeg</sub><br>FeatMLP: 388 → e ∈ ℝ<sup>128</sup><br>66,816 p", 105, 210, 190, 74, EEG)
+     420, 220, 190, 74, CAR)
+ell("catE", "C", 185, 308, 30, 30)
+node("eeg_enc", "<b>EEG encoder</b>  φ<sub>eeg</sub><br>FeatMLP: 388 → e ∈ ℝ<sup>128</sup><br>66,816 p", 105, 360, 190, 74, EEG)
 node("car_enc", "<b>Cardio encoder</b>  φ<sub>car</sub><br>CardioCNN → c ∈ ℝ<sup>64</sup><br>3 conv stages · 155,232 p",
-     420, 210, 190, 74, ("#F7DFC9", "#C0392B"), extra="strokeWidth=2;")
-ell("concatC", "C", 280, 310, 30, 30)
-node("fusion", "<b>Cross-modal fusion</b><br>2 tokens → attention → z ∈ ℝ<sup>128</sup><br>99,456 p", 175, 360, 240, 74, FUS)
-node("bilstm", "<b>BiLSTM</b>  (2 layers, bidirectional)<br>context L = 20 epochs · h<sub>t</sub> ∈ ℝ<sup>512</sup><br>2,367,488 p", 155, 490, 280, 74, LSTM)
-node("stg_head", "<b>Staging head</b><br>ŷ<sub>t</sub><sup>stg</sup> = softmax(W<sub>s</sub> h<sub>t</sub>)<br>+ HMM Viterbi decode<br>2,565 p", 60, 640, 195, 96, STG)
-node("rsp_head", "<b>Respiratory head</b><br>ŷ<sub>t</sub><sup>apn</sup> = σ(W<sub>2</sub>[h<sub>t</sub> ; c<sub>t</sub>])<br>direct cardio bypass<br>147,969 p", 335, 640, 195, 96, RSP)
+     420, 360, 190, 74, ("#F7DFC9", "#C0392B"), extra="strokeWidth=2;")
+ell("concatC", "C", 280, 460, 30, 30)
+node("fusion", "<b>Cross-modal fusion</b><br>2 tokens → attention → z ∈ ℝ<sup>128</sup><br>99,456 p", 175, 510, 240, 74, FUS)
+node("bilstm", "<b>BiLSTM</b>  (2 layers, bidirectional)<br>context L = 20 epochs · h<sub>t</sub> ∈ ℝ<sup>512</sup><br>2,367,488 p", 155, 640, 280, 74, LSTM)
+node("stg_head", "<b>Staging head</b><br>ŷ<sub>t</sub><sup>stg</sup> = softmax(W<sub>s</sub> h<sub>t</sub>)<br>+ HMM Viterbi decode<br>2,565 p", 60, 790, 195, 96, STG)
+node("rsp_head", "<b>Respiratory head</b><br>ŷ<sub>t</sub><sup>apn</sup> = σ(W<sub>2</sub>[h<sub>t</sub> ; c<sub>t</sub>])<br>direct cardio bypass<br>147,969 p", 335, 790, 195, 96, RSP)
 
 edge("e1a", "eeg_feat", "catE"); edge("e1b", "eeg_fnd", "catE"); edge("e1", "catE", "eeg_enc")
 edge("e2", "car_feat", "car_enc")
-edge("e3", "eeg_enc", "fusion"); edge("e4", "car_enc", "fusion")
+edge("e3", "eeg_enc", "fusion")
+edge("e4", "car_enc", "fusion", exit_=(0.5, 1), entry=(1, 0.5))
 edge("e5", "fusion", "bilstm")
 edge("e6", "bilstm", "stg_head"); edge("e7", "bilstm", "rsp_head")
 edge("e8", "car_enc", "rsp_head", dashed=True, color="#C4763A")
-txt("bypass_lbl", "<i>direct c<sub>t</sub></i>", 548, 430, 70, 20)
+txt("bypass_lbl", "<i>direct c<sub>t</sub></i>", 548, 580, 70, 20)
 
 # ===== PANEL B: module detail =====
 txt("detail_hdr", "<b>Module detail</b>", 700, 12, 320, 26, size=13)
@@ -106,9 +134,10 @@ edge("cf_add_ln", "cf_add", "cf_ln"); edge("cf_ln_ff", "cf_ln", "cf_ff"); edge("
 edge("cf_resid", "cf_tok", "cf_add", color="#666666")
 
 # ===== PANEL C: CardioCNN, the block that replaced the 14 engineered features =====
-panel("cc_panel", "CardioCNN  (replaces the 14 engineered cardio features)", 1060, 50, 300, 410)
-txt("cc_note", "<i>kernels sized to respiratory physiology:<br>events last 10–30 s, so kernels are wide<br>"
-    "and the stack downsamples hard</i>", 1070, 82, 280, 46)
+panel("cc_panel", "CardioCNN", 1060, 50, 300, 410)
+txt("cc_note", "<i>replaces the 14 engineered cardio features<br>"
+    "kernels sized to respiratory physiology: events<br>"
+    "last 10–30 s, so kernels are wide and the<br>stack downsamples hard</i>", 1070, 78, 280, 56)
 cc_items = [("cc1", "Conv(7→48, k=25, s=2)  BN  GELU"), ("cc2", "MaxPool 4  ·  Dropout"),
             ("cc3", "Conv(48→96, k=15)  BN  GELU"), ("cc4", "MaxPool 4  ·  Dropout"),
             ("cc5", "Conv(96→96, k=7)  BN  GELU"), ("cc6", "concat [mean , max]"),
@@ -129,7 +158,7 @@ txt("obj", "Joint objective:   L = CE<sub>√w</sub>(ŷ<sup>stg</sup>, y<sup>stg
 xml = ('<mxfile host="app.diagrams.net">'
        '<diagram name="MM-Net architecture" id="mmnet">'
        '<mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" '
-       'connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1420" pageHeight="1040" '
+       'connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1420" pageHeight="1190" '
        'math="0" shadow="0"><root>'
        '<mxCell id="0"/><mxCell id="1" parent="0"/>'
        + "".join(cells) +
