@@ -126,9 +126,7 @@ DASHED_FROZEN = "dashed=1;dashPattern=6 4;"
 
 # ---------------------------------------------------------------- layer blocks
 # Drawn with draw.io's own `cube` primitive rather than pasted in as rendered
-# images, so every block stays selectable, movable and recolourable in the
-# editor. An earlier revision embedded matplotlib PNGs, which looked similar and
-# was useless the moment anyone wanted to change a label.
+# images, so every block stays selectable, movable and recolourable in the editor.
 C_IN, C_CONV, C_NORM = "#C8CCD2", "#2F4FD0", "#ECEFF2"
 C_POOL, C_FC, C_OUT = "#E34EE0", "#3FAE5A", "#F0A03C"
 SPINE = ["#D92B2B", "#F0821E", "#F5D020", "#3FAE5A"]     # tinted leading edges
@@ -146,19 +144,16 @@ def cube(i, x, y, w, h, fill, size=9):
 
 def layer_row(prefix, stages, x0, ycenter, pitch=74, hmax=104, plane_w=7,
               plane_step=5, main_w=22, flat_w=26):
-    """A horizontal run of layer blocks with shape above and operation below.
+    """A horizontal run of layer blocks, shape above and operation below.
 
     stages: (kind, shape_label, op_label, height_frac, n_planes). A conv is a
     BANK -- several thin sheets with tinted edges then the body -- because a
     convolution emits many maps and a single sheet would say it emits one.
 
-    Blocks are CENTRED on ycenter rather than standing on a shared baseline.
-    Bottom-aligning them made the row read as a skyline of pillars rising from a
-    floor; centring puts the data path on one axis, which is how these figures
-    are drawn everywhere, and lets the connecting arrows run straight through
-    the middle of every block regardless of its height.
-
-    Returns the ids, so the caller can wire the row into the main flow.
+    Blocks are CENTRED on ycenter, not stood on a shared baseline: bottom
+    alignment made the row read as a skyline of pillars, whereas centring puts
+    the data path on one axis and lets the connectors run through the middle of
+    every block whatever its height.
     """
     ids = []
     op_baseline = ycenter + hmax // 2 + 8          # one line for every op label
@@ -170,9 +165,8 @@ def layer_row(prefix, stages, x0, ycenter, pitch=74, hmax=104, plane_w=7,
             for j in range(npl):
                 cube(f"{prefix}{k}s{j}", x + j * plane_step, y, plane_w, h,
                      SPINE[j % len(SPINE)], size=5)
-            bx = x + npl * plane_step
             cid = f"{prefix}{k}"
-            cube(cid, bx, y, main_w, h, C_CONV)
+            cube(cid, x + npl * plane_step, y, main_w, h, C_CONV)
             wtot = npl * plane_step + main_w
         else:
             cid = f"{prefix}{k}"
@@ -180,31 +174,69 @@ def layer_row(prefix, stages, x0, ycenter, pitch=74, hmax=104, plane_w=7,
             cube(cid, x, y, w, h, KIND_COLOR[kind])
             wtot = w
         ids.append(cid)
-        # the shape follows its own block's top; the operation sits on the
-        # shared baseline, so the names read as a row rather than a zigzag
-        txt(f"{prefix}{k}_sh", f"<b>{shape}</b>", x - 16, y - 20, wtot + 32, 14, size=8)
-        txt(f"{prefix}{k}_op", op, x - 18, op_baseline, wtot + 36, 24, size=8)
+        txt(f"{prefix}{k}_sh", f"<b>{shape}</b>", x - 16, y - 19, wtot + 32, 13, size=8)
+        txt(f"{prefix}{k}_op", op, x - 18, op_baseline, wtot + 36, 22, size=8)
     for a, b in zip(ids[:-1], ids[1:]):
         edge(f"{prefix}_{a}_{b}", a, b, w=1.0, color="#5A6570",
              exit_=(1, 0.5), entry=(0, 0.5))
     return ids
 
+
+# ============================================================ how much text
+# Calibrated against the reference figures rather than by taste. Those figures
+# consistently carry FOUR things and nothing else:
+#
+#   tensor shapes above each block      operation names below each block
+#   a title per grouped stage           a colour legend
+#
+# and they consistently omit equations, parameter counts on every block, and
+# explanatory prose. So the equations that were here (the two head read-outs,
+# the tokenizer, the attention formula, the residual identity, the joint
+# objective) are gone: they are stated in the paper, where a reader can follow
+# them, and on a figure they only compete with the picture. Parameter counts
+# survive once, in the footer, because the model's size is a claim the paper
+# makes and one line carries it.
+
+def container(cid, title, x, y, w, h, stroke="#8A9099"):
+    """A grouped stage: title bar at the top, blocks inside."""
+    # solid, deliberately: a dashed outline already means "frozen" in this
+    # figure, and dashing the group boxes too would make the legend a lie
+    _cell(cid, title, x, y, w, h,
+          f"rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor={stroke};"
+          f"verticalAlign=top;fontStyle=1;fontSize=11;spacingTop=3;arcSize=4;"
+          f"opacity=70;")
+
+
+def legend(x, y):
+    """Colour key, as the reference figures carry."""
+    items = [("input", C_IN), ("conv", C_CONV), ("pool", C_POOL),
+             ("linear", C_FC), ("norm", C_NORM), ("output", C_OUT)]
+    for k, (name, col) in enumerate(items):
+        xx = x + k * 84
+        _cell(f"lg{k}", "", xx, y, 15, 15,
+              f"rounded=0;whiteSpace=wrap;html=1;fillColor={col};strokeColor=#2B2F33;")
+        txt(f"lg{k}t", name, xx + 19, y - 1, 62, 16, size=9, align="left")
+
+
 # ===================================================================== title
-txt("title", "<b>Two-stream multimodal multi-task network</b>  ·  "
-    "f<sub>&#952;</sub> : (f<sup>eeg</sup>, z<sup>fnd</sup>, x<sup>car</sup>) &#8594; "
-    "(&#375;<sup>stg</sup>, &#375;<sup>apn</sup>)", 30, 12, 760, 26, size=13, align="left")
+txt("title", "<b>Two-stream multimodal multi-task network</b>", 26, 14, 460, 22,
+    size=14, align="left")
+txt("subtitle", "f<sub>&#952;</sub> : (f<sup>eeg</sup>, z<sup>fnd</sup>, x<sup>car</sup>) "
+    "&#8594; (&#375;<sup>stg</sup>, &#375;<sup>apn</sup>)", 26, 36, 460, 18,
+    size=11, align="left")
 
 # ============================================== NEURAL LANE (upper, L to R)
-img("eeg_img", "eeg_traces.png", 34, 74, 128, 100)
-txt("eeg_cap", "<i>7 ch @ 100 Hz, 30 s</i>", 24, 178, 150, 14, size=8)
+img("eeg_img", "eeg_traces.png", 26, 78, 132, 102)
+txt("eeg_cap", "<i>7 ch @ 100 Hz, 30 s</i>", 20, 184, 146, 14, size=8)
 
-node("eeg_feat", "<b>Expert physiology</b><br>f<sup>eeg</sup> &#8712; &#8477;<sup>188</sup> · "
-     "band power,<br>spindle, Hjorth", 190, 66, 172, 66, EEG)
-node("eeg_fnd", "<b>Frozen LaBraM</b> &#10052;<br>z<sup>fnd</sup> &#8712; &#8477;<sup>200</sup> · "
-     "5.82 M frozen<br>4 EEG channels, no gradient", 190, 146, 172, 66, EEG, extra=DASHED_FROZEN)
-ell("catE", "C", 382, 126, 26, 26)
-node("eeg_enc", "<b>EEG encoder</b>  &#966;<sub>eeg</sub><br>"
-     "FeatMLP: 388 &#8594; e &#8712; &#8477;<sup>128</sup> · 66,816 p", 428, 106, 200, 66, EEG)
+node("eeg_feat", "<b>Expert physiology</b><br>f<sup>eeg</sup> &#8712; &#8477;<sup>188</sup>"
+     "<br>band power, spindle, Hjorth", 186, 74, 176, 62, EEG)
+node("eeg_fnd", "<b>Frozen LaBraM</b> &#10052;<br>z<sup>fnd</sup> &#8712; &#8477;<sup>200</sup>"
+     "<br>4 EEG channels, no gradient", 186, 148, 176, 62, EEG, extra=DASHED_FROZEN)
+ell("catE", "C", 382, 128, 26, 26)
+
+container("eeg_box", "EEG encoder  &#966;<sub>eeg</sub>  &#183;  FeatMLP 388 &#8594; 128",
+          430, 66, 406, 196, EEG[1])
 _u = lambda n: math.log10(n) / math.log10(388.0)
 layer_row("fe", [("in", "388", "input", _u(388), 1),
                  ("fc", "128", "Linear W&#8321;", _u(128), 1),
@@ -212,18 +244,18 @@ layer_row("fe", [("in", "388", "input", _u(388), 1),
                  ("fc", "128", "Linear W&#8322;", _u(128), 1),
                  ("norm", "128", "LN + GELU", _u(128), 1),
                  ("out", "128", "e", _u(128), 1)],
-          x0=428, ycenter=284, pitch=62, hmax=96)
+          x0=452, ycenter=176, pitch=62, hmax=88)
 
 # =========================================== CARDIORESPIRATORY LANE (lower)
-img("car_img", "cardio_signals.png", 30, 388, 140, 104)
-txt("car_cap", "<i>7 ch @ 25 Hz, 30 s</i>", 24, 496, 150, 14, size=8)
+img("car_img", "cardio_signals.png", 22, 396, 140, 100)
+txt("car_cap", "<i>7 ch @ 25 Hz, 30 s</i>", 20, 500, 146, 14, size=8)
 
 node("car_feat", "<b>Raw cardiorespiratory tensor</b><br>"
-     "x<sup>car</sup> &#8712; &#8477;<sup>7&#215;750</sup> = 5,250<br>"
-     "per-subject z-score, no summary", 190, 402, 172, 76, CAR)
-node("car_enc", "<b>Cardio encoder</b>  &#966;<sub>car</sub><br>"
-     "CardioCNN: 7&#215;750 &#8594; c &#8712; &#8477;<sup>64</sup> · 155,232 p",
-     428, 402, 200, 76, CAR)
+     "x<sup>car</sup> &#8712; &#8477;<sup>7&#215;750</sup><br>per-subject z-score",
+     186, 402, 176, 66, CAR)
+
+container("car_box", "Cardio encoder  &#966;<sub>car</sub>  &#183;  "
+          "CardioCNN 7&#215;750 &#8594; 64", 430, 372, 570, 210, CAR[1])
 _t = lambda n: math.log10(n) / math.log10(750.0)
 layer_row("cc", [("in", "7&#215;750", "raw", _t(750), 1),
                  ("conv", "48&#215;375", "Conv 25, s2<br>BN+GELU", _t(375), 4),
@@ -233,106 +265,81 @@ layer_row("cc", [("in", "7&#215;750", "raw", _t(750), 1),
                  ("conv", "96&#215;23", "Conv 7<br>BN+GELU", _t(23), 5),
                  ("pool", "192", "mean &#8853; max", _t(4), 1),
                  ("out", "64", "Linear", _t(3), 1)],
-          x0=196, ycenter=578, pitch=74, hmax=104)
-txt("car_iso_cap", "<i>replaces the 14 engineered cardiorespiratory features</i>",
-    196, 664, 560, 14, size=8)
+          x0=452, ycenter=482, pitch=67, hmax=96)
 
-# ================================================ CONVERGE, then L to R
-ell("concatC", "C", 786, 282, 26, 26)
-node("fusion", "<b>Cross-modal fusion</b><br>2 tokens &#8594; attention<br>"
-     "&#8594; z &#8712; &#8477;<sup>128</sup> · 99,456 p", 846, 256, 190, 78, FUS)
-node("bilstm", "<b>BiLSTM</b> (2 layers, bidirectional)<br>"
-     "L = 20 epochs (10 min) · 128 &#8594; 2 &#215; 256<br>"
-     "h<sub>t</sub> &#8712; &#8477;<sup>512</sup> · 2,367,488 p", 1074, 250, 220, 90, LSTM)
-node("stg_head", "<b>Staging head</b><br>softmax(W<sub>s</sub> h<sub>t</sub>) · 512 &#8594; 5<br>"
-     "+ HMM Viterbi decode · 2,565 p", 1338, 154, 224, 82, STG)
-node("rsp_head", "<b>Respiratory head</b><br>"
-     "&#963;(W<sub>2</sub> GELU(W<sub>1</sub>[h<sub>t</sub> ; c<sub>t</sub>]))<br>"
-     "576 &#8594; 256 &#8594; 1 · direct cardio bypass<br>147,969 p", 1338, 344, 224, 88, RSP)
+# ============================================================ CONVERGE
+ell("concatC", "C", 1040, 318, 26, 26)
 
-# ==================================================================== wiring
-edge("e1a", "eeg_feat", "catE"); edge("e1b", "eeg_fnd", "catE")
-edge("e1", "catE", "eeg_enc")
-edge("e2", "car_feat", "car_enc")
-edge("e3", "eeg_enc", "concatC", exit_=(1, 0.5), entry=(0, 0.5))
-edge("e4", "car_enc", "concatC", exit_=(1, 0.5), entry=(0.5, 1))
-edge("e5", "concatC", "fusion")
-edge("e6", "fusion", "bilstm")
-edge("e7", "bilstm", "stg_head")
-edge("e8", "bilstm", "rsp_head")
-# the bypass: c_t reaches the respiratory head without passing through fusion
-# or the recurrence, so desaturation and effort cues are not diluted
-edge("e9", "car_enc", "rsp_head", dashed=True, color="#C4763A",
-     exit_=(1, 0.25), entry=(0, 0.5))
-txt("bypass_lbl", "<i>direct c<sub>t</sub></i>", 1150, 404, 90, 16, size=10)
-# each encoder box is expanded by the isometric block beneath it
-
-# ======================================== the one side panel: fusion detail
-# Same visual language as the encoder rows: cube sheets on one centreline,
-# shape above, operation on a shared baseline. The four heads are the exception
-# -- they are PARALLEL, so they stack across the axis rather than along it, and
-# the stack is centred on the same line so the path stays readable.
+container("cf_box", "Cross-modal fusion  &#183;  2 tokens &#8594; attention &#8594; "
+          "z &#8712; &#8477;<sup>128</sup>", 1096, 232, 500, 200, FUS[1])
+# same block language as the encoders, on its own centreline. The four heads are
+# PARALLEL, so they stack across the axis rather than along it.
 F_TOK, F_HEAD, F_MAIN = "#BBD3F0", "#7FA8DC", "#4A80C8"
-F_NORM, F_OUT = "#ECEFF2", "#F0A03C"
-CFY = 596                                     # the panel's centreline
-CF_SH = 528                                   # shape labels
-CF_OP = 654                                   # operation labels, one baseline
-
-panel("cf_panel", "Cross-modal fusion &#8212; the one block detailed separately",
-      846, 448, 730, 274)
-txt("cf_why", "<i>attention does not expand compactly in line; every other block is "
-    "shown inline above</i>", 858, 474, 706, 14, size=8)
+CFY, CF_SH, CF_OP = 336, 274, 382
 
 
 def _cf(cid, x, w, h, fill, shape, op):
     cube(cid, x, CFY - h // 2, w, h, fill)
-    txt(cid + "_sh", f"<b>{shape}</b>", x - 26, CF_SH, w + 52, 14, size=8)
-    txt(cid + "_op", op, x - 30, CF_OP, w + 60, 26, size=8)
+    txt(cid + "_sh", f"<b>{shape}</b>", x - 24, CF_SH, w + 48, 13, size=8)
+    txt(cid + "_op", op, x - 26, CF_OP, w + 52, 15, size=8)
 
 
-_cf("cf_tok", 884, 30, 92, F_TOK, "2&#215;128", "tokenize<br>T = [W<sub>e</sub>e ; W<sub>c</sub>c] + M")
-# four parallel heads, stacked across the axis
+_cf("cf_tok", 1120, 26, 74, F_TOK, "2&#215;128", "tokenize")
 for k in range(4):
-    cube(f"cf_h{k}", 1000, CFY - 49 + k * 26, 40, 20, F_HEAD, size=6)
-txt("cf_h_sh", "<b>4 heads</b>", 974, CF_SH, 92, 14, size=8)
-txt("cf_h_op", "softmax(Q<sub>i</sub>K<sub>i</sub><sup>&#8868;</sup>/&#8730;d<sub>k</sub>)V<sub>i</sub>",
-    964, CF_OP, 112, 26, size=8)
-_cf("cf_concat", 1116, 30, 86, F_MAIN, "128", "concat &#183; W<sub>o</sub>")
-ell("cf_add", "+", 1222, CFY - 13, 26, 26)
-txt("cf_add_op", "residual", 1198, CF_OP, 74, 26, size=8)
-_cf("cf_ln", 1300, 26, 78, F_NORM, "128", "LayerNorm")
-_cf("cf_ff", 1388, 30, 84, F_MAIN, "128&#215;256", "Feed-Forward W<sub>f</sub>")
-_cf("cf_fuse", 1494, 26, 70, F_OUT, "128", "fuse &#8594; z")
+    cube(f"cf_h{k}", 1214, CFY - 41 + k * 22, 34, 17, F_HEAD, size=5)
+txt("cf_h_sh", "<b>4 heads</b>", 1190, CF_SH, 82, 13, size=8)
+txt("cf_h_op", "attention", 1188, CF_OP, 86, 15, size=8)
+_cf("cf_concat", 1308, 26, 68, F_MAIN, "128", "concat &#183; W<sub>o</sub>")
+ell("cf_add", "+", 1388, CFY - 12, 24, 24)
+txt("cf_add_op", "residual", 1366, CF_OP, 68, 15, size=8)
+_cf("cf_ln", 1452, 22, 62, C_NORM, "128", "LayerNorm")
+_cf("cf_fuse", 1528, 24, 56, C_OUT, "128", "feed-forward")
 
 for k in range(4):
     edge(f"cf_t{k}", "cf_tok", f"cf_h{k}", w=1.0, color="#5A6570",
          exit_=(1, 0.5), entry=(0, 0.5))
     edge(f"cf_c{k}", f"cf_h{k}", "cf_concat", w=1.0, color="#5A6570",
          exit_=(1, 0.5), entry=(0, 0.5))
-for a, b in (("cf_concat", "cf_add"), ("cf_add", "cf_ln"),
-             ("cf_ln", "cf_ff"), ("cf_ff", "cf_fuse")):
+for a, b in (("cf_concat", "cf_add"), ("cf_add", "cf_ln"), ("cf_ln", "cf_fuse")):
     edge(f"cf_{a}_{b}", a, b, w=1.0, color="#5A6570", exit_=(1, 0.5), entry=(0, 0.5))
-# the residual: T skips the heads and rejoins at the add
 edge("cf_res", "cf_tok", "cf_add", color="#9AA2AB", dashed=True, w=1.0,
      exit_=(0.5, 1), entry=(0.5, 1))
-txt("cf_cap", "<i>T&#771; = LN(T + concat<sub>i</sub> head<sub>i</sub>).  Ablations replace "
-    "attention with plain concatenation [e ; c] and with a neural-only variant.</i>",
-    858, 696, 706, 14, size=8)
+
+node("bilstm", "<b>BiLSTM</b>  2 layers, bidirectional<br>context L = 20 epochs (10 min)"
+     "<br>h<sub>t</sub> &#8712; &#8477;<sup>512</sup>", 1660, 292, 208, 76, LSTM)
+node("stg_head", "<b>Staging head</b><br>512 &#8594; 5<br>+ HMM Viterbi decode",
+     1660, 120, 208, 70, STG)
+node("rsp_head", "<b>Respiratory head</b><br>[h<sub>t</sub> ; c<sub>t</sub>] &#183; "
+     "576 &#8594; 256 &#8594; 1<br>direct cardio bypass", 1660, 470, 208, 70, RSP)
+
+# ==================================================================== wiring
+edge("e1a", "eeg_feat", "catE"); edge("e1b", "eeg_fnd", "catE")
+edge("e1", "catE", "eeg_box", entry=(0, 0.5))
+edge("e2", "car_feat", "car_box", entry=(0, 0.5))
+edge("e3", "eeg_box", "concatC", exit_=(1, 0.5), entry=(0, 0.5))
+edge("e4", "car_box", "concatC", exit_=(1, 0.5), entry=(0.5, 1))
+edge("e5", "concatC", "cf_box", entry=(0, 0.5))
+edge("e6", "cf_box", "bilstm", exit_=(1, 0.5), entry=(0, 0.5))
+edge("e7", "bilstm", "stg_head")
+edge("e8", "bilstm", "rsp_head")
+# the bypass: c reaches the respiratory head without passing through fusion
+# or the recurrence
+edge("e9", "car_box", "rsp_head", dashed=True, color="#C4763A",
+     exit_=(1, 0.85), entry=(0, 0.5))
+txt("bypass_lbl", "<i>direct c<sub>t</sub></i>", 1470, 560, 90, 16, size=10)
 
 # =================================================================== footer
-txt("obj", "Joint objective:  L = CE<sub>&#8730;w</sub>(&#375;<sup>stg</sup>, y<sup>stg</sup>) + "
-    "&#955; BCE<sub>pw</sub>(&#375;<sup>apn</sup>, y<sup>apn</sup>),  &#955; = 1", 30, 690, 560, 22,
-    size=12, align="left")
-txt("legend", "<i>dashed outline = frozen (no gradient)  &#183;  2,764,774 trainable + "
-    "5,819,936 frozen parameters</i>", 30, 714, 600, 18, size=9, align="left")
+legend(26, 620)
+txt("footer", "<i>dashed outline = frozen (no gradient)  &#183;  2,764,774 trainable + "
+    "5,819,936 frozen parameters</i>", 552, 618, 620, 18, size=9, align="left")
 
 
 # =================================================================== emit
 xml = ('<mxfile host="app.diagrams.net">'
        '<diagram name="MM-Net architecture" id="mmnet">'
        '<mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" '
-       'connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1620" '
-       'pageHeight="760" math="0" shadow="0"><root>'
+       'connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" '
+       'pageHeight="670" math="0" shadow="0"><root>'
        '<mxCell id="0"/><mxCell id="1" parent="0"/>'
        + "".join(cells) +
        '</root></mxGraphModel></diagram></mxfile>')
