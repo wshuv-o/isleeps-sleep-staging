@@ -268,32 +268,56 @@ txt("bypass_lbl", "<i>direct c<sub>t</sub></i>", 1150, 404, 90, 16, size=10)
 # each encoder box is expanded by the isometric block beneath it
 
 # ======================================== the one side panel: fusion detail
+# Same visual language as the encoder rows: cube sheets on one centreline,
+# shape above, operation on a shared baseline. The four heads are the exception
+# -- they are PARALLEL, so they stack across the axis rather than along it, and
+# the stack is centred on the same line so the path stays readable.
+F_TOK, F_HEAD, F_MAIN = "#BBD3F0", "#7FA8DC", "#4A80C8"
+F_NORM, F_OUT = "#ECEFF2", "#F0A03C"
+CFY = 596                                     # the panel's centreline
+CF_SH = 528                                   # shape labels
+CF_OP = 654                                   # operation labels, one baseline
+
 panel("cf_panel", "Cross-modal fusion &#8212; the one block detailed separately",
-      846, 452, 730, 250)
+      846, 448, 730, 274)
 txt("cf_why", "<i>attention does not expand compactly in line; every other block is "
-    "shown inline above</i>", 858, 478, 706, 14, size=8)
-small("cf_tok", "tokenize<br>T = [W<sub>e</sub> e ; W<sub>c</sub> c] + M<sub>type</sub>",
-      864, 508, 148, 48, FUS)
+    "shown inline above</i>", 858, 474, 706, 14, size=8)
+
+
+def _cf(cid, x, w, h, fill, shape, op):
+    cube(cid, x, CFY - h // 2, w, h, fill)
+    txt(cid + "_sh", f"<b>{shape}</b>", x - 26, CF_SH, w + 52, 14, size=8)
+    txt(cid + "_op", op, x - 30, CF_OP, w + 60, 26, size=8)
+
+
+_cf("cf_tok", 884, 30, 92, F_TOK, "2&#215;128", "tokenize<br>T = [W<sub>e</sub>e ; W<sub>c</sub>c] + M")
+# four parallel heads, stacked across the axis
 for k in range(4):
-    small(f"cf_h{k}", f"head {k + 1}", 1044, 500 + k * 42, 84, 34, FUS)
-txt("cf_headeq", "<i>head<sub>i</sub> = softmax(Q<sub>i</sub>K<sub>i</sub><sup>&#8868;</sup>/"
-    "&#8730;d<sub>k</sub>)V<sub>i</sub></i>", 1020, 668, 200, 14, size=8)
-small("cf_concat", "concat heads<br>&#183; W<sub>o</sub>", 1164, 546, 116, 48, FUS)
-ell("cf_add", "+", 1310, 558, 26, 26)
-small("cf_ln", "LayerNorm", 1360, 546, 96, 48, FUS)
-small("cf_ff", "Feed-Forward<br>W<sub>f</sub> &#8712; &#8477;<sup>128&#215;256</sup><br>"
-      "&#8594; fuse z &#8712; &#8477;<sup>128</sup>", 1466, 540, 100, 60, FUS)
+    cube(f"cf_h{k}", 1000, CFY - 49 + k * 26, 40, 20, F_HEAD, size=6)
+txt("cf_h_sh", "<b>4 heads</b>", 974, CF_SH, 92, 14, size=8)
+txt("cf_h_op", "softmax(Q<sub>i</sub>K<sub>i</sub><sup>&#8868;</sup>/&#8730;d<sub>k</sub>)V<sub>i</sub>",
+    964, CF_OP, 112, 26, size=8)
+_cf("cf_concat", 1116, 30, 86, F_MAIN, "128", "concat &#183; W<sub>o</sub>")
+ell("cf_add", "+", 1222, CFY - 13, 26, 26)
+txt("cf_add_op", "residual", 1198, CF_OP, 74, 26, size=8)
+_cf("cf_ln", 1300, 26, 78, F_NORM, "128", "LayerNorm")
+_cf("cf_ff", 1388, 30, 84, F_MAIN, "128&#215;256", "Feed-Forward W<sub>f</sub>")
+_cf("cf_fuse", 1494, 26, 70, F_OUT, "128", "fuse &#8594; z")
+
 for k in range(4):
-    edge(f"cf_t{k}", "cf_tok", f"cf_h{k}", w=1.0)
-    edge(f"cf_c{k}", f"cf_h{k}", "cf_concat", w=1.0)
-edge("cf_ca", "cf_concat", "cf_add", w=1.0)
-edge("cf_al", "cf_add", "cf_ln", w=1.0)
-edge("cf_lf", "cf_ln", "cf_ff", w=1.0)
-edge("cf_res", "cf_tok", "cf_add", color="#9aa2ab", dashed=True, w=1.0,
+    edge(f"cf_t{k}", "cf_tok", f"cf_h{k}", w=1.0, color="#5A6570",
+         exit_=(1, 0.5), entry=(0, 0.5))
+    edge(f"cf_c{k}", f"cf_h{k}", "cf_concat", w=1.0, color="#5A6570",
+         exit_=(1, 0.5), entry=(0, 0.5))
+for a, b in (("cf_concat", "cf_add"), ("cf_add", "cf_ln"),
+             ("cf_ln", "cf_ff"), ("cf_ff", "cf_fuse")):
+    edge(f"cf_{a}_{b}", a, b, w=1.0, color="#5A6570", exit_=(1, 0.5), entry=(0, 0.5))
+# the residual: T skips the heads and rejoins at the add
+edge("cf_res", "cf_tok", "cf_add", color="#9AA2AB", dashed=True, w=1.0,
      exit_=(0.5, 1), entry=(0.5, 1))
 txt("cf_cap", "<i>T&#771; = LN(T + concat<sub>i</sub> head<sub>i</sub>).  Ablations replace "
     "attention with plain concatenation [e ; c] and with a neural-only variant.</i>",
-    858, 682, 706, 14, size=8)
+    858, 696, 706, 14, size=8)
 
 # =================================================================== footer
 txt("obj", "Joint objective:  L = CE<sub>&#8730;w</sub>(&#375;<sup>stg</sup>, y<sup>stg</sup>) + "
