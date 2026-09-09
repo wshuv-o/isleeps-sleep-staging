@@ -362,17 +362,21 @@ where $\hat y^{\mathrm{stg}}_t\in\Delta^4$ is a distribution over the five stage
 $\hat y^{\mathrm{apn}}_t\in[0,1]$ is the probability that epoch $t$ contains a respiratory
 event (Fig.~\ref{fig:arch}).
 
-\begin{figure*}[t]
+\begin{figure*}[p]
 \centering
-\includegraphics[width=\textwidth]{figures/fig_architecture.pdf}
-\caption{The two-stream, multi-task model. (A) The neural features and the cardiorespiratory
-features are encoded in parallel, combined by a cross-modal fusion block, and read across the
-night by a bidirectional LSTM. A staging head reads the recurrent state; a respiratory head
-reads the recurrent state together with a direct copy of the cardiorespiratory embedding, so
-oxygen-desaturation and effort cues reach the respiratory decision without passing through the
-staging-oriented fusion. (B) Detail of the feature encoder and of the fusion block, which
-tokenizes the two modalities, runs four-head attention, and combines the result with a
-residual connection.}
+% the diagram is portrait (about 5:6); at full \textwidth across two columns it
+% would overrun the page, so it is fitted to the text height instead
+\includegraphics[height=0.92\textheight,keepaspectratio]{figures/fig_architecture.pdf}
+\caption{The two-stream, multi-task model. Expert physiological features and a frozen
+self-supervised embedding are concatenated into a 388-dimensional neural input; the
+cardiorespiratory stream is the raw $7\times750$ tensor read by a learned convolutional
+encoder. Both encoders are drawn with their internals expanded, since each is instantiated
+once. The two embeddings are fused and read across the night by a bidirectional LSTM. A
+staging head reads the recurrent state; a respiratory head reads it together with a direct
+copy of the cardiorespiratory embedding, so desaturation and effort cues reach the
+respiratory decision without passing through the staging-oriented fusion. Cross-modal
+fusion is the one block detailed separately (right), because attention does not expand
+compactly in line. Dashed outlines mark frozen parameters.}
 \label{fig:arch}
 \end{figure*}
 
