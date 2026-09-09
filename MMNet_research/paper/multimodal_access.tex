@@ -54,8 +54,8 @@
 % to-do list, not a style choice: every instance must be re-run or removed
 % before submission.
 \newcommand{\stale}[1]{\textcolor{red}{#1}}
-\newcommand{\eegAuc}{0.673}
-\newcommand{\noflowAuc}{0.704}
+\newcommand{\eegAuc}{0.654}
+\newcommand{\noflowAuc}{0.778}
 
 \begin{document}
 
@@ -196,8 +196,9 @@ single-channel baseline; the compact feature-based model reaches $\mmAcc$ and, u
 produces a respiratory read-out. Staging accuracy here reflects a cohort ceiling; the joint respiratory output is what we contribute.
 \item[\textbf{C3.}] \textbf{A physiologically grounded respiratory read-out.}
 Removing the airflow channel from which the events were scored leaves detection at
-$\noflowAuc$ AUC, because the decision rests on oxygen desaturation, breathing effort,
-cardiac variability, and cortical arousals (Section~\ref{sec:noflow}).
+$\noflowAuc$ AUC, because the decision rests on respiratory effort above all, together with
+oxygen desaturation, cardiac variability and cortical arousals, encoded redundantly enough
+that no single channel is indispensable (Section~\ref{sec:noflow}).
 \item[\textbf{C4.}] \textbf{Causal, per-modality attribution.} A
 leave-one-out modality-ablation grid shows each channel carries the task its physiology governs:
 removing the cardiorespiratory stream lowers only respiratory detection (Wilcoxon $p=0.004$),
@@ -646,16 +647,29 @@ contributes rather than a post-hoc visualization.
 The proposed model stages sleep at $\mmAcc$ accuracy ($\kappa$ $\mmK$) and detects respiratory
 events at $\mmAuc$ AUC ($\mmAp$ average precision). To test the paper's central claim, that each
 modality carries the task its physiology governs, we remove each modality in turn and keep the
-rest, on the same folds (Table~\ref{tab:ablate}). The pattern is clean. Removing SpO$_2$ drops
-respiratory AUC from $\mmAuc$ to $0.681$ and leaves staging untouched, and removing the whole
-cardiorespiratory stream drops it furthest, to $\eegAuc$. Removing the ocular (EOG) channel does
-the reverse: staging falls from $\mmAcc$ to $0.712$ while respiratory detection holds. A paired
-Wilcoxon test over the ten folds confirms the split: the cardiorespiratory stream changes
-respiratory AUC significantly ($0.711$ vs $\eegAuc$, $p=0.004$) but not staging ($p=0.91$). A
-cumulative build-up on the respiratory head shows SpO$_2$ alone already reaches the full AUC
-($0.711$), so oxygen desaturation carries the read-out and the other channels are largely
-redundant for detection. Attention and plain concatenation stage and detect alike, so the gain
-comes from the added modality, and the fusion mechanism has little effect.
+rest, on the same folds, with three seeds giving thirty fold-values per row
+(Table~\ref{tab:ablate}). The separation between streams is clean, but within the
+cardiorespiratory stream the pattern is not the one the engineered features gave.
+
+Removing the whole cardiorespiratory stream drops respiratory AUC from $\mmAuc$ to $0.654$ ---
+the largest single effect in this study --- and leaves staging untouched ($0.741$, n.s.).
+Removing the neural stream does the reverse: staging falls from $\mmAcc$ to $0.680$ while
+respiratory detection holds. No neural ablation moves respiratory AUC and no cardiorespiratory
+ablation moves staging, so each stream serves the outcome its physiology governs.
+
+Within the cardiorespiratory stream, however, only respiratory effort is individually necessary
+($-0.038$ AUC, Holm $p<0.001$). Removing SpO$_2$, pulse/HRV, ECG or airflow individually costs
+at most $0.005$ AUC and none survives correction; SpO$_2$, which the engineered-feature
+configuration ranked first, is here the most expendable channel ($-0.002$, $p=0.61$). The five
+individual removals sum to $-0.046$ AUC against $-0.128$ for removing the stream as a whole ---
+a factor of $2.8$. The learned encoder therefore distributes respiratory information redundantly
+across channels: each is individually dispensable because the others overlap it, while the
+ensemble is essential. That redundancy is clinically favourable rather than a weakness, since
+twelve of the hundred recordings are missing at least one cardiorespiratory channel, and it is
+physiologically coherent --- the effort belts register the paradoxical thoraco-abdominal motion
+of an obstructive event as it happens, whereas desaturation is a lagged consequence of it.
+Attention and plain concatenation stage and detect alike, so the gain comes from the added
+modality, and the fusion mechanism has little effect.
 
 \begin{figure}[t]
 \centering
@@ -667,9 +681,12 @@ respiratory AUC and leaves staging flat; removing the ocular channel lowers stag
 \end{figure}
 
 \begin{table}[t]
-\caption{\stale{[STALE -- modality ablation table not yet regenerated for the final model]} Modality-ablation grid (leave-one-out), ten-fold patient-independent. Each row removes
-one modality and keeps the rest. Cardiorespiratory ablations (SpO$_2$, all cardiorespiratory)
-move respiratory AUC and leave staging flat; the ocular (EOG) ablation does the reverse. Largest
+\caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
+three seeds. Each row removes one modality and keeps the rest. Neural ablations move
+staging and leave respiratory AUC flat; cardiorespiratory ablations do the reverse.
+Within the cardiorespiratory stream only respiratory effort is individually
+necessary, yet removing the stream as a whole costs $2.8\times$ the sum of the
+individual removals --- the signature of a redundant distributed code. Largest
 effect per column in \textbf{bold}.}
 \label{tab:ablate}
 \centering
@@ -678,15 +695,16 @@ effect per column in \textbf{bold}.}
 \toprule
 Modality removed & Staging acc\,$\uparrow$ & Respiratory AUC\,$\uparrow$ \\
 \midrule
-none (full model)        & 0.723 & 0.711 \\
-SpO$_2$                  & 0.727 & \textbf{0.681} \\
-respiratory effort       & 0.728 & 0.726 \\
-pulse / HRV              & 0.723 & 0.700 \\
-ECG                      & 0.723 & 0.711 \\
-airflow                  & 0.722 & 0.704 \\
-EOG (ocular)             & \textbf{0.712} & 0.705 \\
-EMG (muscle)             & 0.724 & 0.707 \\
-all cardiorespiratory    & 0.724 & \textbf{0.673} \\
+none (full model)        & 0.739 & 0.782 \\
+EEG (neural)             & \textbf{0.680} & 0.774 \\
+EOG (ocular)             & 0.731 & 0.777 \\
+EMG (muscle)             & 0.735 & 0.778 \\
+SpO$_2$                  & 0.742 & 0.780 \\
+respiratory effort       & 0.741 & 0.744 \\
+pulse / HRV              & 0.741 & 0.785 \\
+ECG                      & 0.737 & 0.777 \\
+airflow                  & 0.740 & 0.778 \\
+all cardiorespiratory    & 0.741 & \textbf{0.654} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -696,11 +714,15 @@ all cardiorespiratory    & 0.724 & \textbf{0.673} \\
 Because the events were scored from airflow, a model that keyed on the airflow channel would
 be right for a trivial reason. Removing the airflow features leaves detection essentially
 unchanged, at $\noflowAuc$ AUC (Table~\ref{tab:ablate}), within one fold standard deviation of
-the full $\mmAuc$. The model therefore does not lean on the labeling signal. It reads the fall
-in blood oxygen, the straining of the chest and abdomen, the beat-to-beat change in the heart,
-and the cortical arousal that ends the event. This is the useful regime, because it detects the
+the full $\mmAuc$. The model therefore does not lean on the labeling signal. It reads above all
+the straining of the chest and abdomen --- the only channel whose removal costs significantly
+--- together with the fall in blood oxygen, the beat-to-beat change in the heart, and the
+cortical arousal that ends the event, none of which is individually indispensable because the
+learned encoder encodes them redundantly. This is the useful regime, because it detects the
 bodily consequences of disordered breathing rather than repeating a measurement a technician
-has already made.
+has already made. It is also the physiologically expected one: the effort belts register the
+paradoxical thoraco-abdominal motion of an obstructive event while it is happening, whereas
+desaturation follows it by several breaths.
 
 \subsection{Respiratory Baselines and Per-event-type Detection}
 The respiratory task needs real competitors (Table~\ref{tab:resp}), on the same folds and the same $14$
@@ -720,7 +742,7 @@ threshold of $0.5$ detects $55\%$ of scored events at $2.6$ false alarms per hou
 threshold to $0.2$ raises event sensitivity to $86\%$ but flags $68\%$ of all epochs. More
 tellingly, the model recovers the wrong \emph{number} of events: a mean predicted rate of $4.5$
 events per hour against a scored $11.1$, and a per-patient rank correlation of only
-$\rho=0.142$ ($p=0.17$, $n=96$) --- far weaker than the $\rho=0.315$ obtained from the
+$\rho=0.142$ ($p=0.17$, $n=96$) --- far weaker than the $\rho=0.491$ obtained from the
 aggregated epoch probability. Consecutive events separated by a few epochs merge into one
 flagged run, so an epoch-level detector systematically under-counts. This is why we report a
 burden rather than an index, and why event-level scoring is the natural next step rather than a
@@ -767,7 +789,7 @@ Method & AUC\,$\uparrow$ & AP\,$\uparrow$ \\
 Desaturation rule    & 0.596 & 0.214 \\
 Logistic regression  & 0.582 & 0.193 \\
 Gradient boosting    & 0.670 & 0.290 \\
-MM-Net (proposed)    & \textbf{0.711} & \textbf{0.337} \\
+MM-Net (proposed)    & \textbf{0.782} & \textbf{0.419} \\
 \bottomrule
 \end{tabular}
 
@@ -788,7 +810,7 @@ Central     & 831      & \textbf{0.840} \\
 \subsection{Clinical Validation against AHI and Severity}
 Aggregating the per-epoch respiratory probability into a per-patient burden and correlating it
 with the clinical apnea-hypopnea index (AHI) from the metadata gives a significant positive
-association (Spearman $\rho=0.315$, $p=0.002$, $n=96$; Fig.~\ref{fig:ahi}), so the model's output tracks a
+association (Spearman $\rho=0.491$, $p<0.001$, $n=99$; Fig.~\ref{fig:ahi}), so the model's output tracks a
 clinician's summary measure rather than only an epoch-level score. Staging, in turn, degrades as
 sleep-disordered breathing worsens: accuracy falls from $0.770$ in patients with a normal AHI to
 $0.708$ in the severe group (Table~\ref{tab:severity}). The pathology that motivates the second output also makes the first
@@ -803,7 +825,7 @@ Second, the clinical index is normalised by total sleep time, whereas our burden
 over every scored epoch including wake, and the two denominators diverge most in the
 patients with the most fragmented sleep --- which in this cohort is the severe group.
 Third, the AHI itself carries substantial night-to-night variability, so a single-night
-reference sets a ceiling on any correlation with it. We therefore read $\rho=0.315$ as
+reference sets a ceiling on any correlation with it. We therefore read $\rho=0.491$ as
 evidence that the read-out tracks severity at the group level, and not as a claim that it
 estimates an index.
 
@@ -812,7 +834,7 @@ estimates an index.
 \includegraphics[width=0.86\columnwidth]{figures/fig_ahi.pdf}
 \caption{\stale{[STALE -- AHI scatter not yet regenerated for the final model]} Predicted per-patient event burden (mean respiratory probability) against the clinical
 apnea-hypopnea index, coloured by AASM severity band. The positive association (Spearman
-$\rho=0.315$, $n=96$) shows the model's output tracks a clinician's summary measure.}
+$\rho=0.491$, $n=99$) shows the model's output tracks a clinician's summary measure.}
 \label{fig:ahi}
 \end{figure}
 
@@ -843,14 +865,21 @@ channel is still present, but no longer aligned to the epoch it describes --- an
 drop, averaged over three shuffles and the ten fold models.
 
 The two methods can disagree, because a model may need a channel during training yet weight it
-lightly afterwards. Here they do not. Permuting the EEG features costs $0.225$ staging accuracy
-and only $0.038$ respiratory AUC; permuting SpO$_2$ costs $0.031$ respiratory AUC and
-\emph{nothing} in staging ($-0.001$). Across the seven modalities common to both analyses the
-rank correlation between permutation drop and ablation drop is $\rho=0.893$ ($p=0.007$) for
-respiratory AUC. Two methods that could have disagreed, applied to different objects --- one to
-retrained models, one to fixed ones --- order the modalities the same way. That is stronger
-evidence for the physiological attribution than either provides alone, and unlike an embedding
-projection it is a prediction that could have failed.
+lightly afterwards. On staging they do not: permuting the neural features costs $0.284$ staging
+accuracy against $0.030$ for the ocular and $0.006$ for the muscle channel, the same ordering
+the ablation gives, and the rank correlation between the two attributions is $\rho=0.833$
+($p=0.010$).
+
+On the respiratory head the agreement is narrower, and we state it precisely rather than
+pooling the two into a single coefficient. Both methods place respiratory effort first by a wide
+margin --- $0.038$ AUC under retraining, $0.071$ under permutation, in each case well clear of
+the runner-up. The remaining four cardiorespiratory channels, however, have retraining effects
+that are not distinguishable from zero, so their rank order carries no signal and the
+correlation over the five is correspondingly uninformative ($\rho=0.381$, $p=0.35$). The claim
+the comparison supports is therefore the one that matters physiologically: two attributions
+sharing no machinery --- one applied to retrained models, one to fixed ones --- independently
+identify effort as the dominant respiratory cue. Unlike an embedding projection, that was a
+prediction that could have failed.
 
 \subsection{Data Efficiency: Which Ceiling Are We Against?}
 \label{sec:curve}
@@ -860,15 +889,18 @@ identical model on a shrinking fraction of the \emph{training patients}, always 
 the full held-out fold (Fig.~\ref{fig:curve}). Patients are subsampled rather than epochs,
 because epochs within a patient are heavily correlated.
 
-The two heads answer differently. Staging accuracy rises $0.693 \rightarrow 0.714 \rightarrow
-0.721 \rightarrow \mmAcc$ as training patients go from $19$ to $76$, with marginal gains of
-$+0.021$, $+0.008$ and $+0.001$: the final quartile buys $4\%$ of one fold standard deviation,
-which is flat within noise. Respiratory AUC over the same range rises $0.656 \rightarrow 0.685
-\rightarrow 0.696 \rightarrow \mmAuc$, and its final step of $+0.015$ is still close to half a
-fold standard deviation. \textbf{Staging has reached this cohort's ceiling; respiratory
-detection has not.} We draw the narrower conclusion the data support: more patients of this
-kind would improve breathing detection and would not improve staging, so the staging ceiling is
-a property of the labels and the injured brain rather than of the training-set size.
+The two heads answer differently. Staging accuracy rises $0.701 \rightarrow 0.721 \rightarrow
+0.726 \rightarrow \mmAcc$ as training patients go from $20$ to $79$, with marginal gains of
+$+0.020$, $+0.005$ and $+0.009$, all under half a fold standard deviation and flattening.
+Respiratory AUC over the same range rises $0.732 \rightarrow 0.750 \rightarrow 0.752
+\rightarrow \mmAuc$, and its \emph{largest} increment is the final one, $+0.033$ --- close to a
+full fold standard deviation, and steeper than any earlier step. \textbf{Staging is at or near
+this cohort's ceiling; respiratory detection is not, and is still accelerating.} We draw the
+narrower conclusion the data support: more patients of this kind would improve breathing
+detection and would not appreciably improve staging, so the staging ceiling is a property of the
+labels and the injured brain rather than of the training-set size. The final model also exceeds
+the feature-only configuration at every training-set size tested, so its advantage is not an
+artefact of the full sample.
 
 \begin{figure}[t]
 \centering
@@ -1100,7 +1132,7 @@ SleepTransformer & 2022 & Transformer encoder with epoch-level interpretability 
 Micro SleepNet & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.833$ (SHHS) & -- \\
 AT-BiLSTM & 2024 & Attention-augmented bidirectional LSTM, single-channel EEG. & $0.838$ (Sleep-EDF) & -- \\
 \midrule
-\textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the full polysomnogram. & -- & $\mathbf{0.722}$ \\
+\textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the full polysomnogram. & -- & $\mathbf{0.739}$ \\
 \bottomrule
 \end{tabular*}
 \end{table*}
