@@ -29,7 +29,9 @@ sys.path.insert(0, HERE)
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 import mmnet_core as C          # noqa: E402
+import ablation_remap           # noqa: E402
 import arms                     # noqa: E402
+import sweep                    # noqa: E402
 from sklearn.metrics import (accuracy_score, cohen_kappa_score, f1_score,        # noqa: E402
                              roc_auc_score, average_precision_score)
 
@@ -38,13 +40,19 @@ FINAL = dict(arm="A+labram", cardio="raw_cnn", temporal="lstm",
              hidden=256, drop=0.3, lr=3e-4, wd=1e-4)
 
 
-def load_external(name, labram_dir):
+def load_external(name, labram_dir, n_card):
     """External corpus in the same shape mmnet_core.DATA uses.
 
-    Each external .npz must provide Feeg (188), Fcard (14) and y; the LaBraM
+    Each external .npz must provide Feeg (188), Fcard and y; the LaBraM
     embedding for the same epochs comes from labram_dir. Everything is z-scored
     per recording, exactly as load_data does for iSLEEPS, so the external inputs
     reach the model on the same scale the training data did.
+
+    n_card is the cardio width the ARM expects, which is no longer 14: the final
+    model's branch takes the raw 7 x 750 tensor. Sleep-EDF has no SpO2, ECG,
+    effort or pulse channel at all, so there is nothing to resample into that
+    shape and the branch is fed zeros. Left unhandled this raised a reshape
+    error inside CardioCNN; handled silently it would have been worse.
     """
     import glob
     base = os.path.join(REPO, "data", CORPORA[name])
@@ -55,7 +63,15 @@ def load_external(name, labram_dir):
         fe = np.nan_to_num(d["Feeg"]).astype(np.float32)
         fc = np.nan_to_num(d["Fcard"]).astype(np.float32)
         fe = (fe - fe.mean(0)) / (fe.std(0) + 1e-6)
-        fc = (fc - fc.mean(0)) / (fc.std(0) + 1e-6)
+        if fc.shape[1] != n_card:
+            if np.any(fc):
+                raise ValueError(
+                    "%s: cardio is %d-d but the arm expects %d-d, and the corpus "
+                    "does carry cardio data -- it must be rebuilt in the arm's "
+                    "representation rather than zeroed" % (rec, fc.shape[1], n_card))
+            fc = np.zeros((len(fe), n_card), np.float32)
+        else:
+            fc = (fc - fc.mean(0)) / (fc.std(0) + 1e-6)
         emb_path = os.path.join(labram_dir, rec + ".npz")
         if not os.path.exists(emb_path):
             raise FileNotFoundError(
@@ -79,21 +95,39 @@ def main():
     ap.add_argument("--labram-dir", default=None)
     ap.add_argument("--out", required=True)
     ap.add_argument("--seed", type=int, default=42)
+    # When the external corpus has no cardiorespiratory channels, the branch is
+    # fed zeros at test time while the model was trained on real signal. That is
+    # a train/test mismatch, not an ablation, and BatchNorm inside CardioCNN
+    # makes it worth checking rather than assuming. This flag also zeroes the
+    # branch during training, so the two agree, and the pair of runs brackets
+    # the effect instead of leaving a referee to ask about it.
+    ap.add_argument("--match-train-cardio", action="store_true",
+                    help="zero the cardio branch during training too")
     a = ap.parse_args()
     labram_dir = a.labram_dir or os.path.join(REPO, "data", "labram_ext", a.corpus)
-
-    ext = load_external(a.corpus, labram_dir)
-    print("%s: %d recordings, %d epochs"
-          % (a.corpus, len(ext), sum(len(v[2]) for v in ext.values())), flush=True)
 
     t0 = time.time()
     # Train once on every iSLEEPS patient. No folds: the held-out set is the
     # external corpus, so a fold split would only shrink the training data.
-    with arms.arm(C, FINAL["arm"], cardio=FINAL["cardio"]) as h:
+    # sweep.config, not arms.arm: the arm alone leaves hidden=128 and lr=1e-3,
+    # which is NOT the final model and would have been reported as if it were.
+    with sweep.config(C, FINAL["arm"], hidden=FINAL["hidden"], drop=FINAL["drop"],
+                      lr=FINAL["lr"], wd=FINAL["wd"], cardio=FINAL["cardio"],
+                      cardio_mode="concat") as h:
+        ext = load_external(a.corpus, labram_dir, h.n_card)
+        print("%s: %d recordings, %d epochs  (eeg %d-d, cardio %d-d)"
+              % (a.corpus, len(ext), sum(len(v[2]) for v in ext.values()),
+                 h.dim, h.n_card), flush=True)
         tr = list(C.SUBS)
         va = tr[:10]                      # small internal split, for early stopping only
-        model = C.train_fold(tr, va, "concat", [], [], seed=a.seed,
-                             bypass=True, temporal=FINAL["temporal"])
+        drop = ["all"] if a.match_train_cardio else []
+        restore = ablation_remap.apply(C, n_eeg_total=h.dim) if drop else None
+        try:
+            model = C.train_fold(tr, va, "concat", [], drop, seed=a.seed,
+                                 bypass=True, temporal=FINAL["temporal"])
+        finally:
+            if restore:
+                restore()
         saved = dict(C.DATA)
         try:
             C.DATA = {**saved, **ext}     # so subj_infer can address external records
@@ -108,6 +142,8 @@ def main():
     yt, yp = np.concatenate(yt), np.concatenate(yp)
     at, ascore = np.concatenate(at), np.concatenate(ascore)
     res = dict(corpus=a.corpus, seed=a.seed, n_recordings=len(ext), n_epochs=int(len(yt)),
+               match_train_cardio=bool(a.match_train_cardio),
+               eeg_dim=int(h.dim), card_dim=int(h.n_card),
                acc=float(accuracy_score(yt, yp)),
                mf1=float(f1_score(yt, yp, average="macro", zero_division=0)),
                kappa=float(cohen_kappa_score(yt, yp)),
