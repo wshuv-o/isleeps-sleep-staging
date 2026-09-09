@@ -200,9 +200,12 @@ def fig_perclass(out):
     no = json.load(open(src))
     if not no:
         return None
+    # Both sides must come from the same 30 fold-values. Taking the full model's
+    # per-class F1 from derived_seed42.json instead would compare a 30-fold mean
+    # against a single seed's pooled predictions, which is not the same quantity.
+    fm = json.load(open(os.path.join(FINAL, "final_model.json")))
     npcf = np.concatenate([no[k]["pcf"] for k in sorted(no)], axis=0).mean(0)
-    fpcf = np.array([json.load(open(os.path.join(FINAL, "derived_seed42.json")))
-                     ["per_class_f1"][s] for s in STAGES])
+    fpcf = np.concatenate([fm[k]["pcf"] for k in sorted(fm)], axis=0).mean(0)
     x = np.arange(5); w = 0.38
     fig, ax = plt.subplots(figsize=(4.6, 3.0))
     ax.bar(x - w / 2, npcf, w, color="#8a9099", label="neural only")

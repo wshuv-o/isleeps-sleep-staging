@@ -613,9 +613,10 @@ hidden-Markov operating point). Errors concentrate on N1, which is absorbed into
 \begin{table}[t]
 \caption{Per-class staging F1 (Wake, N1, N2, N3, REM), ten-fold patient-independent, at the
 hidden-Markov operating point, for the proposed model and the raw-signal deep network. Best per
-column in \textbf{bold}. \stale{[The neural-only row is from the previous configuration; the
-ablation grid did not retain per-class F1, so it has not been regenerated and is not directly
-comparable to the row below it.]}}
+column in \textbf{bold}. The neural-only and full rows are both means over the same thirty
+fold-values, so the difference between them isolates the cardiorespiratory stream: it improves
+N1 significantly ($+0.019$, Wilcoxon $p=0.045$) and moves no other stage
+($p \geq 0.15$).}
 \label{tab:perclass}
 \centering
 \setlength{\tabcolsep}{6pt}
@@ -624,8 +625,8 @@ comparable to the row below it.]}}
 Model & W\,$\uparrow$ & N1\,$\uparrow$ & N2\,$\uparrow$ & N3\,$\uparrow$ & R\,$\uparrow$ \\
 \midrule
 Raw multimodal CNN                & 0.74 & \textbf{0.37} & 0.73 & 0.56 & 0.67 \\
-MM-Net (neural only)              & 0.77 & 0.24 & 0.78 & 0.68 & 0.70 \\
-\textbf{MM-Net (neural + cardio)} & \textbf{0.78} & 0.31 & \textbf{0.80} & \textbf{0.71} & \textbf{0.75} \\
+MM-Net (neural only)              & \textbf{0.79} & 0.28 & 0.80 & 0.71 & \textbf{0.76} \\
+\textbf{MM-Net (neural + cardio)} & 0.79 & 0.30 & \textbf{0.80} & \textbf{0.71} & 0.75 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -633,9 +634,11 @@ MM-Net (neural only)              & 0.77 & 0.24 & 0.78 & 0.68 & 0.70 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_mm_perclass.pdf}
-\caption{\stale{[STALE -- per-class F1, neural-only comparison not yet regenerated for the final model]} Per-class staging F1 for the neural-only and the neural-plus-cardiorespiratory
-model. Adding the cardiorespiratory channels leaves every stage at its full level, including
-Wake and REM.}
+\caption{Per-class staging F1 for the neural-only and the neural-plus-cardiorespiratory
+model, both averaged over the same thirty fold-values. The cardiorespiratory stream's
+contribution to staging is concentrated in N1, the transitional stage that is hardest to score
+and the one most often coincident with a respiratory event; no other stage moves
+significantly.}
 \label{fig:perclassfig}
 \end{figure}
 
