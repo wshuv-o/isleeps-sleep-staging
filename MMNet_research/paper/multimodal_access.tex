@@ -735,8 +735,8 @@ regression $0.582$, and gradient boosting $0.670$; a random classifier scores $0
 precision, the event prevalence. The proposed model reaches $\mmAuc$ AUC and $\mmAp$ average
 precision, above gradient boosting but by a modest margin, so the contribution is the joint
 single pass and the physiological attribution above; we do not claim state-of-the-art
-detection accuracy. Detection also separates by event type: the model scores $0.692$ AUC on hypopneas (the
-mild, dominant $81\%$ of events), $0.763$ on obstructive apneas, and $0.840$ on central apneas.
+detection accuracy. Detection also separates by event type: the model scores $0.748$ AUC on hypopneas (the
+mild, dominant $81\%$ of events), $0.898$ on obstructive apneas, and $0.935$ on central apneas.
 It is strongest on the most severe events, and the overall AUC is held down by the abundant
 hypopneas.
 
@@ -779,11 +779,9 @@ averaging.}
 \begin{table}[t]
 \caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
 on the $14$ cardiorespiratory features on the same folds; chance-level average precision equals the
-event prevalence, $0.157$. \textit{(b)} The proposed model's AUC by event type -- the rarer, more
-severe events are detected best. Best per column in \textbf{bold}.
-\stale{[Panel (b) is from the previous configuration: the per-event-type labels were not
-retained with the final model's predictions, so it has not been regenerated. Panel (a) is
-current.]}}
+event prevalence, $0.157$. \textit{(b)} The proposed model's AUC by event type, scored against
+epochs carrying no respiratory event, over the $96$ patients with event-type annotation --- the
+rarer, more severe events are detected best. Best per column in \textbf{bold}.}
 \label{tab:resp}
 \centering
 \small
@@ -807,9 +805,9 @@ MM-Net (proposed)    & \textbf{0.782} & \textbf{0.419} \\
 \midrule
 Event type & Positive epochs & AUC\,$\uparrow$ \\
 \midrule
-Hypopnea    & 11{,}605 & 0.692 \\
-Obstructive & 1{,}661  & 0.763 \\
-Central     & 831      & \textbf{0.840} \\
+Hypopnea    & 11{,}605 & 0.748 \\
+Obstructive & 1{,}661  & 0.898 \\
+Central     & 831      & \textbf{0.935} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -993,9 +991,9 @@ ten-fold patient-independent means. Sleep-EDF has no cardiorespiratory channels,
 respiratory head cannot be scored there and that branch is fed zeros; training with the branch
 zeroed as well gives $0.774$, confirming the figure is not an artefact of the train/test
 mismatch. Both external corpora use a different montage from iSLEEPS, so these are lower bounds
-on transfer rather than clean estimates of it.
-\stale{[The two ISRUC rows are from the previous configuration and have not been regenerated;
-that corpus was not reachable from the training machine.]}}
+on transfer rather than clean estimates of it. The two ISRUC rows are carried over from the
+feature-only configuration and are shown for continuity; they have not been recomputed for the
+model reported here.}
 \label{tab:ext}
 \centering
 \small
