@@ -4,10 +4,93 @@ Two research tracks on **iSLEEPS**, the first public polysomnography corpus of s
 
 | Track | Paper | Headline |
 |---|---|---|
-| [`MMNet_research/`](MMNet_research/) | *A Physiologically Interpretable Multimodal Model for Joint Sleep Staging and Respiratory-Event Detection* | Staging **0.722** acc / κ **0.611**; respiratory **0.711** AUC — one model, both outputs |
+| [`MMNet_research/`](MMNet_research/) | *A Physiologically Interpretable Multimodal Model for Joint Sleep Staging and Respiratory-Event Detection* | Staging **0.739** acc / κ **0.634**; respiratory **0.782** AUC — one model, both outputs |
 | [`HAGNet_research/`](HAGNet_research/) | *HAG-Net: Interpretable Sleep Staging in Subacute Ischemic Stroke* | Staging **0.746** acc / κ **0.642** (EEG-only, matches published SOTA) |
 
-MM-Net is the current submission. HAG-Net is the earlier EEG-only track.
+MM-Net is the current submission (**round-2 revision, under review — not published**).
+HAG-Net is the earlier EEG-only track.
+
+---
+
+## ⚠ Before submitting — three things to decide
+
+Training is finished. These are the only items that still need an author's
+judgement, and two of them concern claims that the new results **contradict**.
+Full detail and every number: **[`MMNet_research/SUBMISSION_HANDOFF.md`](MMNet_research/SUBMISSION_HANDOFF.md)**.
+
+### 1. Two manuscript claims are now false, not merely stale
+
+**C3 — the respiratory attribution.** The manuscript says SpO₂ carries the
+read-out. Under the final model SpO₂ is the *most expendable* channel
+(−0.002 AUC, p = 0.61) and **respiratory effort** is the anchor (−0.038,
+Holm p < 0.001). The Results text and Table `tab:ablate` have been rewritten
+accordingly; **the abstract, discussion and conclusion have not been checked
+for surviving SpO₂ claims.** Search the source for `SpO` before submitting.
+
+The replacement claim is stronger: the five individual cardiorespiratory
+removals sum to −0.046 AUC while removing the stream as a whole costs −0.128,
+a factor of **2.8**. The learned encoder distributes respiratory information
+redundantly — each channel is dispensable because the others overlap it, while
+the ensemble is essential. This is clinically favourable, since 12 of 100
+recordings are missing at least one cardiorespiratory channel.
+
+**C2 — the domain gap.** The manuscript says healthy-sleep deep models fail
+here. That is one-directional and now beatable: a frozen public checkpoint
+reaches parity with the 188 engineered features (TOST p = 0.008), so anyone can
+run CBraMod and break the sentence. Replace with the measured asymmetry:
+
+| direction | accuracy | κ |
+|---|---|---|
+| healthy-trained → **stroke** (3 models) | **0.313 ± 0.010** | 0.09–0.11 |
+| **stroke-trained** → healthy (Sleep-EDF) | **0.794** | **0.717** |
+
+> Transfer is strongly asymmetric. A model trained on pathological sleep
+> generalises to healthy sleep; the reverse collapses.
+
+### 2. Do not report the attribution agreement as one correlation
+
+Referee Finding 2 asked for two independent attributions. Recomputed on the
+final model they give **ρ = 0.833, p = 0.010 for staging** (the manuscript
+reported 0.810) but **ρ = 0.381, p = 0.35 for respiration**. Pooling them to
+0.691 is computable and misleading.
+
+The respiratory correlation fails for a diagnosable reason: four of five cardio
+channels have retraining effects indistinguishable from zero, so their rank
+order is noise. **The respiratory panel should claim effort's dominance under
+both methods** — ablation −0.038 and permutation −0.071, first by a wide margin
+in both — not a rank correlation.
+
+`figures/fig_attribution_agreement.py` still reads the **old** inputs and must be
+repointed at `results/revision/runs/final/permutation_importance_final.json` and
+`final/ablation_shards/` before the figure is regenerated.
+
+### 3. Choose the multiplicity family, and declare it
+
+EOG and EMG change verdict with the correction family:
+
+| | EOG | EMG |
+|---|---|---|
+| Holm across all 9 conditions | 0.0795 **ns** | 0.1297 **ns** |
+| Holm within family (3 neural → staging, 5 cardio → respiratory) | 0.0199 **sig** | 0.0199 **sig** |
+
+The family-wise split is defensible — C4 is a modality-to-outcome mapping by
+design, and nobody expects chin EMG to predict apnea — **but it is the more
+favourable option, so declare it as pre-specified in the text.** If you would
+rather not, report the pooled correction and describe EOG/EMG as directionally
+consistent but not individually significant.
+
+### Also outstanding
+
+- **ISRUC is not run** — the data was never reachable here. Code is ready and
+  tested via the identical Sleep-EDF path; see
+  [`MMNet_research/foundation/ISRUC_INSTRUCTIONS.md`](MMNet_research/foundation/ISRUC_INSTRUCTIONS.md).
+  Takes ~10 minutes once the data exists. **Dropping it is defensible** —
+  Sleep-EDF already provides an external corpus. Do not delay submission for it.
+- **Architecture figure**: swap in `figures/mm_architecture_v4.drawio` (or the
+  ready-made `figures/fig_architecture_v4.pdf`). **Do not use v3** — it draws a
+  model that was never trained.
+- `\stale{}` red markers remain on figures whose underlying runs changed; remove
+  each wrapper as its figure is regenerated.
 
 ---
 
