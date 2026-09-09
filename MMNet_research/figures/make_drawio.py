@@ -9,8 +9,9 @@ earns its place only when the block it details is INSTANTIATED MORE THAN ONCE
 and the panel saves the reader from reading the same stack twice. None of these
 repeats: FeatMLP runs on the neural stream alone, CardioCNN on the
 cardiorespiratory stream alone, and there is one temporal decoder. So their
-internals are expanded inline as isometric layer blocks (make_encoder_blocks.py),
-which lay out horizontally and keep the figure landscape.
+internals are expanded inline as rows of draw.io cube shapes, centred on a
+shared horizontal axis so the data path reads as one line, which lays out
+horizontally and keeps the figure landscape.
 
 Cross-modal fusion keeps a side panel, and is the only one. Attention does not
 inline compactly -- four heads, a residual path and a feed-forward block need
@@ -143,20 +144,28 @@ def cube(i, x, y, w, h, fill, size=9):
           f"strokeColor=#2B2F33;size={size};")
 
 
-def layer_row(prefix, stages, x0, ybase, pitch=74, hmax=104, plane_w=7,
+def layer_row(prefix, stages, x0, ycenter, pitch=74, hmax=104, plane_w=7,
               plane_step=5, main_w=22, flat_w=26):
     """A horizontal run of layer blocks with shape above and operation below.
 
     stages: (kind, shape_label, op_label, height_frac, n_planes). A conv is a
     BANK -- several thin sheets with tinted edges then the body -- because a
     convolution emits many maps and a single sheet would say it emits one.
+
+    Blocks are CENTRED on ycenter rather than standing on a shared baseline.
+    Bottom-aligning them made the row read as a skyline of pillars rising from a
+    floor; centring puts the data path on one axis, which is how these figures
+    are drawn everywhere, and lets the connecting arrows run straight through
+    the middle of every block regardless of its height.
+
     Returns the ids, so the caller can wire the row into the main flow.
     """
     ids = []
+    op_baseline = ycenter + hmax // 2 + 8          # one line for every op label
     for k, (kind, shape, op, hf, npl) in enumerate(stages):
         x = x0 + k * pitch
         h = max(16, int(round(hmax * hf)))
-        y = ybase - h
+        y = ycenter - h // 2
         if kind == "conv":
             for j in range(npl):
                 cube(f"{prefix}{k}s{j}", x + j * plane_step, y, plane_w, h,
@@ -171,11 +180,13 @@ def layer_row(prefix, stages, x0, ybase, pitch=74, hmax=104, plane_w=7,
             cube(cid, x, y, w, h, KIND_COLOR[kind])
             wtot = w
         ids.append(cid)
-        txt(f"{prefix}{k}_sh", f"<b>{shape}</b>", x - 16, y - 22, wtot + 32, 14, size=8)
-        txt(f"{prefix}{k}_op", op, x - 18, ybase + 6, wtot + 36, 24, size=8)
+        # the shape follows its own block's top; the operation sits on the
+        # shared baseline, so the names read as a row rather than a zigzag
+        txt(f"{prefix}{k}_sh", f"<b>{shape}</b>", x - 16, y - 20, wtot + 32, 14, size=8)
+        txt(f"{prefix}{k}_op", op, x - 18, op_baseline, wtot + 36, 24, size=8)
     for a, b in zip(ids[:-1], ids[1:]):
         edge(f"{prefix}_{a}_{b}", a, b, w=1.0, color="#5A6570",
-             exit_=(1, 0.75), entry=(0, 0.75))
+             exit_=(1, 0.5), entry=(0, 0.5))
     return ids
 
 # ===================================================================== title
@@ -201,7 +212,7 @@ layer_row("fe", [("in", "388", "input", _u(388), 1),
                  ("fc", "128", "Linear W&#8322;", _u(128), 1),
                  ("norm", "128", "LN + GELU", _u(128), 1),
                  ("out", "128", "e", _u(128), 1)],
-          x0=428, ybase=330, pitch=62, hmax=96)
+          x0=428, ycenter=284, pitch=62, hmax=96)
 
 # =========================================== CARDIORESPIRATORY LANE (lower)
 img("car_img", "cardio_signals.png", 30, 388, 140, 104)
@@ -222,7 +233,7 @@ layer_row("cc", [("in", "7&#215;750", "raw", _t(750), 1),
                  ("conv", "96&#215;23", "Conv 7<br>BN+GELU", _t(23), 5),
                  ("pool", "192", "mean &#8853; max", _t(4), 1),
                  ("out", "64", "Linear", _t(3), 1)],
-          x0=196, ybase=628, pitch=74, hmax=104)
+          x0=196, ycenter=578, pitch=74, hmax=104)
 txt("car_iso_cap", "<i>replaces the 14 engineered cardiorespiratory features</i>",
     196, 664, 560, 14, size=8)
 
