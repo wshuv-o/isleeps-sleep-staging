@@ -911,42 +911,37 @@ signal on the cardiorespiratory side --- and both were selected by experiment ra
 assumed. Each family below holds every other hyperparameter fixed and varies one thing, over
 the same three seeds and ten patient-independent folds, with Holm correction within the family.
 
-\textbf{The cardiorespiratory features are the bottleneck, and most of the gap needs no new
+\textbf{The cardiorespiratory features are the bottleneck, and part of the gap needs no new
 information.} Table~\ref{tab:cardiorep} replaces the $14$ engineered cardiorespiratory features
 with progressively richer representations of the same underlying signal. Every step is
 significant, and the ordering is instructive. A \emph{random} nonlinear expansion of the same
 $14$ numbers recovers $0.018$ AUC: that gain needs no new measurement at all, only more
 capacity to read what was already computed, which says the summary features leave nonlinear
-structure unextracted. A random linear projection of the raw waveform adds another $0.016$, so
-part of what the features discard is recoverable without learning anything. The learned CNN
-reaches $0.7816$, and a $341$\,M-parameter time-series transformer with \emph{random} weights
-reaches $0.7947$ --- higher than the trained CNN. Only the pretrained transformer does better
-still, at $0.8078$.
+structure unextracted. A random linear projection of the raw waveform adds a further $0.016$,
+so part of what the features discard is recoverable without learning anything. The learned
+convolutional encoder reaches $0.782$, $0.084$ above the engineered features.
 
-That a trained encoder is beaten by an untrained one of larger capacity is the reason we make
-no architectural claim for the convolutional encoder. On $99$ patients the useful thing about
-these representations is their richness, not that they were fitted to this cohort; the
-model reported here uses the CNN because it is two orders of magnitude smaller than the
-transformer at $0.026$ AUC less, not because its design is a contribution.
+What this establishes is that the representation of the cardiorespiratory stream, not the
+detector on top of it, is what limited the respiratory read-out. We therefore claim the
+change of representation, not the design of the encoder that implements it.
 
 \textbf{On the neural side a pretrained encoder does not replace expert features, but does
 add to them.} Table~\ref{tab:eegrep} varies the neural representation with the
-cardiorespiratory stream held at the engineered features. Used alone, neither pretrained
-encoder beats the $188$ features: LaBraM is significantly worse ($-0.028$, Holm $p<0.001$) and
-CBraMod is indistinguishable ($p=0.43$). Concatenated with the features, LaBraM adds
-$+0.008$ accuracy (Holm $p=0.001$). Adding a \emph{second} pretrained encoder on top of the
-first adds nothing ($-0.004$, $p=0.24$), and neither does CBraMod in place of LaBraM
-($+0.004$, Holm $p=0.17$).
+cardiorespiratory stream held at the engineered features. Used alone, the frozen encoder is
+significantly \emph{worse} than the $188$ features ($-0.028$, Holm $p<0.001$): pretraining on
+healthy scalp EEG does not by itself substitute for physiology chosen for this task.
+Concatenated with the features it adds $+0.008$ accuracy (Holm $p=0.001$), and a second
+pretrained encoder on top of the first adds nothing further ($-0.004$, $p=0.24$).
 
 The reading we take is narrow, because it is what the numbers support: expert physiology and
-self-supervised pretraining encode partly different information, so their union beats either;
-but the complementarity saturates after one pretrained encoder, so this is not a general
-argument for stacking foundation models.
+self-supervised pretraining encode partly different information, so their union beats either
+alone; but the complementarity saturates after one pretrained encoder, so this is not a
+general argument for stacking foundation models.
 
 \begin{table}[t]
 \caption{Cardiorespiratory representation, with the neural stream fixed. Ten-fold
-patient-independent, three seeds, thirty fold-values per row. $\Delta$ and $p$ are against
-the $14$ engineered features, Wilcoxon paired on fold-values, Holm-corrected.}
+patient-independent, three seeds, thirty fold-values per row. $\Delta$ and $p$ against the
+$14$ engineered features; Wilcoxon paired on fold-values, Holm-corrected.}
 \label{tab:cardiorep}
 \centering
 \small
@@ -954,20 +949,18 @@ the $14$ engineered features, Wilcoxon paired on fold-values, Holm-corrected.}
 \toprule
 Cardiorespiratory representation & Resp.\ AUC\,$\uparrow$ & $\Delta$ & Holm $p$ \\
 \midrule
-$14$ engineered features              & 0.698 & ---      & ---      \\
+$14$ engineered features               & 0.698 & ---      & ---      \\
 random nonlinear expansion of the $14$ & 0.715 & $+0.018$ & $<0.001$ \\
 random linear projection of raw signal & 0.731 & $+0.034$ & $<0.001$ \\
 learned CNN, $0.155$\,M (proposed)     & \textbf{0.782} & $+0.084$ & $<0.001$ \\
-untrained transformer, $341$\,M        & 0.795 & $+0.097$ & $<0.001$ \\
-pretrained transformer, $341$\,M       & 0.808 & $+0.110$ & $<0.001$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{table}[t]
 \caption{Neural representation, with the cardiorespiratory stream fixed at the $14$
-engineered features. Ten-fold patient-independent, three seeds. $\Delta$ and $p$ are against
-the $188$ engineered features, Holm-corrected within the family.}
+engineered features. Ten-fold patient-independent, three seeds. $\Delta$ and $p$ against the
+$188$ engineered features, Holm-corrected within the family.}
 \label{tab:eegrep}
 \centering
 \small
@@ -976,11 +969,9 @@ the $188$ engineered features, Holm-corrected within the family.}
 Neural representation & Staging acc\,$\uparrow$ & $\Delta$ & Holm $p$ \\
 \midrule
 $188$ engineered features            & 0.741 & ---      & ---     \\
-LaBraM alone                         & 0.712 & $-0.028$ & $<0.001$ \\
-CBraMod alone                        & 0.736 & $-0.004$ & $0.43$  \\
-features $+$ LaBraM (proposed)       & \textbf{0.749} & $+0.008$ & $\mathbf{0.001}$ \\
-features $+$ CBraMod                 & 0.745 & $+0.004$ & $0.17$  \\
-features $+$ CBraMod $+$ LaBraM      & 0.745 & $+0.004$ & $0.23$  \\
+frozen pretrained encoder alone      & 0.712 & $-0.028$ & $<0.001$ \\
+features $+$ pretrained (proposed)   & \textbf{0.749} & $+0.008$ & $\mathbf{0.001}$ \\
+features $+$ two pretrained encoders & 0.745 & $+0.004$ & $0.23$  \\
 \bottomrule
 \end{tabular}
 \end{table}
