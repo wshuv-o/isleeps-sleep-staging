@@ -64,12 +64,19 @@ def load_external(name, labram_dir, n_card):
         fc = np.nan_to_num(d["Fcard"]).astype(np.float32)
         fe = (fe - fe.mean(0)) / (fe.std(0) + 1e-6)
         if fc.shape[1] != n_card:
-            if np.any(fc):
+            # A corpus that carries the raw signal supplies it directly: the
+            # final model's cardio encoder is a CNN over the 7 x 750 tensor, so
+            # the 14 engineered features are the wrong object entirely.
+            if "xcard" in d and d["xcard"].shape[1] == n_card:
+                fc = np.nan_to_num(d["xcard"]).astype(np.float32)
+                fc = (fc - fc.mean(0)) / (fc.std(0) + 1e-6)
+            elif np.any(fc):
                 raise ValueError(
                     "%s: cardio is %d-d but the arm expects %d-d, and the corpus "
                     "does carry cardio data -- it must be rebuilt in the arm's "
                     "representation rather than zeroed" % (rec, fc.shape[1], n_card))
-            fc = np.zeros((len(fe), n_card), np.float32)
+            else:
+                fc = np.zeros((len(fe), n_card), np.float32)
         else:
             fc = (fc - fc.mean(0)) / (fc.std(0) + 1e-6)
         emb_path = os.path.join(labram_dir, rec + ".npz")
@@ -135,6 +142,7 @@ def main():
         # KeyError: 'SC4001'. The snapshot holds the same dict OBJECT that
         # arms.arm installed, so mutating that object in place is visible.
         saved = dict(C.DATA)
+        per_rec = {}
         try:
             C.DATA.update(ext)
             yt, yp, at, ascore = [], [], [], []
@@ -142,6 +150,17 @@ def main():
                 sp, apn = C.subj_infer(model, rec, [], [])
                 yt.append(ext[rec][2]); yp.append(sp.argmax(1))
                 at.append(ext[rec][3]); ascore.append(apn)
+                # per-recording, because the manuscript reports ISRUC by night
+                # and quotes the spread across recordings; deriving either from
+                # the pooled numbers afterwards is impossible
+                yy, pp, aa = ext[rec][2], sp.argmax(1), ext[rec][3]
+                per_rec[rec] = dict(
+                    n=int(len(yy)),
+                    acc=float(accuracy_score(yy, pp)),
+                    kappa=float(cohen_kappa_score(yy, pp)),
+                    prevalence=float(aa.mean()),
+                    auc=(float(roc_auc_score(aa, apn))
+                         if len(np.unique(aa)) > 1 else None))
         finally:
             C.DATA.clear(); C.DATA.update(saved)
 
@@ -155,6 +174,7 @@ def main():
                kappa=float(cohen_kappa_score(yt, yp)),
                pcf=[float(v) for v in f1_score(yt, yp, average=None,
                                                labels=range(5), zero_division=0)],
+               per_recording=per_rec,
                minutes=(time.time() - t0) / 60)
     if len(np.unique(at)) > 1:
         res["auc"] = float(roc_auc_score(at, ascore))
@@ -165,6 +185,15 @@ def main():
 
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     json.dump(res, open(a.out, "w"), indent=1)
+    # Pooled predictions, with the recording each epoch came from. Accuracy
+    # decomposes across recordings and kappa and AUC do not, so any grouping
+    # other than the one chosen here -- ISRUC by night, say -- has to be pooled
+    # from the predictions rather than averaged from per-recording summaries.
+    # Saving them means that never costs another training run.
+    rec_of = np.concatenate([np.full(len(ext[r][2]), r) for r in ext])
+    np.savez_compressed(os.path.splitext(a.out)[0] + "_predictions.npz",
+                        y_true=yt, y_pred=yp, apnea_true=at, apnea_score=ascore,
+                        recording=rec_of)
     print("\n%s: acc %.4f  mF1 %.4f  kappa %.4f  AUC %s  [%.1f min]"
           % (a.corpus, res["acc"], res["mf1"], res["kappa"],
              ("%.4f" % res["auc"]) if res["auc"] else "n/a", res["minutes"]))
