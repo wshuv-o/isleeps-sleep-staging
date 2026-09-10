@@ -145,7 +145,7 @@ We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 as the first 
 corpus dedicated to subacute ischemic stroke. The cohort is well matched to the question.
 Sleep-disordered breathing is common in the weeks after a stroke and is tied to worse
 recovery~\cite{bassetti2006sleep,denis2024sleep}, and in this corpus the median patient
-carries a scored respiratory event in $13\%$ of epochs, with $77$ of $96$ patients above
+carries a scored respiratory event in $13\%$ of epochs, with $79$ of $99$ patients above
 $5\%$ (Fig.~\ref{fig:prev}). The cardiorespiratory signal is therefore abundant and
 clinically meaningful in exactly the population where breathing matters most. The published
 staging baselines on this corpus reach $74.7\%$ accuracy for an LSTM, about ten points below
@@ -304,15 +304,16 @@ Share (\%) & 26.6 & 10.2 & 42.3 & 8.9 & 12.1 \\
 \end{tabular}
 \\[2pt]
 \footnotesize Respiratory events: $16.0\%$ of epochs positive; median $13\%$ per patient
-(range $0$ to $60.5\%$); $77$ of $96$ patients above $5\%$.
+(range $0$ to $60.5\%$); $79$ of $99$ patients above $5\%$.
 \end{table}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_mm_apnea_prev.pdf}
 \caption{Sleep-disordered-breathing burden across the cohort. Each bar counts patients by the
-fraction of epochs that carry a scored respiratory event. The median patient sits at $13\%$
-and many exceed $30\%$, so the cardiorespiratory signal is abundant.}
+fraction of epochs that carry a scored respiratory event, over the $99$ patients with
+respiratory labels. The median, marked by the dashed line, sits at $13\%$, and many
+exceed $30\%$, so the cardiorespiratory signal is abundant.}
 \label{fig:prev}
 \end{figure}
 
