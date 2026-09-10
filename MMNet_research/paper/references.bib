@@ -41,10 +41,12 @@
 
 @article{guillot2023transfer,
   author  = {Guillot, Antoine and Thorey, Valentin},
-  title   = {Transfer Learning and Domain Adaptation for Robust Sleep Staging},
-  journal = {Frontiers in Physiology},
-  volume  = {14},
-  year    = {2023}
+  title   = {{RobustSleepNet}: Transfer Learning for Automated Sleep Staging at Scale},
+  journal = {IEEE Transactions on Neural Systems and Rehabilitation Engineering},
+  volume  = {29},
+  pages   = {1441--1451},
+  year    = {2021},
+  doi     = {10.1109/TNSRE.2021.3098968}
 }
 
 @article{fernandez2019spindles,
@@ -196,10 +198,13 @@
 }
 
 @article{tellenbach2023brainstem,
-  author  = {Tellenbach, Nadja and others},
-  title   = {Sleep-Wake and Sleep Architecture Changes After Brainstem Stroke},
+  author  = {Tellenbach, Nathalie and Schmidt, Markus H. and Alexiev, Filip and Blondiaux, Eva and Cavalloni, Fabian and Bassetti, Claudio L. and Heydrich, Lukas and Bargiotas, Panagiotis},
+  title   = {{REM} Sleep and Muscle Atonia in Brainstem Stroke: A Quantitative Polysomnographic and Lesion Analysis Study},
   journal = {Journal of Sleep Research},
-  year    = {2023}
+  volume  = {32},
+  number  = {2},
+  year    = {2022},
+  doi     = {10.1111/jsr.13640}
 }
 
 % ===== recent comparators (2021-2026), verified =====
@@ -259,9 +264,11 @@
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, volume = {37}, year = {2024}
 }
 @inproceedings{biot2023,
-  title = {{BIOT}: Cross-data Biosignal Learning in the Wild},
+  title = {{BIOT}: Biosignal Transformer for Cross-data Learning in the Wild},
   author = {Yang, Chaoqi and Westover, M. Brandon and Sun, Jimeng},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, volume = {36}, year = {2023}, note = {arXiv:2305.10351}
+  booktitle = {Advances in Neural Information Processing Systems 36 (NeurIPS)},
+  pages = {78240--78260}, year = {2023}, doi = {10.52202/075280-3420},
+  url = {https://openreview.net/forum?id=c2LZyTyddi}
 }
 @article{simpson2023laterality,
   title = {Disturbed Laterality of Non-rapid Eye Movement Sleep Oscillations in Post-stroke Human Sleep: A Pilot Study},
@@ -337,4 +344,40 @@
   pages   = {180--192},
   year    = {2016},
   doi     = {10.1016/j.cmpb.2015.10.013}
+}
+
+% ===== classical gradient boosting and graph baselines (contribution C2) =====
+% NIPS/NeurIPS 2017 and 2018 registered no DOIs, and ICLR registers none at all,
+% so three of these four carry the only identifier that exists for them.
+@inproceedings{chen2016xgboost,
+  author    = {Chen, Tianqi and Guestrin, Carlos},
+  title     = {{XGBoost}: A Scalable Tree Boosting System},
+  booktitle = {Proceedings of the 22nd {ACM} {SIGKDD} International Conference on Knowledge Discovery and Data Mining ({KDD})},
+  pages     = {785--794},
+  year      = {2016},
+  doi       = {10.1145/2939672.2939785}
+}
+
+@inproceedings{ke2017lightgbm,
+  author    = {Ke, Guolin and Meng, Qi and Finley, Thomas and Wang, Taifeng and Chen, Wei and Ma, Weidong and Ye, Qiwei and Liu, Tie-Yan},
+  title     = {{LightGBM}: A Highly Efficient Gradient Boosting Decision Tree},
+  booktitle = {Advances in Neural Information Processing Systems 30 ({NIPS})},
+  year      = {2017},
+  note      = {No {DOI} is registered for this volume}
+}
+
+@inproceedings{prokhorenkova2018catboost,
+  author    = {Prokhorenkova, Liudmila and Gusev, Gleb and Vorobev, Aleksandr and Dorogush, Anna Veronika and Gulin, Andrey},
+  title     = {{CatBoost}: Unbiased Boosting with Categorical Features},
+  booktitle = {Advances in Neural Information Processing Systems 31 ({NeurIPS})},
+  year      = {2018},
+  doi       = {10.48550/arXiv.1706.09516}
+}
+
+@inproceedings{velickovic2018gat,
+  author    = {Veli{\v{c}}kovi{\'c}, Petar and Cucurull, Guillem and Casanova, Arantxa and Romero, Adriana and Li{\`o}, Pietro and Bengio, Yoshua},
+  title     = {Graph Attention Networks},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2018},
+  doi       = {10.17863/CAM.48429}
 }
