@@ -963,14 +963,18 @@ subject twice; respiratory-event prevalence is $10.1\%$ on the first night and $
 the second, so we report the two separately rather than pooling a difference that has
 nothing to do with the model.
 
-\textbf{The respiratory read-out transfers.} On ISRUC night one the model reaches $0.721$
+\textbf{The respiratory read-out transfers.} \stale{[STALE -- every ISRUC number in this
+subsection is from the submitted model. ISRUC has not been re-run: the official archive
+has been unreachable since 5 Sep 2026, and the mirror used instead must pass the
+epoch-count check in the repository data notes before its numbers are trusted.]}
+On ISRUC night one the model reaches $0.721$
 AUC against $\mmAuc$ in-domain --- and it does so handicapped, because ISRUC provides no
 pulse channel and no separate effort trace, leaving two of the seven cardiorespiratory
 inputs zero-filled. A detector that had latched onto one centre's equipment would not
 survive that; this one does.
 
 \textbf{Staging moves in opposite directions on the two corpora, for reasons the data
-identify.} On Sleep-EDF the model \emph{gains} $0.102$ of $\kappa$ over its in-domain
+identify.} On Sleep-EDF the model \emph{gains} $0.083$ of $\kappa$ over its in-domain
 score. A representation that had memorised corpus-specific artefacts would degrade out of
 corpus, so the straightforward reading is that the features are physiological and that the
 ceiling reported throughout this paper is a property of \emph{stroke sleep} rather than of
@@ -978,9 +982,18 @@ the model --- the same conclusion the learning curve reaches (Section~\ref{sec:c
 different route. On ISRUC staging falls by $0.059$ accuracy, and the class mix explains
 much of it: ISRUC carries $15.6\%$ N1 against iSLEEPS' $10.2\%$, and N1 is the weakest
 stage in every cohort we have measured (recall $0.201$ on ISRUC, $0.247$ on Sleep-EDF, and
-the lowest per-class F1 in-domain).
+the lowest per-class F1 in-domain). \stale{[The N1 claim survives --- N1 is still the
+weakest stage everywhere, at F1 $0.306$ on Sleep-EDF and $0.300$ in-domain --- but these
+two recall figures are from the submitted model and need recomputing.]}
 
-Comparing the two also isolates the montage effect. On Sleep-EDF, N3 recall collapses to
+Comparing the two also isolates the montage effect.
+\stale{[STALE, AND THE CLAIM MAY HAVE FLIPPED. Under the final model Sleep-EDF N3 reaches
+F1 $0.802$, which is not consistent with a recall collapse to $0.554$ --- the argument in
+this paragraph may no longer hold. The external runner saves per-class F1 but not the
+confusion matrix, so N3 recall and the N3-read-as-N2 fraction have to be recomputed before
+this paragraph is either rewritten or removed. The ISRUC half additionally needs the
+corpus itself.]}
+On Sleep-EDF, N3 recall collapses to
 $0.554$ with $44\%$ of N3 epochs read as N2, which we attributed to slow-wave activity
 being frontally dominant while the model was trained on central and occipital derivations.
 On ISRUC, where those derivations match ours exactly, \textbf{N3 recall recovers to
