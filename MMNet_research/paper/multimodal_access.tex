@@ -503,10 +503,13 @@ alongside the published single-channel baselines for the corpus~\cite{maiti2026i
 patient-independent, at the hidden-Markov operating point where a model provides one.
 
 \begin{table*}[t]
-\caption{Sleep staging on iSLEEPS (ten-fold, patient-independent): the proposed model
-against deep networks trained from scratch, transferred from healthy sleep, or applied to
-the raw multichannel signal. ``feat'' marks engineered features; best per column in
-\textbf{bold}.}
+\caption{Sleep staging on iSLEEPS, patient-independent: the proposed model against deep
+networks trained from scratch, transferred from healthy sleep, or applied to the raw
+multichannel signal. Cells are mean $\pm$ SD across folds where per-fold values were
+retained --- five folds for the baselines, thirty fold-values (ten folds, three seeds) for
+the proposed rows. CNN-ResNet18 is quoted from the corpus paper and AttnSleep retained only
+aggregates, so neither carries an interval. ``feat'' marks engineered features; best per
+column in \textbf{bold}.}
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c @{}}
@@ -515,15 +518,15 @@ the raw multichannel signal. ``feat'' marks engineered features; best per column
 \midrule
 \multirow{6}{*}{\emph{Deep networks}}
  & CNN-ResNet18~\cite{maiti2026isleeps}          & 1\,EEG  & $\sim$11\,M  & 0.617 & 0.544 & 0.480 \\
- & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & 0.615 & 0.567 & 0.483 \\
+ & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
  & AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & 0.686 & 0.629 & 0.577 \\
- & CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & 0.613 & 0.565 & 0.485 \\
- & Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & 0.623 & 0.582 & 0.488 \\
- & Raw multimodal CNN                            & 14\,ch  & 0.95\,M     & 0.655 & 0.612 & 0.531 \\
+ & CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
+ & Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & $0.623 \pm 0.020$ & 0.582 & 0.488 \\
+ & Raw multimodal CNN                            & 14\,ch  & 0.95\,M     & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
 \midrule
 \multirow{2}{*}{\shortstack[l]{\emph{Proposed feature-based}\\\emph{multi-task model}}}
- & MM-Net (neural only)              & 7\,ch feat  & 0.77\,M & 0.721 & 0.635 & 0.603 \\
- & \textbf{MM-Net (neural + cardio)} & 14\,ch feat & 0.86\,M & \mmAcc & \textbf{\mmMf} & \textbf{\mmK} \\
+ & MM-Net (neural only)              & 7\,ch feat  & 2.62\,M & $\mathbf{0.741 \pm 0.017}$ & $0.668 \pm 0.020$ & $\mathbf{0.635 \pm 0.022}$ \\
+ & \textbf{MM-Net (neural + cardio)} & 14\,ch feat & 2.76\,M & $0.739 \pm 0.020$ & $\mathbf{0.670 \pm 0.020}$ & $0.634 \pm 0.024$ \\
 \bottomrule
 \end{tabular*}
 \end{table*}
@@ -932,7 +935,7 @@ assumed. Each family below holds every other hyperparameter fixed and varies one
 the same three seeds and ten patient-independent folds, with Holm correction within the family.
 
 \textbf{The cardiorespiratory features are the bottleneck, and part of the gap needs no new
-information.} Table~\ref{tab:cardiorep} replaces the $14$ engineered cardiorespiratory features
+information.} The upper block of Table~\ref{tab:repr} replaces the $14$ engineered cardiorespiratory features
 with progressively richer representations of the same underlying signal. Every step is
 significant, and the ordering is instructive. A \emph{random} nonlinear expansion of the same
 $14$ numbers recovers $0.018$ AUC: that gain needs no new measurement at all, only more
@@ -946,7 +949,7 @@ detector on top of it, is what limited the respiratory read-out. We therefore cl
 change of representation, not the design of the encoder that implements it.
 
 \textbf{On the neural side a pretrained encoder does not replace expert features, but does
-add to them.} Table~\ref{tab:eegrep} varies the neural representation with the
+add to them.} The lower block of Table~\ref{tab:repr} varies the neural representation with the
 cardiorespiratory stream held at the engineered features. Used alone, the frozen encoder is
 significantly \emph{worse} than the $188$ features ($-0.028$, Holm $p<0.001$): pretraining on
 healthy scalp EEG does not by itself substitute for physiology chosen for this task.
@@ -958,43 +961,33 @@ self-supervised pretraining encode partly different information, so their union 
 alone; but the complementarity saturates after one pretrained encoder, so this is not a
 general argument for stacking foundation models.
 
-\begin{table}[t]
-\caption{Cardiorespiratory representation, with the neural stream fixed. Ten-fold
-patient-independent, three seeds, thirty fold-values per row. $\Delta$ and $p$ against the
-$14$ engineered features; Wilcoxon paired on fold-values, Holm-corrected.}
-\label{tab:cardiorep}
+\begin{table*}[t]
+\caption{What each stream should be represented as. Every other hyperparameter is held
+fixed within a block, so one thing varies at a time; ten-fold patient-independent, three
+seeds, thirty fold-values per cell, mean $\pm$ SD. $\Delta$ and Holm $p$ are on the metric
+that block varies --- respiratory AUC for the cardiorespiratory block, staging accuracy for
+the neural block --- against the engineered-feature baseline of that block, Wilcoxon paired
+on fold-values and Holm-corrected within the block.}
+\label{tab:repr}
 \centering
-\small
-\begin{tabular}{lcccc}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l c c c c @{}}
 \toprule
-Cardiorespiratory representation & Resp.\ AUC\,$\uparrow$ & Staging acc & $\Delta$AUC & Holm $p$ \\
+Representation & Variant & Resp.\ AUC\,$\uparrow$ & Staging acc\,$\uparrow$ & $\Delta$ & Holm $p$ \\
 \midrule
-$14$ engineered features               & $0.698 \pm 0.051$ & $0.736 \pm 0.014$ & ---      & ---      \\
-random nonlinear expansion of the $14$ & $0.715 \pm 0.047$ & $0.737 \pm 0.017$ & $+0.018$ & $<0.001$ \\
-random linear projection of raw signal & $0.731 \pm 0.044$ & $0.735 \pm 0.021$ & $+0.034$ & $<0.001$ \\
-learned CNN, $0.155$\,M (proposed)     & $\mathbf{0.782 \pm 0.039}$ & $0.740 \pm 0.019$ & $+0.084$ & $<0.001$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[t]
-\caption{Neural representation, with the cardiorespiratory stream fixed at the $14$
-engineered features. Ten-fold patient-independent, three seeds. $\Delta$ and $p$ against the
-$188$ engineered features, Holm-corrected within the family.}
-\label{tab:eegrep}
-\centering
-\small
-\begin{tabular}{lcccc}
-\toprule
-Neural representation & Staging acc\,$\uparrow$ & Resp.\ AUC & $\Delta$acc & Holm $p$ \\
+\multirow{4}{*}{\emph{Cardiorespiratory}}
+ & $14$ engineered features               & $0.698 \pm 0.051$ & $0.736 \pm 0.014$ & ---      & ---      \\
+ & random nonlinear expansion of the $14$ & $0.715 \pm 0.047$ & $0.737 \pm 0.018$ & $+0.018$ & $<0.001$ \\
+ & random linear projection of raw signal & $0.731 \pm 0.044$ & $0.735 \pm 0.021$ & $+0.034$ & $<0.001$ \\
+ & learned CNN, $0.155$\,M (proposed)     & $\mathbf{0.782 \pm 0.040}$ & $0.740 \pm 0.019$ & $+0.084$ & $<0.001$ \\
 \midrule
-$188$ engineered features            & $0.741 \pm 0.016$ & $0.685 \pm 0.041$ & ---      & ---     \\
-frozen pretrained encoder alone      & $0.712 \pm 0.032$ & $0.681 \pm 0.033$ & $-0.028$ & $<0.001$ \\
-features $+$ pretrained (proposed)   & $\mathbf{0.748 \pm 0.018}$ & $0.690 \pm 0.037$ & $+0.008$ & $\mathbf{0.001}$ \\
-features $+$ two pretrained encoders & $0.745 \pm 0.018$ & $0.684 \pm 0.043$ & $+0.004$ & $0.23$  \\
+\multirow{4}{*}{\emph{Neural}}
+ & $188$ engineered features            & $0.685 \pm 0.041$ & $0.741 \pm 0.016$ & ---      & ---      \\
+ & frozen pretrained encoder alone      & $0.681 \pm 0.033$ & $0.712 \pm 0.033$ & $-0.028$ & $<0.001$ \\
+ & features $+$ pretrained (proposed)   & $0.690 \pm 0.037$ & $\mathbf{0.749 \pm 0.018}$ & $+0.008$ & $\mathbf{0.001}$ \\
+ & features $+$ two pretrained encoders & $0.684 \pm 0.043$ & $0.745 \pm 0.018$ & $+0.004$ & $0.23$   \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{tabular*}
+\end{table*}
 
 \subsection{Calibration and When the Model Declines to Commit}
 A clinical reader needs to know not only how often the model is right but whether it knows when
