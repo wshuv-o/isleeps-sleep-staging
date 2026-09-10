@@ -94,7 +94,7 @@ under patient-independent ten-fold cross-validation, MM-Net stages sleep at $\mm
 accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC with
 $2.76$\,M trainable parameters. We benchmark ten deep architectures retrained on this
 cohort and three applied zero-shot from healthy sleep, all on identical folds; every
-retrained baseline lands between $0.613$ and $0.686$ accuracy. Three are reimplemented
+retrained baseline lands between $0.613$ and $0.716$ accuracy. Three are reimplemented
 here, each recovering its published Sleep-EDF accuracy to within $0.03$, which indicates
 that the ceiling belongs to the cohort and not to our implementations. Cross-validated on
 healthy sleep the same architecture reaches $0.856$, losing $0.115$ accuracy crossing into
@@ -174,7 +174,7 @@ TinySleepNet, SleepTransformer) so that every comparison runs through one pipeli
 
 \item \label{c:ceiling}We establish that the accuracy ceiling on this cohort belongs to the patients and
 not to our implementations. Each reimplementation recovers its published Sleep-EDF
-accuracy to within $0.03$, every retrained baseline lands between $0.613$ and $0.686$
+accuracy to within $0.03$, every retrained baseline lands between $0.613$ and $0.716$
 here, and the proposed model loses $0.115$ accuracy crossing from healthy sleep to stroke
 against $0.140$ to $0.148$ for those baselines (Section~\ref{sec:domaingap}).
 
@@ -592,7 +592,7 @@ across folds where per-fold values were retained. Best per column in \textbf{bol
  & CNN-ResNet18~\cite{maiti2026isleeps}          & 1\,EEG  & $\sim$11\,M  & --- & 0.617 & 0.544 & 0.480 \\
  & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & --- & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
  & U-Time~\cite{perslev2019utime}$^{\dagger}$ & 1\,EEG & $1.07$\,M & $0.791 \pm 0.062$ & $0.646 \pm 0.064$ & $0.524 \pm 0.057$ & $0.506 \pm 0.082$ \\
- & AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & --- & 0.686 & 0.629 & 0.577 \\
+ & AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & --- & $0.716 \pm 0.042$ & $0.600 \pm 0.043$ & $0.593 \pm 0.058$ \\
  & TinySleepNet~\cite{supratak2020tinysleepnet}$^{\dagger}$ & 1\,EEG & $1.45$\,M & $0.824 \pm 0.045$ & $0.676 \pm 0.050$ & $0.587 \pm 0.034$ & $0.548 \pm 0.062$ \\
  & SleepTransformer~\cite{sleeptransformer2022}$^{\dagger}$ & 1\,EEG & $2.79$\,M & $0.823 \pm 0.033$ & $0.683 \pm 0.026$ & $0.602 \pm 0.030$ & $0.555 \pm 0.032$ \\
  & CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & --- & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
@@ -600,8 +600,8 @@ across folds where per-fold values were retained. Best per column in \textbf{bol
  & Raw multimodal CNN                            & 14\,ch  & 0.95\,M      & --- & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
 \midrule
 \multirow{3}{*}{\shortstack[l]{\emph{Trained on healthy sleep,}\\\emph{applied zero-shot}}}
- & CNN                                           & 4\,EEG  & $0.49$\,M    & 0.806 & 0.325 & 0.237 & 0.111 \\
- & CNN\,+\,BiLSTM (CRNN)                         & 4\,EEG  & $1.15$\,M    & 0.834 & 0.307 & 0.251 & 0.111 \\
+ & CNN                                           & 4\,EEG  & $0.49$\,M    & $0.806 \pm 0.001$ & $0.307 \pm 0.016$ & $0.223 \pm 0.013$ & $0.102 \pm 0.010$ \\
+ & CNN\,+\,BiLSTM (CRNN)                         & 4\,EEG  & $1.15$\,M    & $0.828 \pm 0.005$ & $0.312 \pm 0.012$ & $0.253 \pm 0.006$ & $0.127 \pm 0.022$ \\
  & StagingSeqNet                                 & 4\,EEG  & $1.08$\,M    & \textbf{0.868} & 0.308 & 0.232 & 0.093 \\
 \midrule
 \multirow{2}{*}{\shortstack[l]{\emph{Proposed feature-based}\\\emph{multi-task model}}}
@@ -623,17 +623,20 @@ cohort, architectures trained on healthy sleep and applied to it zero-shot, and 
 proposed model, with a final row cross-validating the proposed architecture on healthy
 sleep as a control on the cohort argument; its macro-F1 and $\kappa$ are healthy-sleep
 figures and so are left out of the stroke columns, and quoted in the text instead.
-Dispersion is reported wherever per-fold values survive: five folds for the earlier retrained baselines, ten for the three reimplemented
-literature models, and thirty fold-values (ten folds, three seeds) for the proposed rows.
-The LSTM and CNN-ResNet18 rows are quoted from the corpus paper rather than re-run here, so their protocol is that paper's and not ours, and AttnSleep retained only aggregates, so
-neither carries an interval, and the zero-shot block is a single pass over all $99$
-patients with no fold structure. Sleep-EDF carries no cardiorespiratory channels, so every
+Dispersion is reported wherever it is defined: five folds for the earlier retrained
+baselines; thirty fold-values, ten folds by three seeds, for AttnSleep, the three
+reimplemented literature models and the proposed rows. The LSTM and CNN-ResNet18 rows are
+quoted from the corpus paper rather than re-run here, so their protocol is that paper's and
+not ours and neither carries an interval. In the zero-shot block the interval is across
+training seeds and not folds, because that evaluation is a single pass of a finished
+checkpoint over all $99$ patients; StagingSeqNet is a single supplied checkpoint and has
+none. Sleep-EDF carries no cardiorespiratory channels, so every
 healthy-sleep figure exercises the neural branch alone and the comparison row there is
 MM-Net (neural only).
 
 Table~\ref{tab:bench} shows a clear pattern: every deep network, whether trained from scratch,
 transferred from healthy sleep, or applied to the raw multichannel signal, stays between $0.61$
-and $0.69$ accuracy, $15$ to $20$ points below the same architectures' published accuracy on
+and $0.72$ accuracy, $12$ to $20$ points below the same architectures' published accuracy on
 healthy sleepers. The feature-based model reaches $\mmAcc$, above every deep architecture we
 retrained here, which matches the concurrent finding that depth alone does not help on this
 cohort~\cite{bose2026gap}: with under a hundred patients a convolutional network cannot
@@ -1369,7 +1372,7 @@ Method & Year & Approach & Reported acc (dataset) & On iSLEEPS \\
 DeepSleepNet~\cite{supratak2017deepsleepnet} & 2017 & Two representation-learning CNNs followed by a bidirectional LSTM sequence model, single-channel EEG. & $0.82$ (Sleep-EDF) & $0.615$ \\
 U-Time~\cite{perslev2019utime} & 2019 & Fully convolutional encoder--decoder segmenting a whole night at once, no recurrence over epochs. & $\approx$$0.79$ (Sleep-EDF) & $0.646$ \\
 TinySleepNet~\cite{supratak2020tinysleepnet} & 2020 & Compact convolutional stack with a single unidirectional LSTM, single-channel EEG. & $0.854$ (Sleep-EDF) & $0.676$ \\
-AttnSleep~\cite{eldele2021attnsleep} & 2021 & Multi-resolution CNN with multi-head self-attention over epochs, single-channel EEG. & $0.844$ (Sleep-EDF) & $0.686$ \\
+AttnSleep~\cite{eldele2021attnsleep} & 2021 & Multi-resolution CNN with multi-head self-attention over epochs, single-channel EEG. & $0.844$ (Sleep-EDF) & $0.716$ \\
 SleepTransformer~\cite{sleeptransformer2022} & 2022 & Transformer encoder with epoch-level interpretability and uncertainty estimates. & $0.848$ (Sleep-EDF) & $0.683$ \\
 1D-ResNet-SE-LSTM & 2023 & Residual network with squeeze-and-excitation blocks and an LSTM on raw EEG. & $0.864$ (Sleep-EDF) & -- \\
 Micro SleepNet & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.833$ (SHHS) & -- \\
@@ -1383,7 +1386,7 @@ AT-BiLSTM & 2024 & Attention-augmented bidirectional LSTM, single-channel EEG. &
 \section{Conclusion}
 We built a model that reads the full polysomnogram of stroke patients and, from one pass,
 stages their sleep and detects their respiratory events. Deep networks built for healthy sleep
-collapse to $0.61$--$0.69$ accuracy on this cohort, so its $\mmAcc$ staging accuracy is at the
+collapse to $0.61$--$0.72$ accuracy on this cohort, so its $\mmAcc$ staging accuracy is at the
 cohort ceiling for every model family. The contribution is the second output, a respiratory
 read-out at $\mmAuc$ AUC that survives removal of the airflow channel, showing it reads the
 underlying physiology. Reading the whole recording gives the model a second clinical voice in the
