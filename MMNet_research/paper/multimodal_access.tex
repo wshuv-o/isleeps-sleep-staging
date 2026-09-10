@@ -769,6 +769,17 @@ of an obstructive event as it happens, whereas desaturation is a lagged conseque
 Attention and plain concatenation stage and detect alike, so the gain comes from the added
 modality, and the fusion mechanism has little effect.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/fig_ablation.pdf}
+\caption{Modality-ablation grid: the drop in staging accuracy and in respiratory AUC when
+each modality is removed and the model retrained. The two tasks separate cleanly. Staging
+falls only for the neural channels and respiratory detection only for effort and the
+cardiorespiratory stream as a whole, with everything between flat. Intervals are in
+Table~\ref{tab:ablate}.}
+\label{fig:ablationfig}
+\end{figure}
+
 \begin{table}[t]
 \caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
 three seeds. Each row removes one modality and keeps the rest; cells are mean
@@ -946,7 +957,8 @@ Severe   & $\geq 30$  & 38 & $0.719 \pm 0.100$ \\
 \end{table}
 
 \subsection{Permutation Importance: a Second, Independent Attribution}
-The ablation grid establishes what the model \emph{needs}: remove a modality, retrain, and
+The ablation grid (Fig.~\ref{fig:ablationfig}) establishes what the model \emph{needs}:
+remove a modality, retrain, and
 observe which head suffers. A complementary question is what a \emph{trained} model actually
 uses. We therefore permute each modality's features across epochs at inference time, so the
 channel is still present but no longer aligned to the epoch it describes, and measure the
