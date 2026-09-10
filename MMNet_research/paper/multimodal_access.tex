@@ -309,10 +309,9 @@ Share (\%) & 26.6 & 10.2 & 42.3 & 8.9 & 12.1 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_mm_apnea_prev.pdf}
-\caption{Sleep-disordered-breathing burden across the cohort. Each bar counts patients by the
-fraction of epochs that carry a scored respiratory event, over the $99$ patients with
-respiratory labels. The median, marked by the dashed line, sits at $13\%$, and many
-exceed $30\%$, so the cardiorespiratory signal is abundant.}
+\caption{Sleep-disordered-breathing burden across the cohort: patients by the fraction
+of epochs carrying a scored respiratory event, over the $99$ with respiratory labels. The
+dashed line marks the median, $13\%$.}
 \label{fig:prev}
 \end{figure}
 
@@ -360,8 +359,8 @@ event (Fig.~\ref{fig:arch}).
 \caption{The two-stream, multi-task model. Layer shapes above each block, operation
 below; block height encodes units for the multilayer perceptron and temporal length for
 the convolutional stack. Dashed outlines mark frozen parameters. The junction marked C is the
-concatenation used for every reported result; the panel at lower right details the attention
-fusion evaluated against it in Section~\ref{sec:ablate}, which it matches to within noise.}
+concatenation used for every reported result; the lower-right panel details the attention
+fusion evaluated against it (Section~\ref{sec:ablate}).}
 \label{fig:arch}
 \end{figure*}
 
@@ -558,11 +557,8 @@ patient-independent, ten-fold except for the earlier retrained baselines at five
 \caption{Reimplementation check for the models marked $^{\dagger}$ in
 Table~\ref{tab:bench}: ten-fold subject-independent cross-validation on the
 Sleep-EDF Cassette subjects $0$--$20$, $40$ recordings, single Fpz-Cz derivation.
-This is one subject more than the conventional Sleep-EDF-20 split, so the published
-accuracies opposite are not computed on an identical set. $\approx$ marks an accuracy
-inferred from the macro-F1 its paper reports; $^{\S}$ marks a model whose published figure
-is on SHHS rather than Sleep-EDF, so its check compares different corpora and is weaker
-than the others.}
+$\approx$ marks an accuracy inferred from a paper's macro-F1, $^{\S}$ a published
+figure measured on SHHS rather than Sleep-EDF.}
 \label{tab:reimpl}
 \centering
 \begin{tabular}{@{}l c c c@{}}
@@ -581,15 +577,10 @@ AT-BiLSTM & 0.838 & $0.835 \pm 0.046$ & $-0.003$ \\
 
 \begin{table*}[t]
 \caption{Sleep staging on iSLEEPS, patient-independent, against every architecture we
-evaluated. $^{\dagger}$ marks a model reimplemented by us from its paper
-(Table~\ref{tab:reimpl}). $^{\ddagger}$ marks a figure quoted from the corpus
-paper~\cite{maiti2026isleeps} rather than run here: that row uses that paper's
-protocol, an $80/10/10$ patient-wise split over $N=100$ including the duplicated pair we
-exclude (Section~\ref{sec:data}), and its own two-channel input; the authors' repository
-releases preprocessing only, so neither row can be reproduced and neither is a
-same-protocol comparison. Bold marks the best value among rows run under our protocol.
-``feat'' marks engineered features. Cells are mean $\pm$ SD across folds where per-fold
-values were retained.}
+evaluated. Cells are mean $\pm$ SD across folds where per-fold values were retained.
+$^{\dagger}$ marks a model we reimplemented (Table~\ref{tab:reimpl}), $^{\ddagger}$ one
+quoted from the corpus paper on its own protocol, ``feat'' engineered features. Bold marks
+the best value among rows run under our protocol.}
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c c @{}}
@@ -629,9 +620,16 @@ values were retained.}
 \end{table*}
 
 \subsection{Staging Benchmark and Comparison}
-Each reimplementation is checked against its published Sleep-EDF accuracy in
-Table~\ref{tab:reimpl}; those published figures follow each paper's own protocol, which
+The row marked $^{\ddagger}$ is quoted from the corpus paper rather than run here. It
+uses that paper's protocol, an $80/10/10$ patient-wise split over $N=100$ that includes the
+duplicated pair we exclude (Section~\ref{sec:data}), and its own two-channel input, and that
+paper's repository releases preprocessing only, so it can be neither reproduced nor read as
+a same-protocol comparison. Each reimplementation is checked against its published Sleep-EDF
+accuracy in Table~\ref{tab:reimpl}; those published figures follow each paper's own protocol, which
 differs in subset and split, so they are consistency checks and not exact reproductions.
+Our own split uses one subject more than the conventional Sleep-EDF-20 set, and one of the
+published figures is measured on SHHS rather than Sleep-EDF, so those two checks are weaker
+than the rest.
 Table~\ref{tab:bench} is organised in three blocks: architectures retrained on this
 cohort, architectures trained on healthy sleep and applied to it zero-shot, and the
 proposed model, with a final row cross-validating the proposed architecture on healthy
@@ -669,8 +667,8 @@ it hesitates.
 \textbf{The margin over the retrained baselines is tested, not eyeballed.} The folds are fixed
 across every model in Table~\ref{tab:bench}, so each baseline is scored on exactly the patients
 the proposed model was and the comparison is paired. That matters here: fold-to-fold variation
-is large and it is \emph{shared}, because the difficulty lies in the patients rather than the
-architecture --- AttnSleep spans $0.627$ to $0.755$ across folds --- so reading two overlapping
+is large and it is \emph{shared}, because the difficulty lies in the patients and not the
+architecture (AttnSleep spans $0.627$ to $0.755$ across folds), so reading two overlapping
 $\pm$SD intervals charges the cohort's own variability against the difference and hides it.
 Paired on fold values, with Holm correction within each metric across the four reimplemented
 baselines, the proposed model leads on all three metrics against all four, twelve comparisons
@@ -832,7 +830,7 @@ events per hour against a scored $11.1$, and a per-patient rank correlation of o
 $\rho=0.142$ ($p=0.17$, $n=96$), far weaker than the $\rho=0.491$ obtained from the
 aggregated epoch probability. Consecutive events separated by a few epochs merge into one
 flagged run, so an epoch-level detector systematically under-counts. This is why we report a
-burden and not an index, and why event-level scoring is the natural next step rather than a
+burden and not an index, and why event-level scoring is the natural next step instead of a
 formality.
 
 Figure~\ref{fig:rocpr} shows the operating characteristics behind these numbers, computed
@@ -851,22 +849,18 @@ visible, not hidden; at $0.005$ it is an eighth of one fold standard deviation.
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_roc_pr.pdf}
 \caption{Respiratory-event detection, pooled over the ten patient-independent test
-folds. \textbf{(a)} Event-level operating characteristic: consecutive flagged epochs are
-grouped into events per patient, and each point is a decision threshold, labelled with the
-fraction of all epochs it flags. Marker area carries that fraction, because sensitivity and
-false-alarm rate alone would make the low thresholds look strictly better. The curve turns
-back on itself: flagged runs merge, so fewer distinct false alarms are counted even as more
-of the night is flagged. \textbf{(b)} Precision--recall; the dashed line is the $0.157$
-event prevalence, the no-skill floor.}
+folds. \textbf{(a)} Event-level operating characteristic. Each point is a decision
+threshold, labelled and sized by the fraction of all epochs it flags.
+\textbf{(b)} Precision--recall; the dashed line is the $0.157$ event prevalence, the
+no-skill floor.}
 \label{fig:rocpr}
 \end{figure}
 
 \begin{table}[t]
 \caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)}
-Detectors trained on the same folds. The classical baselines read the $14$
-cardiorespiratory descriptors; MM-Net reads the raw signal through its learned encoder.
-Chance-level average precision equals the event prevalence, $0.157$. \textit{(b)} AUC by event type
-over the $96$ patients with event-type annotation. Best per column in \textbf{bold}.}
+Detectors on the same folds; the classical baselines read the $14$ descriptors, MM-Net the
+raw signal. Chance average precision is the $0.157$ prevalence. \textit{(b)} AUC by event
+type, $96$ annotated patients. Best per column in \textbf{bold}.}
 \label{tab:resp}
 \centering
 \small
@@ -908,7 +902,7 @@ sleep-disordered breathing worsens: accuracy falls from $0.769$ in patients with
 $0.719$ in the severe group (Table~\ref{tab:severity}). The pathology that motivates the second output also makes the first
 harder, which is the clinical reality of this cohort.
 
-The association is real but modest, and it is worth saying why rather than only that it is
+The association is real but modest, and it is worth saying why, not only that it is
 so. Three mechanisms plausibly cap it, and each is a property of the formulation rather
 than of the model. First, mean per-epoch probability is a poor estimator of an hourly event
 rate: a $30$-second epoch holding one hypopnea and one holding three both contribute a
@@ -962,7 +956,7 @@ accuracy against $0.030$ for the ocular and $0.006$ for the muscle channel, the 
 the ablation gives, and the rank correlation between the two attributions is $\rho=0.833$
 ($p=0.010$).
 
-On the respiratory head the agreement is narrower, and we state it precisely rather than
+On the respiratory head the agreement is narrower, and we state it precisely instead of
 pooling the two into a single coefficient. Both methods place respiratory effort first by a wide
 margin: $0.038$ AUC under retraining, $0.071$ under permutation, in each case well clear of
 the runner-up. The remaining four cardiorespiratory channels, however, have retraining effects
@@ -974,13 +968,13 @@ AUC and its AUC after shuffling, so the drop is a within-fold quantity and can b
 directly. Every channel's drop is distinguishable from zero (one-sample on ten per-fold drops,
 Holm across the eight channels): effort $0.071$ ($p<10^{-4}$), airflow $0.027$ ($p=0.0005$),
 SpO$_2$ $0.016$ ($p=0.0002$), pulse/HRV $0.012$ ($p=0.004$), and the remainder below $0.006$.
-Significance here is not importance --- the magnitudes span a factor of $32$, and what the test
-establishes is that the \emph{ordering} is real rather than sampling noise. The ordering is the
+Significance here is not importance. The magnitudes span a factor of $32$, and what the test
+establishes is that the \emph{ordering} is real and not sampling noise. The ordering is the
 result worth having: the three channels the model leans on most, effort, airflow and SpO$_2$,
 are exactly the three the AASM definition of a respiratory event is written in, and they are
 one to two orders above the cardiac and muscle channels.
 
-The two experiments answer different questions and the divergence is informative rather than
+The two experiments answer different questions and the divergence is informative and not
 contradictory. Retraining without a channel measures whether it is \emph{irreplaceable}, and
 the network compensates by re-learning the signal from its correlates; permutation holds the
 fitted model still and measures what it \emph{uses}. SpO$_2$ is the clearest case: retraining
@@ -1126,11 +1120,10 @@ alone; but the complementarity saturates after one pretrained encoder, so this i
 general argument for stacking foundation models.
 
 \begin{table*}[t]
-\caption{What each stream should be represented as. One factor varies per block with
-everything else held fixed; ten-fold patient-independent, three seeds, thirty fold-values
-per cell, mean $\pm$ SD. $\Delta$ and Holm $p$ are against the engineered-feature baseline
-of each block, Wilcoxon paired on fold-values. ``adopted'' marks the choice carried into the
-final model.}
+\caption{What each stream should be represented as. One factor varies per block,
+everything else held fixed; thirty fold-values per cell, mean $\pm$ SD. $\Delta$ and Holm
+$p$ are against each block's engineered-feature baseline. ``adopted'' marks the choice
+carried into the final model.}
 \label{tab:repr}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l c c c c @{}}
@@ -1193,7 +1186,7 @@ reported. We read the pair as bracketing the true transfer figure, not as confir
 higher one. The mismatched run could be gaining from batch-normalisation statistics that never
 saw zeros, in which case $0.774$ is the more defensible number, and a reader who prefers it
 loses nothing in our argument: both sit above the in-domain $\mmAcc$. Both corpora
-also differ from iSLEEPS in montage, so both transfer figures are lower bounds rather than
+also differ from iSLEEPS in montage, so both transfer figures are lower bounds and not
 clean estimates. ISRUC records each
 subject twice; respiratory-event prevalence is $10.1\%$ on the first night and $2.4\%$ on
 the second, so we report the two separately instead of pooling a difference that has
@@ -1203,12 +1196,12 @@ nothing to do with the model.
 $0.780$ AUC, and it does so handicapped, because ISRUC provides no pulse channel and no
 separate effort trace, leaving two of the seven cardiorespiratory inputs zero-filled. A
 detector that had latched onto one centre's equipment would not survive that; this one does.
-The comparison needs its estimators matched to mean anything, and we state them rather than
+The comparison needs its estimators matched to mean anything, and we state them instead of
 placing the two numbers side by side. The external figure is pooled over all epochs of the
 night, because per-recording AUC is unusable on this corpus: event prevalence ranges from
 $0\%$ to $22\%$ across the sixteen recordings, and a night with almost no events returns a
 near-chance value whatever the model does. The in-domain headline $\mmAuc$ is a ten-fold mean.
-Pooled in-domain --- the like-for-like quantity --- is $0.778$. The external result therefore
+Pooled in-domain, the like-for-like quantity, is $0.778$. The external result therefore
 sits within $0.003$ of the in-domain one on either estimator, and nothing in the claim rests
 on which is chosen. Night two falls to $0.723$, tracking its
 much lower event prevalence ($2.4\%$ against $10.1\%$) and not anything about the
@@ -1248,11 +1241,10 @@ respiratory AUC spans $0.515$--$0.848$, the latter tracking event prevalence clo
 the low-prevalence nights give near-chance estimates.
 
 \begin{table}[t]
-\caption{External validation on two public corpora, zero-shot: one model trained on all
-$99$ iSLEEPS patients with no dataset-specific tuning. In-domain figures are ten-fold
-patient-independent means. Sleep-EDF carries no cardiorespiratory channels, so the
-respiratory head is not scored there. The two ISRUC nights differ sharply in event
-prevalence and are reported separately.}
+\caption{External validation, zero-shot: one model trained on all $99$ iSLEEPS
+patients, no dataset-specific tuning. In-domain figures are ten-fold means. Sleep-EDF has no
+cardiorespiratory channels, so the respiratory head is unscored there; the two ISRUC nights
+differ in event prevalence and are reported separately.}
 \label{tab:ext}
 \centering
 \setlength{\tabcolsep}{4pt}
