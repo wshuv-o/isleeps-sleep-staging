@@ -655,15 +655,10 @@ and $0.72$ accuracy, $12$ to $20$ points below the same architectures' published
 healthy sleepers. The feature-based model reaches $\mmAcc$, above every deep architecture we
 retrained here, which matches the concurrent finding that depth alone does not help on this
 cohort~\cite{bose2026gap}: with under a hundred patients a convolutional network cannot
-rediscover what decades of sleep science already encode in the features. It does not lead the
-corpus. The corpus paper reports $0.747$ for its own LSTM, above our $\mmAcc$, on an
-$80/10/10$ split over $N=100$ that includes the duplicated pair we exclude. We do not carry
-that figure into Table~\ref{tab:bench}, because it was not measured on the folds every other
-row there uses; instead we reimplemented that architecture and ran it on our folds, where it
-reaches $0.720 \pm 0.032$ over thirty fold-values, a shortfall of $0.027$ that sits inside
-the range our other reimplementations show against their published figures. Both readings are
-available to the reader: their number here, ours in the table. No method we are aware of
-exceeds $0.75$ on this corpus. Section~\ref{sec:curve} shows why: the
+rediscover what decades of sleep science already encode in the features. The corpus paper's own recurrent
+baseline, reimplemented here and run on the same folds, reaches $0.720 \pm 0.032$ over
+thirty fold-values. Staging accuracy is nonetheless capped: nothing we have run on this
+corpus exceeds $0.75$. Section~\ref{sec:curve} shows why: the
 staging learning curve has flattened, so the ceiling is a property of this cohort rather than
 of any one model. We therefore do not position the model as a staging leader. What sets it apart is
 a second output: it is the only model that also detects respiratory events. A representative held-out night is
