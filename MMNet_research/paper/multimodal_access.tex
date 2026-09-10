@@ -92,7 +92,7 @@ staging objective. On iSLEEPS, the first public
 polysomnography corpus of subacute ischemic stroke ($99$ patients, $92{,}560$ epochs),
 under patient-independent ten-fold cross-validation, MM-Net stages sleep at $\mmAcc$
 accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC with
-$2.76$\,M trainable parameters. We benchmark nine deep architectures retrained on this
+$2.76$\,M trainable parameters. We benchmark ten deep architectures retrained on this
 cohort and three applied zero-shot from healthy sleep, all on identical folds; every
 retrained baseline lands between $0.613$ and $0.686$ accuracy. Three are reimplemented
 here, each recovering its published Sleep-EDF accuracy to within $0.03$, which indicates
@@ -165,7 +165,7 @@ cardiorespiratory cues reach the decision undiminished by a fusion trained mostl
 for staging (Section~\ref{sec:method}). The ablation identifies respiratory effort, not
 oxygen saturation, as the channel that read-out depends on (Section~\ref{sec:ablate}).
 
-\item \label{c:bench}We benchmark the model against twelve baseline configurations on identical
+\item \label{c:bench}We benchmark the model against thirteen baseline configurations on identical
 patient-independent folds, covering convolutional, recurrent, attentional and fully
 convolutional families, and reimplement three published architectures (U-Time,
 TinySleepNet, SleepTransformer) so that every comparison runs through one pipeline
@@ -185,7 +185,8 @@ channel is indispensable (Section~\ref{sec:noflow}).
 
 \item \label{c:attrib}We attribute each output causally to the physiology that produces it. A
 leave-one-out modality-ablation grid shows removing the cardiorespiratory stream lowers
-only respiratory detection (Wilcoxon $p=0.004$), while removing the ocular channel lowers
+only respiratory detection ($-0.128$ AUC, Wilcoxon on thirty fold-values, Holm
+$p<10^{-7}$), while removing the ocular channel lowers
 only staging, giving a falsifiable account of what each modality contributes
 (Table~\ref{tab:ablate}).
 \end{enumerate}
@@ -264,10 +265,9 @@ polysomnogram and produces both outputs.
 healthy corpora such as Sleep-EDF~\cite{kemp2000sleepedf,goldberger2000physionet}, where deep
 and foundation models reach a ceiling, while performance on focal brain injury is largely
 unmeasured. Contributions~\ref{c:bench} and~\ref{c:ceiling} benchmark strong deep architectures,
-classical gradient-boosting
-pipelines~\cite{chen2016xgboost,ke2017lightgbm,prokhorenkova2018catboost}, and graph
-models~\cite{velickovic2018gat} on a subacute-stroke cohort, show that the healthy-built
-networks collapse, and establish by reimplementation that the collapse is a property of the
+and classical gradient-boosting
+pipelines~\cite{chen2016xgboost,ke2017lightgbm,prokhorenkova2018catboost} on a
+subacute-stroke cohort, show that the healthy-built networks collapse, and establish by reimplementation that the collapse is a property of the
 cohort.
 \emph{(iii) Attribution, reliability, and cost.} Interpretability is usually post-hoc and
 unfalsifiable, predictive uncertainty is seldom modeled~\cite{angelopoulos2023conformal}, and the
@@ -550,8 +550,8 @@ three further published architectures we reimplemented for this comparison (U-Ti
 fully convolutional encoder--decoder; TinySleepNet, a compact convolutional--recurrent model;
 and SleepTransformer, a purely attentional one), a
 network transferred from Sleep-EDF, and a raw-signal convolutional network on all $14$ channels,
-alongside the published single-channel baselines for the corpus~\cite{maiti2026isleeps}. All numbers are ten-fold
-patient-independent, at the hidden-Markov operating point where a model provides one.
+alongside the published single-channel baselines for the corpus~\cite{maiti2026isleeps}. All numbers are
+patient-independent, ten-fold except for the earlier retrained baselines at five, at the hidden-Markov operating point where a model provides one.
 
 \begin{table}[t]
 \caption{Reimplementation check for the models marked $^{\dagger}$ in
@@ -731,7 +731,7 @@ ablation moves staging, so each stream serves the outcome its physiology governs
 Within the cardiorespiratory stream, however, only respiratory effort is individually necessary
 ($-0.038$ AUC, Holm $p<0.001$). Removing SpO$_2$, pulse/HRV, ECG or airflow individually costs
 at most $0.005$ AUC and none survives correction; SpO$_2$, which the engineered-feature
-configuration relied on more heavily, is here the most expendable channel
+configuration was built around, is here the most expendable channel
 ($-0.002$, $p=0.61$). The five
 individual removals sum to $-0.046$ AUC against $-0.128$ for removing the stream as a whole,
 a factor of $2.8$. The learned encoder therefore distributes respiratory information redundantly
@@ -792,8 +792,10 @@ paradoxical thoraco-abdominal motion of an obstructive event while it is happeni
 desaturation follows it by several breaths.
 
 \subsection{Respiratory Baselines and Per-event-type Detection}
-The respiratory task needs real competitors (Table~\ref{tab:resp}), on the same folds and the same $14$
-cardiorespiratory features. A clinical desaturation rule reaches $0.596$ AUC, logistic
+The respiratory task needs real competitors (Table~\ref{tab:resp}), on the same folds.
+The classical baselines read the $14$ engineered cardiorespiratory descriptors; the proposed
+model reads the raw signal through its learned encoder, and its own score on the $14$
+descriptors is $0.698$ (Table~\ref{tab:repr}), which is the like-for-like comparison. A clinical desaturation rule reaches $0.596$ AUC, logistic
 regression $0.582$, and gradient boosting $0.670$; a random classifier scores $0.157$ average
 precision, the event prevalence. The proposed model reaches $\mmAuc$ AUC and $\mmAp$ average
 precision, above gradient boosting but by a modest margin, so the contribution is the joint
@@ -876,7 +878,9 @@ Central     & 831      & \textbf{0.935} \\
 \subsection{Clinical Validation against AHI and Severity}
 Aggregating the per-epoch respiratory probability into a per-patient burden and correlating it
 with the clinical apnea-hypopnea index (AHI) from the metadata gives a significant positive
-association (Spearman $\rho=0.491$, $p<0.001$, $n=99$; Fig.~\ref{fig:ahi}), so the model's output tracks a
+association (Spearman $\rho=0.491$, $p<0.001$, $n=99$, the three recordings with an
+incomplete cardiorespiratory montage scored with those channels zero-filled;
+Fig.~\ref{fig:ahi}), so the model's output tracks a
 clinician's summary measure, not only an epoch-level score. Staging, in turn, degrades as
 sleep-disordered breathing worsens: accuracy falls from $0.769$ in patients with a normal AHI to
 $0.719$ in the severe group (Table~\ref{tab:severity}). The pathology that motivates the second output also makes the first
@@ -1428,7 +1432,7 @@ recipient of the Rising Star Performer Award from Odin in 2025.
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{bio_abha.jpg}}]{ESM-E MOULA CHOWDHURY ABHA}
 received the B.Sc. degree in computer science and engineering from American
-International University-Bangladesh (AIUB), Dhaka, Bangladesh, in \stale{[year]}, where she
+International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025, where she
 is currently pursuing the M.Sc. degree in computer science. She is with the Department of
 Computer Science and Engineering, AIUB, and a Researcher with Prodigy AI, a non-profit
 research group focused on brain--computer interfaces. She has over three years of industry
