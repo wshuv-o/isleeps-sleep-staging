@@ -448,8 +448,7 @@ embedding $c_t$,
 The connection exists so that the respiratory decision does not have to survive a
 fusion trained mostly for staging, which would weaken the mechanical signature of an
 obstructed breath along the way. Section~\ref{sec:ablate} identifies the channel that
-signature lives in, and it is respiratory effort, not the oxygen fall, that names the
-event. We isolate the connection by removing it and holding everything else fixed, on the
+signature lives in, and it is respiratory effort that names the event. We isolate the connection by removing it and holding everything else fixed, on the
 same thirty fold-values as every other figure here. Respiratory AUC falls from $\mmAuc$ to
 $0.776$ (Wilcoxon $p=0.043$) and average precision from $\mmAp$ to $0.411$ ($p=0.42$), while
 staging is untouched at $0.739$ accuracy ($p=0.97$) and $\kappa$ $0.634$ ($p=0.94$). The gain
@@ -817,8 +816,7 @@ mild, dominant $81\%$ of events), $0.898$ on obstructive apneas, and $0.935$ on 
 It is strongest on the most severe events, and the overall AUC is held down by the abundant
 hypopneas.
 
-Scoring at the event level instead of the epoch level changes the picture, and not
-favourably. Grouping consecutive flagged epochs into events within each patient, a decision
+Scoring at the event level instead of the epoch level worsens the picture. Grouping consecutive flagged epochs into events within each patient, a decision
 threshold of $0.5$ detects $55\%$ of scored events at $2.6$ false alarms per hour; lowering the
 threshold to $0.2$ raises event sensitivity to $86\%$ but flags $68\%$ of all epochs. More
 tellingly, the model recovers the wrong \emph{number} of events: a mean predicted rate of $4.5$
@@ -970,8 +968,7 @@ result worth having: the three channels the model leans on most, effort, airflow
 are exactly the three the AASM definition of a respiratory event is written in, and they are
 one to two orders above the cardiac and muscle channels.
 
-The two experiments answer different questions and the divergence is informative and not
-contradictory. Retraining without a channel measures whether it is \emph{irreplaceable}, and
+The two experiments answer different questions, so the divergence is informative. Retraining without a channel measures whether it is \emph{irreplaceable}, and
 the network compensates by re-learning the signal from its correlates; permutation holds the
 fitted model still and measures what it \emph{uses}. SpO$_2$ is the clearest case: retraining
 without it costs $0.002$ AUC, shuffling it under the fitted model costs $0.016$. A channel can
