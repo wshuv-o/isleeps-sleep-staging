@@ -577,8 +577,14 @@ SleepTransformer~\cite{sleeptransformer2022} & 0.848 & $0.823 \pm 0.033$ & $-0.0
 \begin{table*}[t]
 \caption{Sleep staging on iSLEEPS, patient-independent, against every architecture we
 evaluated. $^{\dagger}$ marks a model reimplemented by us from its paper
-(Table~\ref{tab:reimpl}). ``feat'' marks engineered features. Cells are mean $\pm$ SD
-across folds where per-fold values were retained. Best per column in \textbf{bold}.}
+(Table~\ref{tab:reimpl}). $^{\ddagger}$ marks a figure quoted from the corpus
+paper~\cite{maiti2026isleeps} rather than run here: those two rows use that paper's
+protocol, an $80/10/10$ patient-wise split over $N=100$ including the duplicated pair we
+exclude (Section~\ref{sec:data}), and its own two-channel input; the authors' repository
+releases preprocessing only, so neither row can be reproduced and neither is a
+same-protocol comparison. Bold marks the best value among rows run under our protocol.
+``feat'' marks engineered features. Cells are mean $\pm$ SD across folds where per-fold
+values were retained.}
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c c @{}}
@@ -588,8 +594,8 @@ across folds where per-fold values were retained. Best per column in \textbf{bol
  & Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
 \midrule
 \multirow{10}{*}{\shortstack[l]{\emph{Deep networks,}\\\emph{retrained on iSLEEPS}}}
- & LSTM~\cite{maiti2026isleeps}                  & 1\,EEG  & n/r          & --- & \textbf{0.747} & --- & --- \\
- & CNN-ResNet18~\cite{maiti2026isleeps}          & 1\,EEG  & $\sim$11\,M  & --- & 0.617 & 0.544 & 0.480 \\
+ & LSTM~\cite{maiti2026isleeps}$^{\ddagger}$     & 1\,EEG\,$+$\,EOG & n/r & --- & $0.747$ & --- & --- \\
+ & CNN-ResNet18~\cite{maiti2026isleeps}$^{\ddagger}$ & 1\,EEG\,$+$\,EOG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
  & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & --- & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
  & U-Time~\cite{perslev2019utime}$^{\dagger}$ & 1\,EEG & $1.07$\,M & $0.791 \pm 0.062$ & $0.646 \pm 0.064$ & $0.524 \pm 0.057$ & $0.506 \pm 0.082$ \\
  & AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & --- & $0.716 \pm 0.042$ & $0.600 \pm 0.043$ & $0.593 \pm 0.058$ \\
@@ -650,6 +656,21 @@ a second output: it is the only model that also detects respiratory events. A re
 shown in Figure~\ref{fig:hypno}: the predicted hypnogram follows the reference through the
 night's cycles, and the stage-probability ribbon exposes where the model is confident and where
 it hesitates.
+
+\textbf{The margin over the retrained baselines is tested, not eyeballed.} The folds are fixed
+across every model in Table~\ref{tab:bench}, so each baseline is scored on exactly the patients
+the proposed model was and the comparison is paired. That matters here: fold-to-fold variation
+is large and it is \emph{shared}, because the difficulty lies in the patients rather than the
+architecture --- AttnSleep spans $0.627$ to $0.755$ across folds --- so reading two overlapping
+$\pm$SD intervals charges the cohort's own variability against the difference and hides it.
+Paired on fold values, with Holm correction within each metric across the four reimplemented
+baselines, the proposed model leads on all three metrics against all four, twelve comparisons
+of twelve: accuracy $+0.023$ to $+0.088$ (Holm $p\le0.008$), macro-F1 $+0.064$ to $+0.142$
+($p\le0.0005$), and $\kappa$ $+0.041$ to $+0.122$ ($p\le0.006$). Against AttnSleep, the
+strongest of them, the macro-F1 margin of $+0.071$ holds on \emph{all thirty} fold-seed pairs.
+The accuracy margin is the narrowest of the three and the one most exposed to the cohort's
+noise; macro-F1 and $\kappa$, which do not let a model coast on the two majority stages,
+separate the models by two to three times as much.
 
 \begin{figure*}[t]
 \centering
@@ -948,12 +969,29 @@ On the respiratory head the agreement is narrower, and we state it precisely rat
 pooling the two into a single coefficient. Both methods place respiratory effort first by a wide
 margin: $0.038$ AUC under retraining, $0.071$ under permutation, in each case well clear of
 the runner-up. The remaining four cardiorespiratory channels, however, have retraining effects
-that are not distinguishable from zero, so their rank order carries no signal and the
-correlation over the five is correspondingly uninformative ($\rho=0.381$, $p=0.35$). The claim
-the comparison supports is therefore the one that matters physiologically: two attributions
-sharing no machinery (one applied to retrained models, one to fixed ones), independently
-identify effort as the dominant respiratory cue. Unlike an embedding projection, that was a
-prediction that could have failed.
+that are not distinguishable from zero, so their rank order carries no signal there and the
+correlation over the five is correspondingly uninformative ($\rho=0.381$, $p=0.35$).
+
+\textbf{Permutation separates them where retraining cannot.} Each fold records its own baseline
+AUC and its AUC after shuffling, so the drop is a within-fold quantity and can be tested
+directly. Every channel's drop is distinguishable from zero (one-sample on ten per-fold drops,
+Holm across the eight channels): effort $0.071$ ($p<10^{-4}$), airflow $0.027$ ($p=0.0005$),
+SpO$_2$ $0.016$ ($p=0.0002$), pulse/HRV $0.012$ ($p=0.004$), and the remainder below $0.006$.
+Significance here is not importance --- the magnitudes span a factor of $32$, and what the test
+establishes is that the \emph{ordering} is real rather than sampling noise. The ordering is the
+result worth having: the three channels the model leans on most, effort, airflow and SpO$_2$,
+are exactly the three the AASM definition of a respiratory event is written in, and they are
+one to two orders above the cardiac and muscle channels.
+
+The two experiments answer different questions and the divergence is informative rather than
+contradictory. Retraining without a channel measures whether it is \emph{irreplaceable}, and
+the network compensates by re-learning the signal from its correlates; permutation holds the
+fitted model still and measures what it \emph{uses}. SpO$_2$ is the clearest case: retraining
+without it costs $0.002$ AUC, shuffling it under the fitted model costs $0.016$. A channel can
+be heavily used and still be replaceable. The claim the comparison supports is therefore the
+one that matters physiologically: two attributions sharing no machinery, one applied to
+retrained models and one to fixed ones, independently identify effort as the dominant
+respiratory cue. Unlike an embedding projection, that was a prediction that could have failed.
 
 \subsection{Data Efficiency: Which Ceiling Are We Against?}
 \label{sec:curve}
@@ -1165,10 +1203,17 @@ the second, so we report the two separately instead of pooling a difference that
 nothing to do with the model.
 
 \textbf{The respiratory read-out transfers.} On ISRUC night one the model reaches
-$0.780$ AUC against $\mmAuc$ in-domain, a gap of $0.002$, and it does so handicapped,
-because ISRUC provides no pulse channel and no separate effort trace, leaving two of the
-seven cardiorespiratory inputs zero-filled. A detector that had latched onto one centre's
-equipment would not survive that; this one does. Night two falls to $0.723$, tracking its
+$0.780$ AUC, and it does so handicapped, because ISRUC provides no pulse channel and no
+separate effort trace, leaving two of the seven cardiorespiratory inputs zero-filled. A
+detector that had latched onto one centre's equipment would not survive that; this one does.
+The comparison needs its estimators matched to mean anything, and we state them rather than
+placing the two numbers side by side. The external figure is pooled over all epochs of the
+night, because per-recording AUC is unusable on this corpus: event prevalence ranges from
+$0\%$ to $22\%$ across the sixteen recordings, and a night with almost no events returns a
+near-chance value whatever the model does. The in-domain headline $\mmAuc$ is a ten-fold mean.
+Pooled in-domain --- the like-for-like quantity --- is $0.778$. The external result therefore
+sits within $0.003$ of the in-domain one on either estimator, and nothing in the claim rests
+on which is chosen. Night two falls to $0.723$, tracking its
 much lower event prevalence ($2.4\%$ against $10.1\%$) and not anything about the
 model.
 
