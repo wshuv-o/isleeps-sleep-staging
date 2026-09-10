@@ -201,7 +201,7 @@ deeper single-channel staging does not help on this cohort. The remainder of the
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Single-channel deep sleep staging}
+\subsection{Single-Channel Deep Sleep Staging}
 Automated staging matured on one EEG channel. DeepSleepNet paired convolutional feature
 extraction with a bidirectional LSTM~\cite{supratak2017deepsleepnet}; SeqSleepNet framed the
 night as sequence-to-sequence labeling~\cite{phan2019seqsleepnet}; AttnSleep introduced
@@ -217,7 +217,7 @@ These models set the accuracy on healthy corpora but
 depend on the cortical micro-events that stroke disturbs, which is why they transfer poorly to
 patients~\cite{bose2026gap}.
 
-\subsection{Multi-channel and foundation models}
+\subsection{Multi-Channel and Foundation Models}
 Later work reads several PSG channels. U-Sleep stages from arbitrary EEG and EOG derivations
 across many cohorts~\cite{perslev2021usleep}, and self-supervised EEG foundation models such
 as LaBraM, CBraMod, EEGPT, and BIOT learn transferable representations from large unlabeled
@@ -231,7 +231,7 @@ which a single EEG channel resolves poorly. Reported gains from adding respirato
 \emph{staging} are small and cohort-dependent; our benchmark quantifies this directly on a
 high-burden clinical cohort and separates the staging effect from the respiratory one.
 
-\subsection{Detection of sleep-disordered breathing}
+\subsection{Detection of Sleep-Disordered Breathing}
 A parallel line of work detects apnea and hypopnea from breathing signals. Airflow and effort
 shape, oximetry, and ECG-derived heart-rate variability are all informative, and oxygen
 desaturation is a defining marker of an event~\cite{jing2025cpap}. These detectors usually run
@@ -240,7 +240,7 @@ instead detect respiratory events on the staging epoch grid, jointly with stagin
 shared representation, so that one model produces both clinical outputs and the two tasks
 support each other during training.
 
-\subsection{Sleep and breathing after stroke}
+\subsection{Sleep and Breathing After Stroke}
 Sleep is both disturbed by stroke and predictive of recovery, and sleep-disordered breathing
 is common in the subacute phase and linked to poorer functional
 outcome~\cite{bassetti2006sleep,denis2024sleep,tellenbach2023brainstem}. Focal injury also changes
@@ -336,7 +336,7 @@ when it overlaps an event.
 %=====================================================================
 \section{Proposed Method}
 \label{sec:method}
-\subsection{Problem formulation}
+\subsection{Problem Formulation}
 A night is a sequence of $T$ epochs. For epoch $t$ we form a neural feature vector
 $\mathbf{f}^{\mathrm{eeg}}_t\in\mathbb{R}^{388}$, formed by concatenating the $188$
 engineered descriptors below with a $200$-dimensional embedding from a frozen pretrained EEG
@@ -364,7 +364,7 @@ fusion evaluated against it (Section~\ref{sec:ablate}).}
 \label{fig:arch}
 \end{figure*}
 
-\subsection{Physiological feature representations}
+\subsection{Physiological Feature Representations}
 \paragraph{Neural features ($188$)}
 Per channel we take absolute and relative band powers from the Welch spectrum $P(f)$ in delta
 ($0.5$--$4$), theta ($4$--$8$), alpha ($8$--$12$), sigma ($12$--$16$), and beta
@@ -402,7 +402,7 @@ $64$ dimensions the feature MLP produced, so the encoder is a drop-in replacemen
 other part of the network is unchanged. Section~\ref{sec:repr} reports what that substitution
 is worth, and it is the single largest architectural effect in this paper.
 
-\subsection{Two-stream encoders}
+\subsection{Two-Stream Encoders}
 The neural stream is a two-layer perceptron with LayerNorm; the
 cardiorespiratory stream is the convolutional encoder described above, which emits a vector
 of the same width the perceptron it replaced produced,
@@ -428,7 +428,7 @@ concatenation to within noise (Section~\ref{sec:ablate}). Since the elaborate fu
 nothing measurable here, we report and release the simple one, and the gain from the second
 stream should be read as coming from the added modality and not from how it is combined.
 
-\subsection{Temporal decoder and two heads}
+\subsection{Temporal Decoder and Two Heads}
 Sleep is sequential and respiratory events cluster, so the fused vectors of an $L=20$ epoch
 window ($10$ minutes) are read by a two-layer bidirectional LSTM. Each direction runs the
 standard recurrence
@@ -462,7 +462,7 @@ The trained model holds $2.76$ million parameters. The pretrained encoder that s
 $200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
 trainable parameters to this count.
 
-\subsection{Training and decoding}
+\subsection{Training and Decoding}
 The two tasks are trained together with equal weight, $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\,\mathcal{L}^{\mathrm{apn}}$ with $\lambda=1$, combining a class-weighted staging cross-entropy and a positive-weighted respiratory cross-entropy,
 \begin{align}
 \mathcal{L}^{\mathrm{stg}}&=-\sum_t\sum_{k}w_k\,y^{\mathrm{stg}}_{t,k}\log\hat y^{\mathrm{stg}}_{t,k},\\
@@ -484,7 +484,7 @@ held-out set of patients.
 %=====================================================================
 \section{Experiments}
 \label{sec:results}
-\subsection{Protocol and metrics}
+\subsection{Protocol and Metrics}
 All results use ten-fold, patient-independent cross-validation, so no patient appears in both
 training and test, and within each training split a disjoint set of patients is held out for
 early stopping. Staging is scored by accuracy, macro-F1 $\tfrac{1}{K}\sum_k\mathrm{F1}_k$, and
@@ -505,7 +505,7 @@ point. Every headline figure in this paper is the mean over all thirty fold-valu
 folds by three seeds, and not a single run. The three seed means for respiratory AUC are
 $0.781$, $0.783$ and $0.781$, so $\mmAuc$ is stable to the third decimal under reseeding.
 
-\subsection{Implementation and hyperparameters}
+\subsection{Implementation and Hyperparameters}
 The model is implemented in PyTorch and trained on a single NVIDIA RTX~2060 GPU (6\,GB) under
 Windows. Every run is seeded, so each is individually reproducible; headline figures
 average three seeds ($42$, $1$, $7$) over the ten folds, giving the thirty fold-values used
@@ -664,7 +664,7 @@ shown in Figure~\ref{fig:hypno}: the predicted hypnogram follows the reference t
 night's cycles, and the stage-probability ribbon exposes where the model is confident and where
 it hesitates.
 
-\textbf{The margin over the retrained baselines is tested, not eyeballed.} The folds are fixed
+The margin over the retrained baselines is tested, not eyeballed. The folds are fixed
 across every model in Table~\ref{tab:bench}, so each baseline is scored on exactly the patients
 the proposed model was and the comparison is paired. That matters here: fold-to-fold variation
 is large and it is \emph{shared}, because the difficulty lies in the patients and not the
@@ -963,7 +963,7 @@ the runner-up. The remaining four cardiorespiratory channels, however, have retr
 that are not distinguishable from zero, so their rank order carries no signal there and the
 correlation over the five is correspondingly uninformative ($\rho=0.381$, $p=0.35$).
 
-\textbf{Permutation separates them where retraining cannot.} Each fold records its own baseline
+Permutation separates them where retraining cannot. Each fold records its own baseline
 AUC and its AUC after shuffling, so the drop is a within-fold quantity and can be tested
 directly. Every channel's drop is distinguishable from zero (one-sample on ten per-fold drops,
 Holm across the eight channels): effort $0.071$ ($p<10^{-4}$), airflow $0.027$ ($p=0.0005$),
@@ -984,7 +984,7 @@ one that matters physiologically: two attributions sharing no machinery, one app
 retrained models and one to fixed ones, independently identify effort as the dominant
 respiratory cue. Unlike an embedding projection, that was a prediction that could have failed.
 
-\subsection{Data Efficiency: Which Ceiling Are We Against?}
+\subsection{Data Efficiency and the Cohort Ceiling}
 \label{sec:curve}
 Staging on this corpus saturates near $0.72$--$0.75$ for every model family tried here and
 elsewhere. Whether that reflects the architecture or the cohort is testable: retrain the
@@ -999,8 +999,8 @@ Respiratory AUC over the same range rises $0.732 \rightarrow 0.750 \rightarrow 0
 \rightarrow 0.785$, and its \emph{largest} increment is the final one, $+0.033$, close to a
 full fold standard deviation, and steeper than any earlier step. This curve is a single seed
 on a fixed held-out set, so its endpoint differs slightly from the three-seed headline figures
-($\mmAcc$ and $\mmAuc$); the shape, not the endpoint, is what it is here to show. \textbf{Staging is at or near
-this cohort's ceiling; respiratory detection is not, and is still accelerating.} We draw the
+($\mmAcc$ and $\mmAuc$); the shape, not the endpoint, is what it is here to show. Staging is at or near
+this cohort's ceiling; respiratory detection is not, and is still accelerating. We draw the
 narrower conclusion the data support: more patients of this kind would improve breathing
 detection and would not appreciably improve staging, so the staging ceiling is a property of the
 labels and the injured brain, not of the training-set size. The final model also exceeds
@@ -1037,14 +1037,14 @@ labels $66$--$78\%$ of stroke epochs Wake against a true $26.7\%$, and N2 recall
 $0.032$ on the stage that is $42\%$ of the data. These models do not lose accuracy gracefully;
 they stop recognising sleep architecture at all.
 
-\textbf{The control is what makes this interpretable.} A healthy-trained stager scoring $0.31$
+The control is what makes this interpretable. A healthy-trained stager scoring $0.31$
 on iSLEEPS is evidence of a cohort effect only if the same checkpoint, through the same
 preprocessing, scores properly on healthy sleep; otherwise a broken input pipeline and a
 genuine domain gap produce identical numbers. Run through our pipeline on held-out Sleep-EDF
 recordings, the strongest checkpoint holds at $0.8682$ ($0.8667 \pm 0.0415$ per recording), so
 the pipeline is correct and the collapse belongs to the cohort.
 
-\textbf{Two bounds, reported together.} Sleep-EDF is recorded on Fpz-Cz and Pz-Oz where iSLEEPS
+Two bounds, reported together. Sleep-EDF is recorded on Fpz-Cz and Pz-Oz where iSLEEPS
 uses C4:M1 and O2:M1, so part of this gap is montage shift, not pathology, and quoting
 the zero-shot number alone would overstate the case. Deep models trained \emph{on} iSLEEPS with
 the matched montage reach $0.61$--$0.69$ (upper block), which puts the cost of
@@ -1052,7 +1052,7 @@ pathology alone at roughly $0.19$ against healthy-sleep performance; healthy-tra
 zero-shot, with the montage shift included, the cost is $0.56$. The honest claim is bounded by
 those two figures rather than by either alone.
 
-\textbf{The same argument run in reverse.} Every figure above concerns other
+The same argument run in reverse. Every figure above concerns other
 architectures, which leaves the obvious question unanswered: whether $\mmAcc$ is low
 because the cohort is hard or because the proposed model is weak. So we cross-validated it
 on healthy sleep, ten-fold and subject-independent over the $21$ Sleep-EDF subjects, using the
@@ -1063,7 +1063,7 @@ against $0.741$ for the identical architecture on stroke. The $0.115$ difference
 the cohort costs a model that is demonstrably capable of more, which is a stronger
 statement than any comparison against other people's architectures can make.
 
-\textbf{The cohort does not cost every architecture equally.} Because the three reimplemented
+The cohort does not cost every architecture equally. Because the three reimplemented
 models carry a healthy-sleep score produced by the same code under the same protocol, the
 table supports a comparison it could not before: not merely where each model lands, but how
 much it loses in the crossing. TinySleepNet falls $0.148$ from healthy sleep to stroke
@@ -1083,7 +1083,7 @@ sides of a fold.
 
 
 
-\subsection{What Each Stream Should Be Represented As}
+\subsection{Stream Representations}
 \label{sec:repr}
 The architecture makes two representation choices (engineered features plus a frozen
 self-supervised embedding on the neural side, a learned convolutional encoder over the raw
@@ -1091,8 +1091,8 @@ signal on the cardiorespiratory side), and both were selected by experiment, not
 assumed. Each family below holds every other hyperparameter fixed and varies one thing, over
 the same three seeds and ten patient-independent folds, with Holm correction within the family.
 
-\textbf{The cardiorespiratory features are the bottleneck, and part of the gap needs no new
-information.} Each block of Table~\ref{tab:repr} holds the other stream at its baseline, so no single
+The cardiorespiratory features are the bottleneck, and part of the gap needs no new
+information. Each block of Table~\ref{tab:repr} holds the other stream at its baseline, so no single
 row there is the full model. The upper block replaces the $14$ engineered cardiorespiratory features
 with progressively richer representations of the same underlying signal. Every step is
 significant, and the ordering is instructive. A \emph{random} nonlinear expansion of the same
@@ -1106,8 +1106,8 @@ What this establishes is that the representation of the cardiorespiratory stream
 detector on top of it, is what limited the respiratory read-out. We therefore claim the
 change of representation, not the design of the encoder that implements it.
 
-\textbf{On the neural side a pretrained encoder does not replace expert features, but does
-add to them.} The lower block of Table~\ref{tab:repr} varies the neural representation with the
+On the neural side a pretrained encoder does not replace expert features, but does
+add to them. The lower block of Table~\ref{tab:repr} varies the neural representation with the
 cardiorespiratory stream held at the engineered features. Used alone, the frozen encoder is
 significantly \emph{worse} than the $188$ features ($-0.028$, Holm $p<0.001$): pretraining on
 healthy scalp EEG does not by itself substitute for physiology chosen for this task.
@@ -1145,7 +1145,7 @@ Representation & Variant & Resp.\ AUC\,$\uparrow$ & Staging acc\,$\uparrow$ & $\
 \end{tabular*}
 \end{table*}
 
-\subsection{Calibration and When the Model Declines to Commit}
+\subsection{Calibration and Selective Prediction}
 A clinical reader needs to know not only how often the model is right but whether it knows when
 it is likely to be wrong. Two measurements answer that, both computed on held-out epochs with
 the raw posteriors before HMM smoothing.
@@ -1192,7 +1192,7 @@ subject twice; respiratory-event prevalence is $10.1\%$ on the first night and $
 the second, so we report the two separately instead of pooling a difference that has
 nothing to do with the model.
 
-\textbf{The respiratory read-out transfers.} On ISRUC night one the model reaches
+The respiratory read-out transfers. On ISRUC night one the model reaches
 $0.780$ AUC, and it does so handicapped, because ISRUC provides no pulse channel and no
 separate effort trace, leaving two of the seven cardiorespiratory inputs zero-filled. A
 detector that had latched onto one centre's equipment would not survive that; this one does.
@@ -1207,8 +1207,8 @@ on which is chosen. Night two falls to $0.723$, tracking its
 much lower event prevalence ($2.4\%$ against $10.1\%$) and not anything about the
 model.
 
-\textbf{Staging moves in opposite directions on the two corpora, for reasons the data
-identify.} On Sleep-EDF the model \emph{gains} $0.083$ of $\kappa$ over its in-domain
+Staging moves in opposite directions on the two corpora, for reasons the data
+identify. On Sleep-EDF the model \emph{gains} $0.083$ of $\kappa$ over its in-domain
 score. A representation that had memorised corpus-specific artefacts would degrade out of
 corpus, so the straightforward reading is that the features are physiological and that the
 ceiling reported throughout this paper is a property of \emph{stroke sleep} rather than of
@@ -1218,7 +1218,7 @@ much of it: ISRUC carries $15.6\%$ N1 against iSLEEPS' $10.2\%$ and Sleep-EDF's 
 and N1 is the weakest stage in every cohort we have measured (recall $0.168$ on ISRUC,
 $0.294$ on Sleep-EDF, and the lowest per-class F1 in-domain).
 
-\textbf{A montage explanation the data now rule out.} An earlier version of this
+A montage explanation the data now rule out. An earlier version of this
 work observed N3 recall of $0.554$ on Sleep-EDF with $44\%$ of N3 epochs read as N2, and
 attributed it to slow-wave activity being frontally dominant while the model reads central
 and occipital derivations. That account made a prediction: N3 should recover on ISRUC,
@@ -1340,7 +1340,7 @@ clinical use, because a reader can trust that the respiratory output reflects br
 staging output reflects the brain.
 
 \subsection{Limitations}
-\textbf{The system is offline, and mildly transductive.} Two properties follow from
+The system is offline, and mildly transductive. Two properties follow from
 the design and neither is visible in the numbers. Staging uses whole-night Viterbi decoding,
 so no epoch can be scored until the recording ends, which rules out the real-time use a
 bedside monitor would need. And features are standardised per patient, which at test time uses
@@ -1348,7 +1348,7 @@ that night's own statistics; the model never sees another patient's labels, so t
 label leakage, but it is a transductive step and a strictly causal deployment would need
 running or population statistics instead. We have not measured what that substitution costs.
 
-\textbf{A prediction of ours that failed.} The montage account of N3 transfer described in
+A prediction of ours that failed. The montage account of N3 transfer described in
 Section~\ref{sec:external} does not survive retesting under the final model, and we report
 it as falsified instead of removing it. Two cautions follow for every other per-class
 figure in that section: each rests on a single external pass with no fold structure, so
