@@ -92,7 +92,7 @@ staging objective. On iSLEEPS, the first public
 polysomnography corpus of subacute ischemic stroke ($99$ patients, $92{,}560$ epochs),
 under patient-independent ten-fold cross-validation, MM-Net stages sleep at $\mmAcc$
 accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC with
-$2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on this
+$2.76$\,M trainable parameters. We benchmark fourteen deep architectures retrained on this
 cohort and three applied zero-shot from healthy sleep, all on identical folds; every
 retrained baseline lands between $0.613$ and $0.716$ accuracy. Three are reimplemented
 here, each recovering its published accuracy to within $0.04$, which indicates
@@ -166,7 +166,7 @@ for staging; removing that path costs $0.006$ respiratory AUC and leaves staging
 (Section~\ref{sec:method}). The ablation identifies respiratory effort, not oxygen
 saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
-\item \label{c:bench}We benchmark the model against sixteen baseline configurations on identical
+\item \label{c:bench}We benchmark the model against seventeen baseline configurations on identical
 patient-independent folds, covering convolutional, recurrent, attentional and fully
 convolutional families, and reimplement three published architectures (U-Time,
 TinySleepNet, SleepTransformer) so that every comparison runs through one pipeline
@@ -598,8 +598,9 @@ values were retained.}
 \cmidrule(lr){6-8}
  & Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
 \midrule
-\multirow{13}{*}{\shortstack[l]{\emph{Deep networks,}\\\emph{retrained on iSLEEPS}}}
+\multirow{14}{*}{\shortstack[l]{\emph{Deep networks,}\\\emph{retrained on iSLEEPS}}}
  & LSTM~\cite{maiti2026isleeps}$^{\ddagger}$     & 1\,EEG\,$+$\,EOG & n/r & --- & $0.747$ & --- & --- \\
+ & LSTM, our reimplementation$^{\dagger}$ & 1\,EEG\,$+$\,EOG & $1.16$\,M & --- & $0.720 \pm 0.032$ & $0.626 \pm 0.028$ & $0.599 \pm 0.043$ \\
  & CNN-ResNet18~\cite{maiti2026isleeps}$^{\ddagger}$ & 1\,EEG\,$+$\,EOG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
  & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & --- & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
  & U-Time~\cite{perslev2019utime}$^{\dagger}$ & 1\,EEG & $1.07$\,M & $0.791 \pm 0.062$ & $0.646 \pm 0.064$ & $0.524 \pm 0.057$ & $0.506 \pm 0.082$ \\
@@ -641,7 +642,10 @@ Dispersion is reported wherever it is defined: five folds for the earlier retrai
 baselines; thirty fold-values, ten folds by three seeds, for AttnSleep, the three
 reimplemented literature models and the proposed rows. The LSTM and CNN-ResNet18 rows are
 quoted from the corpus paper rather than re-run here, so their protocol is that paper's and
-not ours and neither carries an interval. In the zero-shot block the interval is across
+not ours. The LSTM additionally appears as our own reimplementation on the folds used
+throughout, which reaches $0.720 \pm 0.032$ over thirty fold-values against the $0.747$ they
+report; that shortfall of $0.027$ is within the range our other reimplementations show
+against their published figures and neither carries an interval. In the zero-shot block the interval is across
 pretraining seeds and not folds, because that evaluation is a single pass of a finished
 checkpoint over all $99$ patients. The two best healthy scores, $0.856$ and $0.855$, are
 separated by less than either interval. Sleep-EDF carries no cardiorespiratory channels, so every
