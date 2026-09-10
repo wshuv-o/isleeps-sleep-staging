@@ -92,7 +92,7 @@ staging objective. On iSLEEPS, the first public
 polysomnography corpus of subacute ischemic stroke ($99$ patients, $92{,}560$ epochs),
 under patient-independent ten-fold cross-validation, MM-Net stages sleep at $\mmAcc$
 accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC with
-$2.76$\,M trainable parameters. We benchmark fourteen deep architectures retrained on this
+$2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on this
 cohort and three applied zero-shot from healthy sleep, all on identical folds; every
 retrained baseline lands between $0.613$ and $0.716$ accuracy. Three are reimplemented
 here, each recovering its published accuracy to within $0.04$, which indicates
@@ -166,7 +166,7 @@ for staging; removing that path costs $0.006$ respiratory AUC and leaves staging
 (Section~\ref{sec:method}). The ablation identifies respiratory effort, not oxygen
 saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
-\item \label{c:bench}We benchmark the model against seventeen baseline configurations on identical
+\item \label{c:bench}We benchmark the model against sixteen baseline configurations on identical
 patient-independent folds, covering convolutional, recurrent, attentional and fully
 convolutional families, and reimplement three published architectures (U-Time,
 TinySleepNet, SleepTransformer) so that every comparison runs through one pipeline
@@ -583,7 +583,7 @@ AT-BiLSTM & 0.838 & $0.835 \pm 0.046$ & $-0.003$ \\
 \caption{Sleep staging on iSLEEPS, patient-independent, against every architecture we
 evaluated. $^{\dagger}$ marks a model reimplemented by us from its paper
 (Table~\ref{tab:reimpl}). $^{\ddagger}$ marks a figure quoted from the corpus
-paper~\cite{maiti2026isleeps} rather than run here: those two rows use that paper's
+paper~\cite{maiti2026isleeps} rather than run here: that row uses that paper's
 protocol, an $80/10/10$ patient-wise split over $N=100$ including the duplicated pair we
 exclude (Section~\ref{sec:data}), and its own two-channel input; the authors' repository
 releases preprocessing only, so neither row can be reproduced and neither is a
@@ -598,8 +598,7 @@ values were retained.}
 \cmidrule(lr){6-8}
  & Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
 \midrule
-\multirow{14}{*}{\shortstack[l]{\emph{Deep networks,}\\\emph{retrained on iSLEEPS}}}
- & LSTM~\cite{maiti2026isleeps}$^{\ddagger}$     & 1\,EEG\,$+$\,EOG & n/r & --- & $0.747$ & --- & --- \\
+\multirow{13}{*}{\shortstack[l]{\emph{Deep networks,}\\\emph{retrained on iSLEEPS}}}
  & LSTM, our reimplementation$^{\dagger}$ & 1\,EEG\,$+$\,EOG & $1.16$\,M & --- & $0.720 \pm 0.032$ & $0.626 \pm 0.028$ & $0.599 \pm 0.043$ \\
  & CNN-ResNet18~\cite{maiti2026isleeps}$^{\ddagger}$ & 1\,EEG\,$+$\,EOG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
  & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & --- & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
@@ -640,12 +639,10 @@ sleep as a control on the cohort argument; its macro-F1 and $\kappa$ are healthy
 figures and so are left out of the stroke columns, and quoted in the text instead.
 Dispersion is reported wherever it is defined: five folds for the earlier retrained
 baselines; thirty fold-values, ten folds by three seeds, for AttnSleep, the three
-reimplemented literature models and the proposed rows. The LSTM and CNN-ResNet18 rows are
-quoted from the corpus paper rather than re-run here, so their protocol is that paper's and
-not ours. The LSTM additionally appears as our own reimplementation on the folds used
-throughout, which reaches $0.720 \pm 0.032$ over thirty fold-values against the $0.747$ they
-report; that shortfall of $0.027$ is within the range our other reimplementations show
-against their published figures and neither carries an interval. In the zero-shot block the interval is across
+reimplemented literature models and the proposed rows. CNN-ResNet18 is quoted from the
+corpus paper rather than re-run here, so its protocol is that paper's and not ours and it
+carries no interval. That paper's LSTM appears only as our reimplementation of it on the
+folds used throughout, because its published figure was never measured on these folds. In the zero-shot block the interval is across
 pretraining seeds and not folds, because that evaluation is a single pass of a finished
 checkpoint over all $99$ patients. The two best healthy scores, $0.856$ and $0.855$, are
 separated by less than either interval. Sleep-EDF carries no cardiorespiratory channels, so every
@@ -659,9 +656,14 @@ healthy sleepers. The feature-based model reaches $\mmAcc$, above every deep arc
 retrained here, which matches the concurrent finding that depth alone does not help on this
 cohort~\cite{bose2026gap}: with under a hundred patients a convolutional network cannot
 rediscover what decades of sleep science already encode in the features. It does not lead the
-corpus. The published single-channel LSTM reaches $0.747$, above our $\mmAcc$, and we list it
-in Table~\ref{tab:bench} instead of leaving the best published number off the comparison. No
-method we are aware of exceeds $0.75$ on this corpus. Section~\ref{sec:curve} shows why: the
+corpus. The corpus paper reports $0.747$ for its own LSTM, above our $\mmAcc$, on an
+$80/10/10$ split over $N=100$ that includes the duplicated pair we exclude. We do not carry
+that figure into Table~\ref{tab:bench}, because it was not measured on the folds every other
+row there uses; instead we reimplemented that architecture and ran it on our folds, where it
+reaches $0.720 \pm 0.032$ over thirty fold-values, a shortfall of $0.027$ that sits inside
+the range our other reimplementations show against their published figures. Both readings are
+available to the reader: their number here, ours in the table. No method we are aware of
+exceeds $0.75$ on this corpus. Section~\ref{sec:curve} shows why: the
 staging learning curve has flattened, so the ceiling is a property of this cohort rather than
 of any one model. We therefore do not position the model as a staging leader. What sets it apart is
 a second output: it is the only model that also detects respiratory events. A representative held-out night is
