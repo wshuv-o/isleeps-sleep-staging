@@ -550,8 +550,8 @@ patient-independent, ten-fold except for the earlier retrained baselines at five
 \caption{Reimplementation check for the models marked $^{\dagger}$ in
 Table~\ref{tab:bench}: ten-fold subject-independent cross-validation on the
 Sleep-EDF Cassette subjects $0$--$20$, $40$ recordings, single Fpz-Cz derivation.
-$\approx$ marks an accuracy inferred from a paper's macro-F1, $^{\S}$ a published
-figure measured on SHHS rather than Sleep-EDF.}
+$\approx$ marks an accuracy inferred from a paper's macro-F1. Each published figure
+follows its own paper's Sleep-EDF protocol, which differs in subset and split.}
 \label{tab:reimpl}
 \centering
 \begin{tabular}{@{}l c c c@{}}
@@ -561,9 +561,9 @@ Model & Published & Ours & $\Delta$ \\
 U-Time~\cite{perslev2019utime} & $\approx$0.79 & $0.791 \pm 0.062$ & $+0.001$ \\
 TinySleepNet~\cite{supratak2020tinysleepnet} & 0.854 & $0.824 \pm 0.045$ & $-0.030$ \\
 SleepTransformer~\cite{sleeptransformer2022} & 0.814 & $0.823 \pm 0.033$ & $+0.009$ \\
-1D-ResNet-SE-LSTM & 0.864 & $0.832 \pm 0.036$ & $-0.032$ \\
-Micro SleepNet$^{\S}$ & 0.833 & $0.800 \pm 0.041$ & $-0.033$ \\
-AT-BiLSTM & 0.838 & $0.835 \pm 0.046$ & $-0.003$ \\
+1D-ResNet-SE-LSTM~\cite{li2023resnetselstm} & 0.864 & $0.832 \pm 0.036$ & $-0.032$ \\
+Micro SleepNet~\cite{liu2023microsleepnet} & 0.828 & $0.800 \pm 0.041$ & $-0.028$ \\
+AT-BiLSTM~\cite{fu2021atbilstm} & 0.838 & $0.835 \pm 0.046$ & $-0.003$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -590,9 +590,9 @@ U-Time~\cite{perslev2019utime}$^{\dagger}$ & 1\,EEG & $1.07$\,M & $0.791 \pm 0.0
 AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & --- & $0.716 \pm 0.042$ & $0.600 \pm 0.043$ & $0.593 \pm 0.058$ \\
 TinySleepNet~\cite{supratak2020tinysleepnet}$^{\dagger}$ & 1\,EEG & $1.45$\,M & $0.824 \pm 0.045$ & $0.676 \pm 0.050$ & $0.587 \pm 0.034$ & $0.548 \pm 0.062$ \\
 SleepTransformer~\cite{sleeptransformer2022}$^{\dagger}$ & 1\,EEG & $2.79$\,M & $0.823 \pm 0.033$ & $0.683 \pm 0.026$ & $0.602 \pm 0.030$ & $0.555 \pm 0.032$ \\
-1D-ResNet-SE-LSTM$^{\dagger}$ & 1\,EEG & $0.65$\,M & $0.832 \pm 0.036$ & $0.708 \pm 0.038$ & $0.631 \pm 0.033$ & $0.592 \pm 0.050$ \\
-Micro SleepNet$^{\dagger}$ & 1\,EEG & $0.03$\,M & $0.800 \pm 0.041$ & $0.647 \pm 0.049$ & $0.558 \pm 0.028$ & $0.510 \pm 0.055$ \\
-AT-BiLSTM$^{\dagger}$ & 1\,EEG & $0.92$\,M & $0.835 \pm 0.046$ & $0.692 \pm 0.040$ & $0.612 \pm 0.030$ & $0.570 \pm 0.051$ \\
+1D-ResNet-SE-LSTM~\cite{li2023resnetselstm}$^{\dagger}$ & 1\,EEG & $0.65$\,M & $0.832 \pm 0.036$ & $0.708 \pm 0.038$ & $0.631 \pm 0.033$ & $0.592 \pm 0.050$ \\
+Micro SleepNet~\cite{liu2023microsleepnet}$^{\dagger}$ & 1\,EEG & $0.03$\,M & $0.800 \pm 0.041$ & $0.647 \pm 0.049$ & $0.558 \pm 0.028$ & $0.510 \pm 0.055$ \\
+AT-BiLSTM~\cite{fu2021atbilstm}$^{\dagger}$ & 1\,EEG & $0.92$\,M & $0.835 \pm 0.046$ & $0.692 \pm 0.040$ & $0.612 \pm 0.030$ & $0.570 \pm 0.051$ \\
 CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & --- & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
 Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & --- & $0.623 \pm 0.020$ & 0.582 & 0.488 \\
 Raw multimodal CNN                            & 14\,ch  & 0.95\,M      & --- & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
@@ -1385,9 +1385,9 @@ U-Time~\cite{perslev2019utime} & 2019 & Fully convolutional encoder--decoder seg
 TinySleepNet~\cite{supratak2020tinysleepnet} & 2020 & Compact convolutional stack with a single unidirectional LSTM, single-channel EEG. & $0.854$ (Sleep-EDF) & $0.676$ \\
 AttnSleep~\cite{eldele2021attnsleep} & 2021 & Multi-resolution CNN with multi-head self-attention over epochs, single-channel EEG. & $0.844$ (Sleep-EDF) & $0.716$ \\
 SleepTransformer~\cite{sleeptransformer2022} & 2022 & Transformer encoder with epoch-level interpretability and uncertainty estimates. & $0.814$ (Sleep-EDF) & $0.683$ \\
-1D-ResNet-SE-LSTM & 2023 & Residual network with squeeze-and-excitation blocks and an LSTM on raw EEG. & $0.864$ (Sleep-EDF) & $0.708$ \\
-Micro SleepNet & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.833$ (SHHS) & $0.647$ \\
-AT-BiLSTM & 2024 & Attention-augmented bidirectional LSTM, single-channel EEG. & $0.838$ (Sleep-EDF) & $0.692$ \\
+1D-ResNet-SE-LSTM~\cite{li2023resnetselstm} & 2023 & Residual network with squeeze-and-excitation blocks and an LSTM on raw EEG. & $0.864$ (Sleep-EDF) & $0.708$ \\
+Micro SleepNet~\cite{liu2023microsleepnet} & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.828$ (Sleep-EDF-20) & $0.647$ \\
+AT-BiLSTM~\cite{fu2021atbilstm} & 2021 & Attention-augmented bidirectional LSTM, single-channel EEG. & $0.838$ (Sleep-EDF) & $0.692$ \\
 \midrule
 \textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the full polysomnogram. & -- & $\mathbf{0.739}$ \\
 \bottomrule
