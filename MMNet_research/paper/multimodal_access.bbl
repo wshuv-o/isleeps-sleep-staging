@@ -82,9 +82,12 @@ G.~Wang, W.~Liu, Y.~He, C.~Xu, L.~Ma, and H.~Li, ``{EEGPT}: Pretrained
   2024.
 
 \bibitem{biot2023}
-C.~Yang, M.~B. Westover, and J.~Sun, ``{BIOT}: Cross-data biosignal learning in
-  the wild,'' in \emph{Advances in Neural Information Processing Systems
-  (NeurIPS)}, vol.~36, 2023, arXiv:2305.10351.
+\BIBentryALTinterwordspacing
+C.~Yang, M.~B. Westover, and J.~Sun, ``{BIOT}: Biosignal transformer for
+  cross-data learning in the wild,'' in \emph{Advances in Neural Information
+  Processing Systems 36 (NeurIPS)}, 2023, pp. 78\,240--78\,260. [Online].
+  Available: \url{https://openreview.net/forum?id=c2LZyTyddi}
+\BIBentrySTDinterwordspacing
 
 \bibitem{phan2022survey}
 H.~Phan and K.~Mikkelsen, ``Automatic sleep staging of {EEG} signals: Recent
@@ -176,8 +179,9 @@ E.~Estevan, M.~Sierra-Torralba, E.~L{\'o}pez-Larraz, and L.~Montesano, ``A
   staging with wearable {EEG},'' \emph{arXiv preprint arXiv:2510.07960}, 2025.
 
 \bibitem{guillot2023transfer}
-A.~Guillot and V.~Thorey, ``Transfer learning and domain adaptation for robust
-  sleep staging,'' \emph{Frontiers in Physiology}, vol.~14, 2023.
+A.~Guillot and V.~Thorey, ``{RobustSleepNet}: Transfer learning for automated
+  sleep staging at scale,'' \emph{IEEE Transactions on Neural Systems and
+  Rehabilitation Engineering}, vol.~29, pp. 1441--1451, 2021.
 
 \bibitem{yang2026review}
 K.~Yang and H.~Wang, ``Deep learning for {EEG}-based sleep stage
@@ -197,8 +201,10 @@ T.~Jing, L.~Xu, S.~Sun, W.~Yu, Y.~Zheng, G.~Xu, X.~Shen, T.~Tang, and C.~Chu,
   \emph{Frontiers in Neurology}, vol.~16, p. 1605106, 2025.
 
 \bibitem{tellenbach2023brainstem}
-N.~Tellenbach \emph{et~al.}, ``Sleep-wake and sleep architecture changes after
-  brainstem stroke,'' \emph{Journal of Sleep Research}, 2023.
+N.~Tellenbach, M.~H. Schmidt, F.~Alexiev, E.~Blondiaux, F.~Cavalloni, C.~L.
+  Bassetti, L.~Heydrich, and P.~Bargiotas, ``{REM} sleep and muscle atonia in
+  brainstem stroke: A quantitative polysomnographic and lesion analysis
+  study,'' \emph{Journal of Sleep Research}, vol.~32, no.~2, 2022.
 
 \bibitem{gottselig2002stroke}
 J.~M. Gottselig, C.~L. Bassetti, and P.~Achermann, ``Power and coherence of
@@ -243,6 +249,28 @@ A.~L. Goldberger, L.~A.~N. Amaral, L.~Glass \emph{et~al.}, ``{PhysioBank},
   {PhysioToolkit}, and {PhysioNet}: Components of a new research resource for
   complex physiologic signals,'' \emph{Circulation}, vol. 101, no.~23, pp.
   e215--e220, 2000.
+
+\bibitem{chen2016xgboost}
+T.~Chen and C.~Guestrin, ``{XGBoost}: A scalable tree boosting system,'' in
+  \emph{Proceedings of the 22nd {ACM} {SIGKDD} International Conference on
+  Knowledge Discovery and Data Mining ({KDD})}, 2016, pp. 785--794.
+
+\bibitem{ke2017lightgbm}
+G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, and T.-Y. Liu,
+  ``{LightGBM}: A highly efficient gradient boosting decision tree,'' in
+  \emph{Advances in Neural Information Processing Systems 30 ({NIPS})}, 2017,
+  no {DOI} is registered for this volume.
+
+\bibitem{prokhorenkova2018catboost}
+L.~Prokhorenkova, G.~Gusev, A.~Vorobev, A.~V. Dorogush, and A.~Gulin,
+  ``{CatBoost}: Unbiased boosting with categorical features,'' in
+  \emph{Advances in Neural Information Processing Systems 31 ({NeurIPS})},
+  2018.
+
+\bibitem{velickovic2018gat}
+P.~Veli{\v{c}}kovi{\'c}, G.~Cucurull, A.~Casanova, A.~Romero, P.~Li{\`o}, and
+  Y.~Bengio, ``Graph attention networks,'' in \emph{International Conference on
+  Learning Representations ({ICLR})}, 2018.
 
 \bibitem{angelopoulos2023conformal}
 A.~N. Angelopoulos and S.~Bates, ``Conformal prediction: A gentle
