@@ -162,8 +162,9 @@ contributions are:
 accuracy ($\kappa$ $\mmK$) and, from the same forward pass, detects respiratory events at
 $\mmAuc$ AUC, with a direct cardiorespiratory path to the respiratory head so
 cardiorespiratory cues reach the decision undiminished by a fusion trained mostly
-for staging (Section~\ref{sec:method}). The ablation identifies respiratory effort, not
-oxygen saturation, as the channel that read-out depends on (Section~\ref{sec:ablate}).
+for staging; removing that path costs $0.006$ respiratory AUC and leaves staging unchanged
+(Section~\ref{sec:method}). The ablation identifies respiratory effort, not oxygen
+saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
 \item \label{c:bench}We benchmark the model against thirteen baseline configurations on identical
 patient-independent folds, covering convolutional, recurrent, attentional and fully
@@ -449,15 +450,15 @@ The connection exists so that the respiratory decision does not have to survive 
 fusion trained mostly for staging, which would weaken the mechanical signature of an
 obstructed breath along the way. Section~\ref{sec:ablate} identifies the channel that
 signature lives in, and it is respiratory effort, not the oxygen fall, that names the
-event. We report the connection as a design rationale and not as a measured gain: the
-obvious test, removing it while holding everything else fixed, is not reported here, so a
-reader should treat it as an architectural choice we have argued for but not yet isolated.
-%
-% INSERTION POINT for the bypass ablation now running (run_bypass_ablation.py,
-% 3 seeds x 10 folds, with and without the direct path, Wilcoxon on 30 paired
-% fold-values). Replace the two sentences above with the measured effect when the
-% numbers land; if the effect is null, the design rationale comes out entirely.
-%
+event. We isolate the connection by removing it and holding everything else fixed, on the
+same thirty fold-values as every other figure here. Respiratory AUC falls from $\mmAuc$ to
+$0.776$ (Wilcoxon $p=0.043$) and average precision from $\mmAp$ to $0.411$ ($p=0.42$), while
+staging is untouched at $0.739$ accuracy ($p=0.97$) and $\kappa$ $0.634$ ($p=0.94$). The gain
+is small, about a sixth of a fold standard deviation, and the $p$-value is marginal enough
+that we would not rest an argument on it alone. What makes it worth reporting is where it
+lands rather than how large it is: the connection feeds the respiratory head and nothing
+else, and the respiratory head is the only output that moves.
+
 The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
 $200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
 trainable parameters to this count.
