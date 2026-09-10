@@ -732,14 +732,6 @@ MM-Net (neural only)              & \textbf{0.79} & 0.28 & 0.80 & 0.71 & \textbf
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.86\columnwidth]{figures/fig_mm_perclass.pdf}
-\caption{Per-class staging F1 for the neural-only and the neural-plus-cardiorespiratory
-model, both averaged over the same thirty fold-values.}
-\label{fig:perclassfig}
-\end{figure}
-
 \subsection{Modality-Ablation Grid}
 \label{sec:ablate}
 This ablation is also our attribution method. Because the model is feature-based and never sees
@@ -776,14 +768,6 @@ physiologically coherent: the effort belts register the paradoxical thoraco-abdo
 of an obstructive event as it happens, whereas desaturation is a lagged consequence of it.
 Attention and plain concatenation stage and detect alike, so the gain comes from the added
 modality, and the fusion mechanism has little effect.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.98\columnwidth]{figures/fig_ablation.pdf}
-\caption{Modality-ablation grid. Drop in staging accuracy and in respiratory AUC
-when each modality is removed and the model retrained.}
-\label{fig:ablationfig}
-\end{figure}
 
 \begin{table}[t]
 \caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
@@ -1331,19 +1315,11 @@ Raw multimodal CNN                        & 14\,ch      & 0.95\,M     & stage + 
 
 \section{Discussion}
 The result is a single model that reads the whole sleeping body and speaks to two clinical
-questions at once, in the population where both matter. The learned per-epoch embedding
-(Fig.~\ref{fig:tsne}) separates cleanly by sleep stage while the respiratory structure stays
-diffuse, mirroring the strong staging and the modest respiratory AUC.
+questions at once, in the population where both matter. The learned per-epoch embedding separates cleanly by sleep stage while the
+respiratory structure stays diffuse, mirroring the strong staging and the modest
+respiratory AUC.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/fig_tsne.pdf}
-\caption{Two-dimensional t-SNE of the model's per-epoch embeddings (pooled test
-epochs). \textbf{Left:} by sleep stage; Wake, N2, N3 and REM form distinct territories
-while N1 is diffuse. \textbf{Right:} by respiratory-event label; events spread across the
-manifold, consistent with the modest detection AUC.}
-\label{fig:tsne}
-\end{figure*} Staging accuracy on this cohort saturates
+ Staging accuracy on this cohort saturates
 below $0.75$ for every model family we evaluated, and the proposed model reaches $\mmAcc$ while
 adding a respiratory capability the staging models lack. The respiratory
 read-out does not depend on the labeling channel: it survives deletion of the airflow channel and
