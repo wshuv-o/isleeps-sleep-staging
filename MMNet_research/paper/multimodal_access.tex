@@ -511,8 +511,11 @@ weak model. Cells are mean $\pm$ SD across folds where per-fold values were reta
 five folds for the retrained baselines, thirty fold-values (ten folds, three seeds) for the
 proposed rows. CNN-ResNet18 is quoted from the corpus paper and AttnSleep retained only
 aggregates, so neither carries an interval; the zero-shot block is a single pass over all
-$99$ patients and has no fold structure. ``feat'' marks engineered features. Best per
-column in \textbf{bold}.}
+$99$ patients and has no fold structure. The final row cross-validates the proposed
+architecture on healthy sleep instead of stroke, ten-fold and subject-independent, as a
+control on the cohort argument; Sleep-EDF has no cardiorespiratory channels, so it is the
+neural branch alone and the comparison row is MM-Net (neural only). ``feat'' marks
+engineered features. Best per column in \textbf{bold}.}
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c c @{}}
@@ -537,6 +540,9 @@ column in \textbf{bold}.}
 \multirow{2}{*}{\shortstack[l]{\emph{Proposed feature-based}\\\emph{multi-task model}}}
  & MM-Net (neural only)              & 7\,ch feat  & 2.62\,M & --- & $\mathbf{0.741 \pm 0.017}$ & $0.668 \pm 0.020$ & $\mathbf{0.635 \pm 0.022}$ \\
  & \textbf{MM-Net (neural + cardio)} & 14\,ch feat & 2.76\,M & --- & $0.739 \pm 0.020$ & $\mathbf{0.670 \pm 0.020}$ & $0.634 \pm 0.024$ \\
+\midrule
+\emph{Same model, healthy sleep}
+ & MM-Net (neural only)              & 4\,EEG feat & 2.62\,M & $0.856 \pm 0.027$ & --- & $0.793 \pm 0.036$ & $0.800 \pm 0.036$ \\
 \bottomrule
 \end{tabular*}
 \end{table*}
@@ -914,6 +920,21 @@ the matched montage reach $0.61$--$0.69$ (upper block), which puts the cost of
 pathology alone at roughly $0.19$ against healthy-sleep performance; healthy-trained and
 zero-shot, with the montage shift included, the cost is $0.56$. The honest claim is bounded by
 those two figures rather than by either alone.
+
+\textbf{The same argument run in reverse.} Every figure above concerns other
+architectures, which leaves the obvious question unanswered: whether $\mmAcc$ is low
+because the cohort is hard or because the proposed model is weak. So we cross-validated it
+on healthy sleep --- ten-fold, subject-independent over the $21$ Sleep-EDF subjects, the
+neural branch alone since that corpus has no cardiorespiratory channels --- and it reaches
+$0.856 \pm 0.027$ accuracy with $\kappa$ $0.800$ (final row of Table~\ref{tab:bench}).
+That places it among the healthy-sleep stagers in the middle block rather than below them,
+against $0.741$ for the identical architecture on stroke. The $0.115$ difference is what
+the cohort costs a model that is demonstrably capable of more, which is a stronger
+statement than any comparison against other people's architectures can make.
+
+Folds are split by subject rather than by recording, because Sleep-EDF Cassette records
+each subject on two nights; splitting on filenames would place the same person on both
+sides of a fold.
 
 
 
