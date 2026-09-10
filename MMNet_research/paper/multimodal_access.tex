@@ -679,8 +679,8 @@ when each modality is removed and the model retrained.}
 
 \begin{table}[t]
 \caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
-three seeds, thirty fold-values per row. Each row removes one modality and keeps the
-rest. Largest effect per column in \textbf{bold}.}
+three seeds. Each row removes one modality and keeps the rest; cells are mean
+$\pm$ SD over thirty fold-values. Largest effect per column in \textbf{bold}.}
 \label{tab:ablate}
 \centering
 \setlength{\tabcolsep}{8pt}
@@ -688,16 +688,16 @@ rest. Largest effect per column in \textbf{bold}.}
 \toprule
 Modality removed & Staging acc\,$\uparrow$ & Respiratory AUC\,$\uparrow$ \\
 \midrule
-none (full model)        & 0.739 & 0.782 \\
-EEG (neural)             & \textbf{0.680} & 0.774 \\
-EOG (ocular)             & 0.731 & 0.777 \\
-EMG (muscle)             & 0.735 & 0.778 \\
-SpO$_2$                  & 0.742 & 0.780 \\
-respiratory effort       & 0.741 & 0.744 \\
-pulse / HRV              & 0.741 & 0.785 \\
-ECG                      & 0.737 & 0.777 \\
-airflow                  & 0.740 & 0.778 \\
-all cardiorespiratory    & 0.741 & \textbf{0.654} \\
+none (full model)        & $0.739 \pm 0.020$ & $0.782 \pm 0.038$ \\
+EEG (neural)             & $\mathbf{0.680 \pm 0.024}$ & $0.774 \pm 0.041$ \\
+EOG (ocular)             & $0.731 \pm 0.023$ & $0.777 \pm 0.042$ \\
+EMG (muscle)             & $0.735 \pm 0.025$ & $0.778 \pm 0.041$ \\
+SpO$_2$                  & $0.742 \pm 0.019$ & $0.780 \pm 0.041$ \\
+respiratory effort       & $0.741 \pm 0.018$ & $0.744 \pm 0.049$ \\
+pulse / HRV              & $0.741 \pm 0.020$ & $0.785 \pm 0.035$ \\
+ECG                      & $0.737 \pm 0.020$ & $0.777 \pm 0.043$ \\
+airflow                  & $0.740 \pm 0.021$ & $0.778 \pm 0.039$ \\
+all cardiorespiratory    & $0.741 \pm 0.017$ & $\mathbf{0.654 \pm 0.041}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -903,6 +903,58 @@ detection (orange) is still climbing at $76$.}
 \label{fig:curve}
 \end{figure}
 
+\subsection{Healthy-Trained Models Applied to the Injured Brain}
+\label{sec:domaingap}
+Table~\ref{tab:bench} retrains published architectures \emph{on} iSLEEPS. A different and
+harder question is what happens when a model built for healthy sleep is applied to this cohort
+as published. We trained three architectures on Sleep-EDF Expanded and applied each to all
+$99$ iSLEEPS patients zero-shot, with no adaptation of any kind (Table~\ref{tab:domaingap}).
+
+The result is not a degradation but a collapse. All three stage healthy sleep competently,
+$0.806$ to $0.868$ accuracy and $\kappa$ $0.73$ to $0.83$; on stroke the same checkpoints reach
+$0.307$ to $0.325$ with $\kappa$ $0.09$ to $0.11$, which is close to chance for a five-class
+problem with this prior. The failure mode is more informative than the headline: each model
+labels $66$--$78\%$ of stroke epochs Wake against a true $26.7\%$, and N2 recall falls to
+$0.032$ on the stage that is $42\%$ of the data. These models do not lose accuracy gracefully;
+they stop recognising sleep architecture at all.
+
+\textbf{The control is what makes this interpretable.} A healthy-trained stager scoring $0.31$
+on iSLEEPS is evidence of a cohort effect only if the same checkpoint, through the same
+preprocessing, scores properly on healthy sleep --- otherwise a broken input pipeline and a
+genuine domain gap produce identical numbers. Run through our pipeline on held-out Sleep-EDF
+recordings, the strongest checkpoint holds at $0.8682$ ($0.8667 \pm 0.0415$ per recording), so
+the pipeline is correct and the collapse belongs to the cohort.
+
+\textbf{Two bounds, reported together.} Sleep-EDF is recorded on Fpz-Cz and Pz-Oz where iSLEEPS
+uses C4:M1 and O2:M1, so part of this gap is montage shift rather than pathology, and quoting
+the zero-shot number alone would overstate the case. Deep models trained \emph{on} iSLEEPS with
+the matched montage reach $0.61$--$0.69$ (Table~\ref{tab:bench}), which puts the cost of
+pathology alone at roughly $0.19$ against healthy-sleep performance; healthy-trained and
+zero-shot, with the montage shift included, the cost is $0.56$. The honest claim is bounded by
+those two figures rather than by either alone.
+
+\begin{table}[t]
+\caption{Architectures trained on healthy sleep (Sleep-EDF Expanded) and applied zero-shot to
+all $99$ iSLEEPS patients. ``Wake called'' is the fraction of stroke epochs assigned to Wake
+against a true $26.7\%$.}
+\label{tab:domaingap}
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & & \multicolumn{2}{c}{Accuracy\,$\uparrow$} & \\
+\cmidrule(lr){3-4}
+Model & Params & healthy & stroke & Wake called \\
+\midrule
+CNN            & $0.49$\,M & 0.806 & 0.325 & $70.5\%$ \\
+CNN\,+\,BiLSTM & $1.15$\,M & 0.834 & 0.307 & $65.6\%$ \\
+StagingSeqNet  & $1.08$\,M & \textbf{0.868} & 0.308 & $78.4\%$ \\
+\midrule
+\multicolumn{5}{l}{\textit{$\kappa$: healthy $0.73$--$0.83$ $\rightarrow$ stroke $0.09$--$0.11$}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{What Each Stream Should Be Represented As}
 \label{sec:repr}
 The architecture makes two representation choices --- engineered features plus a frozen
@@ -945,14 +997,14 @@ $14$ engineered features; Wilcoxon paired on fold-values, Holm-corrected.}
 \label{tab:cardiorep}
 \centering
 \small
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
-Cardiorespiratory representation & Resp.\ AUC\,$\uparrow$ & $\Delta$ & Holm $p$ \\
+Cardiorespiratory representation & Resp.\ AUC\,$\uparrow$ & Staging acc & $\Delta$AUC & Holm $p$ \\
 \midrule
-$14$ engineered features               & 0.698 & ---      & ---      \\
-random nonlinear expansion of the $14$ & 0.715 & $+0.018$ & $<0.001$ \\
-random linear projection of raw signal & 0.731 & $+0.034$ & $<0.001$ \\
-learned CNN, $0.155$\,M (proposed)     & \textbf{0.782} & $+0.084$ & $<0.001$ \\
+$14$ engineered features               & $0.698 \pm 0.051$ & $0.736 \pm 0.014$ & ---      & ---      \\
+random nonlinear expansion of the $14$ & $0.715 \pm 0.047$ & $0.737 \pm 0.017$ & $+0.018$ & $<0.001$ \\
+random linear projection of raw signal & $0.731 \pm 0.044$ & $0.735 \pm 0.021$ & $+0.034$ & $<0.001$ \\
+learned CNN, $0.155$\,M (proposed)     & $\mathbf{0.782 \pm 0.039}$ & $0.740 \pm 0.019$ & $+0.084$ & $<0.001$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -964,14 +1016,14 @@ $188$ engineered features, Holm-corrected within the family.}
 \label{tab:eegrep}
 \centering
 \small
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
-Neural representation & Staging acc\,$\uparrow$ & $\Delta$ & Holm $p$ \\
+Neural representation & Staging acc\,$\uparrow$ & Resp.\ AUC & $\Delta$acc & Holm $p$ \\
 \midrule
-$188$ engineered features            & 0.741 & ---      & ---     \\
-frozen pretrained encoder alone      & 0.712 & $-0.028$ & $<0.001$ \\
-features $+$ pretrained (proposed)   & \textbf{0.749} & $+0.008$ & $\mathbf{0.001}$ \\
-features $+$ two pretrained encoders & 0.745 & $+0.004$ & $0.23$  \\
+$188$ engineered features            & $0.741 \pm 0.016$ & $0.685 \pm 0.041$ & ---      & ---     \\
+frozen pretrained encoder alone      & $0.712 \pm 0.032$ & $0.681 \pm 0.033$ & $-0.028$ & $<0.001$ \\
+features $+$ pretrained (proposed)   & $\mathbf{0.748 \pm 0.018}$ & $0.690 \pm 0.037$ & $+0.008$ & $\mathbf{0.001}$ \\
+features $+$ two pretrained encoders & $0.745 \pm 0.018$ & $0.684 \pm 0.043$ & $+0.004$ & $0.23$  \\
 \bottomrule
 \end{tabular}
 \end{table}
