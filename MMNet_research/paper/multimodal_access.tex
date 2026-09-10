@@ -503,30 +503,40 @@ alongside the published single-channel baselines for the corpus~\cite{maiti2026i
 patient-independent, at the hidden-Markov operating point where a model provides one.
 
 \begin{table*}[t]
-\caption{Sleep staging on iSLEEPS, patient-independent: the proposed model against deep
-networks trained from scratch, transferred from healthy sleep, or applied to the raw
-multichannel signal. Cells are mean $\pm$ SD across folds where per-fold values were
-retained --- five folds for the baselines, thirty fold-values (ten folds, three seeds) for
-the proposed rows. CNN-ResNet18 is quoted from the corpus paper and AttnSleep retained only
-aggregates, so neither carries an interval. ``feat'' marks engineered features; best per
+\caption{Sleep staging on iSLEEPS, patient-independent, against every architecture we
+evaluated. The upper block retrains each architecture \emph{on} this cohort; the middle
+block trains on healthy sleep (Sleep-EDF Expanded) and applies the checkpoint cold, with
+its healthy-sleep score alongside as the control that separates a cohort effect from a
+weak model. Cells are mean $\pm$ SD across folds where per-fold values were retained ---
+five folds for the retrained baselines, thirty fold-values (ten folds, three seeds) for the
+proposed rows. CNN-ResNet18 is quoted from the corpus paper and AttnSleep retained only
+aggregates, so neither carries an interval; the zero-shot block is a single pass over all
+$99$ patients and has no fold structure. ``feat'' marks engineered features. Best per
 column in \textbf{bold}.}
 \label{tab:bench}
 \centering
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c @{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c c @{}}
 \toprule
- & Model & Input & Params\,$\downarrow$ & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
+ & & & & Healthy & \multicolumn{3}{c}{iSLEEPS (stroke)} \\
+\cmidrule(lr){6-8}
+ & Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
 \midrule
-\multirow{6}{*}{\emph{Deep networks}}
- & CNN-ResNet18~\cite{maiti2026isleeps}          & 1\,EEG  & $\sim$11\,M  & 0.617 & 0.544 & 0.480 \\
- & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
- & AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & 0.686 & 0.629 & 0.577 \\
- & CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
- & Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & $0.623 \pm 0.020$ & 0.582 & 0.488 \\
- & Raw multimodal CNN                            & 14\,ch  & 0.95\,M     & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
+\multirow{6}{*}{\shortstack[l]{\emph{Deep networks,}\\\emph{retrained on iSLEEPS}}}
+ & CNN-ResNet18~\cite{maiti2026isleeps}          & 1\,EEG  & $\sim$11\,M  & --- & 0.617 & 0.544 & 0.480 \\
+ & DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & --- & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
+ & AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & --- & 0.686 & 0.629 & 0.577 \\
+ & CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & --- & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
+ & Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & --- & $0.623 \pm 0.020$ & 0.582 & 0.488 \\
+ & Raw multimodal CNN                            & 14\,ch  & 0.95\,M      & --- & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
+\midrule
+\multirow{3}{*}{\shortstack[l]{\emph{Trained on healthy sleep,}\\\emph{applied zero-shot}}}
+ & CNN                                           & 4\,EEG  & $0.49$\,M    & 0.806 & 0.325 & 0.237 & 0.111 \\
+ & CNN\,+\,BiLSTM (CRNN)                         & 4\,EEG  & $1.15$\,M    & 0.834 & 0.307 & 0.251 & 0.111 \\
+ & StagingSeqNet                                 & 4\,EEG  & $1.08$\,M    & \textbf{0.868} & 0.308 & 0.232 & 0.093 \\
 \midrule
 \multirow{2}{*}{\shortstack[l]{\emph{Proposed feature-based}\\\emph{multi-task model}}}
- & MM-Net (neural only)              & 7\,ch feat  & 2.62\,M & $\mathbf{0.741 \pm 0.017}$ & $0.668 \pm 0.020$ & $\mathbf{0.635 \pm 0.022}$ \\
- & \textbf{MM-Net (neural + cardio)} & 14\,ch feat & 2.76\,M & $0.739 \pm 0.020$ & $\mathbf{0.670 \pm 0.020}$ & $0.634 \pm 0.024$ \\
+ & MM-Net (neural only)              & 7\,ch feat  & 2.62\,M & --- & $\mathbf{0.741 \pm 0.017}$ & $0.668 \pm 0.020$ & $\mathbf{0.635 \pm 0.022}$ \\
+ & \textbf{MM-Net (neural + cardio)} & 14\,ch feat & 2.76\,M & --- & $0.739 \pm 0.020$ & $\mathbf{0.670 \pm 0.020}$ & $0.634 \pm 0.024$ \\
 \bottomrule
 \end{tabular*}
 \end{table*}
@@ -879,7 +889,8 @@ detection (orange) is still climbing at $76$.}
 Table~\ref{tab:bench} retrains published architectures \emph{on} iSLEEPS. A different and
 harder question is what happens when a model built for healthy sleep is applied to this cohort
 as published. We trained three architectures on Sleep-EDF Expanded and applied each to all
-$99$ iSLEEPS patients zero-shot, with no adaptation of any kind (Table~\ref{tab:domaingap}).
+$99$ iSLEEPS patients zero-shot, with no adaptation of any kind --- the middle block of
+Table~\ref{tab:bench}, set against the same architectures retrained on this cohort.
 
 The result is not a degradation but a collapse. All three stage healthy sleep competently,
 $0.806$ to $0.868$ accuracy and $\kappa$ $0.73$ to $0.83$; on stroke the same checkpoints reach
@@ -899,32 +910,12 @@ the pipeline is correct and the collapse belongs to the cohort.
 \textbf{Two bounds, reported together.} Sleep-EDF is recorded on Fpz-Cz and Pz-Oz where iSLEEPS
 uses C4:M1 and O2:M1, so part of this gap is montage shift rather than pathology, and quoting
 the zero-shot number alone would overstate the case. Deep models trained \emph{on} iSLEEPS with
-the matched montage reach $0.61$--$0.69$ (Table~\ref{tab:bench}), which puts the cost of
+the matched montage reach $0.61$--$0.69$ (upper block), which puts the cost of
 pathology alone at roughly $0.19$ against healthy-sleep performance; healthy-trained and
 zero-shot, with the montage shift included, the cost is $0.56$. The honest claim is bounded by
 those two figures rather than by either alone.
 
-\begin{table}[t]
-\caption{Architectures trained on healthy sleep (Sleep-EDF Expanded) and applied zero-shot to
-all $99$ iSLEEPS patients. ``Wake called'' is the fraction of stroke epochs assigned to Wake
-against a true $26.7\%$.}
-\label{tab:domaingap}
-\centering
-\small
-\begin{tabular}{lcccc}
-\toprule
- & & \multicolumn{2}{c}{Accuracy\,$\uparrow$} & \\
-\cmidrule(lr){3-4}
-Model & Params & healthy & stroke & Wake called \\
-\midrule
-CNN            & $0.49$\,M & 0.806 & 0.325 & $70.5\%$ \\
-CNN\,+\,BiLSTM & $1.15$\,M & 0.834 & 0.307 & $65.6\%$ \\
-StagingSeqNet  & $1.08$\,M & \textbf{0.868} & 0.308 & $78.4\%$ \\
-\midrule
-\multicolumn{5}{l}{\textit{$\kappa$: healthy $0.73$--$0.83$ $\rightarrow$ stroke $0.09$--$0.11$}} \\
-\bottomrule
-\end{tabular}
-\end{table}
+
 
 \subsection{What Each Stream Should Be Represented As}
 \label{sec:repr}
