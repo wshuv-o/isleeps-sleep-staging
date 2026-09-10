@@ -80,28 +80,24 @@ University-Bangladesh, Dhaka 1229, Bangladesh}
 \begin{abstract}
 Sleep-disordered breathing is common in the weeks after an ischemic stroke and predicts
 worse recovery, yet automatic sleep analysis reads only the electroencephalogram and
-reports only sleep stages. A clinical polysomnogram records far more: eye movements,
-muscle tone, the electrocardiogram, airflow, breathing effort, and blood oxygen
-saturation. In this population those channels carry the disease itself, and the median
-patient in this cohort has a scored respiratory event in $13\%$ of epochs. We present
-MM-Net, a two-stream multi-task model that reads the full polysomnogram and produces two
-clinical outputs from a single forward pass: the sleep stage of every 30-second epoch and
-a per-epoch respiratory-event label, with a direct cardiorespiratory path that
-delivers breathing effort and desaturation to the respiratory decision undiminished by the
-staging objective. On iSLEEPS, the first public
-polysomnography corpus of subacute ischemic stroke ($99$ patients, $92{,}560$ epochs),
-under patient-independent ten-fold cross-validation, MM-Net stages sleep at $\mmAcc$
-accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC with
-$2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on this
-cohort and three applied zero-shot from healthy sleep, all on identical folds; every
-retrained baseline lands between $0.613$ and $0.716$ accuracy. Three are reimplemented
-here, each recovering its published accuracy to within $0.04$, which indicates
-that the ceiling belongs to the cohort. Cross-validated on
-healthy sleep the same architecture reaches $0.856$, losing $0.115$ accuracy crossing into
-stroke against $0.140$ to $0.148$ for those baselines. Zero-shot on two independent public
-corpora, the respiratory read-out holds at $0.780$ AUC against $\mmAuc$ in-domain, while
-staging rises on healthy sleep and falls $0.090$ on a sleep-disorders cohort. Code, features and checkpoints are
-released.
+reports only sleep stages. A clinical polysomnogram records far more, and in this
+population those cardiorespiratory channels carry the disease itself: the median patient
+here has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
+multi-task model that reads the full polysomnogram and produces two clinical outputs from a
+single forward pass, the sleep stage of every 30-second epoch and a per-epoch
+respiratory-event label, with a direct cardiorespiratory path carrying breathing effort to
+the respiratory decision undiminished by the staging objective. On iSLEEPS, the first
+public polysomnography corpus of subacute ischemic stroke ($99$ patients, $92{,}560$
+epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
+$\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC
+with $2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on
+this cohort and three applied zero-shot from healthy sleep; every retrained baseline lands
+between $0.613$ and $0.716$ accuracy, and those we ran ourselves share the proposed model's
+folds. Six are reimplemented here, each recovering its published accuracy to within $0.04$,
+which indicates that the ceiling belongs to the cohort. Cross-validated on healthy sleep
+the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
+to $0.148$ for those baselines. Zero-shot on two independent corpora the respiratory
+read-out holds at $0.780$ AUC. Code, features and checkpoints are released.
 \end{abstract}
 
 \begin{keywords}
@@ -166,8 +162,8 @@ for staging; removing that path costs $0.006$ respiratory AUC and leaves staging
 (Section~\ref{sec:method}). The ablation identifies respiratory effort, not oxygen
 saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
-\item \label{c:bench}We benchmark the model against sixteen baseline configurations on identical
-patient-independent folds, covering convolutional, recurrent, attentional and fully
+\item \label{c:bench}We benchmark the model against sixteen baseline configurations, those we ran ourselves
+on the same patient-independent folds as the proposed model, covering convolutional, recurrent, attentional and fully
 convolutional families, and reimplement three published architectures (U-Time,
 TinySleepNet, SleepTransformer) so that every comparison runs through one pipeline
 (Table~\ref{tab:bench}).
@@ -339,8 +335,8 @@ when it overlaps an event.
 \subsection{Problem Formulation}
 A night is a sequence of $T$ epochs. For epoch $t$ we form a neural feature vector
 $\mathbf{f}^{\mathrm{eeg}}_t\in\mathbb{R}^{388}$, formed by concatenating the $188$
-engineered descriptors below with a $200$-dimensional embedding from a frozen pretrained EEG
-encoder (Section~\ref{sec:repr}), and a raw cardiorespiratory tensor
+engineered descriptors below with a $200$-dimensional embedding from LaBraM, a frozen
+pretrained EEG encoder~\cite{labram2024} (Section~\ref{sec:repr}), and a raw cardiorespiratory tensor
 $\mathbf{x}^{\mathrm{car}}_t\in\mathbb{R}^{7\times750}$, the seven channels at $25$\,Hz.
 The $14$ engineered cardiorespiratory descriptors defined below are used by the baseline
 configuration against which the learned encoder is measured. We learn a subject-independent
@@ -564,7 +560,7 @@ Model & Published & Ours & $\Delta$ \\
 \midrule
 U-Time~\cite{perslev2019utime} & $\approx$0.79 & $0.791 \pm 0.062$ & $+0.001$ \\
 TinySleepNet~\cite{supratak2020tinysleepnet} & 0.854 & $0.824 \pm 0.045$ & $-0.030$ \\
-SleepTransformer~\cite{sleeptransformer2022} & 0.848 & $0.823 \pm 0.033$ & $-0.025$ \\
+SleepTransformer~\cite{sleeptransformer2022} & 0.814 & $0.823 \pm 0.033$ & $+0.009$ \\
 1D-ResNet-SE-LSTM & 0.864 & $0.832 \pm 0.036$ & $-0.032$ \\
 Micro SleepNet$^{\S}$ & 0.833 & $0.800 \pm 0.041$ & $-0.033$ \\
 AT-BiLSTM & 0.838 & $0.835 \pm 0.046$ & $-0.003$ \\
@@ -588,7 +584,7 @@ Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparr
 \midrule
 \multicolumn{7}{@{}l}{\emph{Deep networks, retrained on iSLEEPS}}\\[1pt]
 LSTM, our reimplementation$^{\dagger}$ & 1\,EEG\,$+$\,EOG & $1.16$\,M & --- & $0.720 \pm 0.032$ & $0.626 \pm 0.028$ & $0.599 \pm 0.043$ \\
-CNN-ResNet18~\cite{maiti2026isleeps}$^{\ddagger}$ & 1\,EEG\,$+$\,EOG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
+CNN-ResNet18~\cite{bose2026gap}$^{\ddagger}$ & 1\,EEG\,$+$\,EOG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
 DeepSleepNet~\cite{supratak2017deepsleepnet}  & 1\,EEG  & $\sim$21\,M  & --- & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
 U-Time~\cite{perslev2019utime}$^{\dagger}$ & 1\,EEG & $1.07$\,M & $0.791 \pm 0.062$ & $0.646 \pm 0.064$ & $0.524 \pm 0.057$ & $0.506 \pm 0.082$ \\
 AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & --- & $0.716 \pm 0.042$ & $0.600 \pm 0.043$ & $0.593 \pm 0.058$ \\
@@ -750,7 +746,7 @@ ablation moves staging, so each stream serves the outcome its physiology governs
 Within the cardiorespiratory stream, however, only respiratory effort is individually necessary
 ($-0.038$ AUC, Holm $p<0.001$). Removing SpO$_2$, pulse/HRV, ECG or airflow individually costs
 at most $0.005$ AUC and none survives correction; SpO$_2$, which the engineered-feature
-configuration was built around, is here the most expendable channel
+configuration was built around, is here among the least necessary channels
 ($-0.002$, $p=0.61$). The five
 individual removals sum to $-0.046$ AUC against $-0.128$ for removing the stream as a whole,
 a factor of $2.8$. The learned encoder therefore distributes respiratory information redundantly
@@ -832,7 +828,8 @@ from the pooled held-out predictions of all ten folds. The precision--recall pan
 more informative of the two: respiratory events occupy $16\%$ of epochs, and under that
 imbalance a ROC curve flatters any detector. Read at fixed sensitivity, the trade-off is
 explicit: at $0.80$ sensitivity the model holds $0.47$ specificity and $0.22$ precision,
-which is a screening signal, not a scoring-grade detector, and we describe it as
+which is a research-grade burden estimate, not a scoring-grade detector, and we
+describe it as
 such. We also note that pooling every fold's epochs into a single curve is not the same
 estimator as averaging the ten per-fold scores: pooling weights folds by epoch count and
 mixes their score scales, giving a pooled AUC of $0.777$ against the cross-validated
@@ -1026,7 +1023,7 @@ The result is not a degradation but a collapse. All three stage healthy sleep co
 $0.806$ to $0.868$ accuracy and $\kappa$ $0.73$ to $0.83$; on stroke the same checkpoints reach
 $0.307$ to $0.325$ with $\kappa$ $0.09$ to $0.11$, which is close to chance for a five-class
 problem with this prior. The failure mode is more informative than the headline: each model
-labels $66$--$78\%$ of stroke epochs Wake against a true $26.7\%$, and N2 recall falls to
+labels $66$--$78\%$ of stroke epochs Wake against a true $26.6\%$, and N2 recall falls to
 $0.032$ on the stage that is $42\%$ of the data. These models do not lose accuracy gracefully;
 they stop recognising sleep architecture at all.
 
@@ -1099,7 +1096,7 @@ change of representation itself, and make no claim for the encoder that implemen
 On the neural side a pretrained encoder does not replace expert features, but does
 add to them. The lower block of Table~\ref{tab:repr} varies the neural representation with the
 cardiorespiratory stream held at the engineered features. Used alone, the frozen encoder is
-significantly \emph{worse} than the $188$ features ($-0.028$, Holm $p<0.001$): pretraining on
+significantly \emph{worse} than the $188$ features ($-0.029$, Holm $p<0.001$): pretraining on
 healthy scalp EEG does not by itself substitute for physiology chosen for this task.
 Concatenated with the features it adds $+0.008$ accuracy (Holm $p=0.001$), and a second
 pretrained encoder on top of the first adds nothing further ($-0.004$, $p=0.24$).
@@ -1128,7 +1125,7 @@ Representation & Variant & Resp.\ AUC\,$\uparrow$ & Staging acc\,$\uparrow$ & $\
 \midrule
 \multirow{4}{*}{\emph{Neural}}
  & $188$ engineered features            & $0.685 \pm 0.041$ & $0.741 \pm 0.016$ & ---      & ---      \\
- & frozen pretrained encoder alone      & $0.681 \pm 0.033$ & $0.712 \pm 0.033$ & $-0.028$ & $<0.001$ \\
+ & frozen pretrained encoder alone      & $0.681 \pm 0.033$ & $0.712 \pm 0.033$ & $-0.029$ & $<0.001$ \\
  & features $+$ pretrained (adopted)    & $0.690 \pm 0.037$ & $\mathbf{0.749 \pm 0.018}$ & $+0.008$ & $\mathbf{0.001}$ \\
  & features $+$ two pretrained encoders & $0.684 \pm 0.043$ & $0.745 \pm 0.018$ & $+0.004$ & $0.23$   \\
 \bottomrule
@@ -1197,7 +1194,7 @@ on which is chosen. Night two falls to $0.723$, tracking its
 much lower event prevalence ($2.4\%$ against $10.1\%$).
 
 Staging moves in opposite directions on the two corpora, for reasons the data
-identify. On Sleep-EDF the model \emph{gains} $0.083$ of $\kappa$ over its in-domain
+identify. On Sleep-EDF the model \emph{gains} $0.084$ of $\kappa$ over its in-domain
 score. A representation that had memorised corpus-specific artefacts would degrade out of
 corpus, so the straightforward reading is that the features are physiological and that the
 ceiling reported throughout this paper is a property of \emph{stroke sleep} rather than of
@@ -1269,9 +1266,8 @@ that produces both a stage and a respiratory-event label.}
 \toprule
 Model & Input & Params\,$\downarrow$ & Outputs \\
 \midrule
-CNN-ResNet18~\cite{maiti2026isleeps}      & 1\,EEG      & $\sim$11\,M & stage \\
+CNN-ResNet18~\cite{bose2026gap}           & 1\,EEG      & $\sim$11\,M & stage \\
 DeepSleepNet~\cite{supratak2017deepsleepnet} & 1\,EEG   & $\sim$21\,M & stage \\
-Feature-sequence BiLSTM                   & 7\,ch feat  & 1.2\,M      & stage \\
 Raw multimodal CNN                        & 14\,ch      & 0.95\,M     & stage + apnea \\
 \textbf{MM-Net (proposed)}                & 7\,ch feat $+$ raw & \textbf{2.76\,M} & \textbf{stage + apnea} \\
 \bottomrule
@@ -1388,7 +1384,7 @@ DeepSleepNet~\cite{supratak2017deepsleepnet} & 2017 & Two representation-learnin
 U-Time~\cite{perslev2019utime} & 2019 & Fully convolutional encoder--decoder segmenting a whole night at once, no recurrence over epochs. & $\approx$$0.79$ (Sleep-EDF) & $0.646$ \\
 TinySleepNet~\cite{supratak2020tinysleepnet} & 2020 & Compact convolutional stack with a single unidirectional LSTM, single-channel EEG. & $0.854$ (Sleep-EDF) & $0.676$ \\
 AttnSleep~\cite{eldele2021attnsleep} & 2021 & Multi-resolution CNN with multi-head self-attention over epochs, single-channel EEG. & $0.844$ (Sleep-EDF) & $0.716$ \\
-SleepTransformer~\cite{sleeptransformer2022} & 2022 & Transformer encoder with epoch-level interpretability and uncertainty estimates. & $0.848$ (Sleep-EDF) & $0.683$ \\
+SleepTransformer~\cite{sleeptransformer2022} & 2022 & Transformer encoder with epoch-level interpretability and uncertainty estimates. & $0.814$ (Sleep-EDF) & $0.683$ \\
 1D-ResNet-SE-LSTM & 2023 & Residual network with squeeze-and-excitation blocks and an LSTM on raw EEG. & $0.864$ (Sleep-EDF) & $0.708$ \\
 Micro SleepNet & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.833$ (SHHS) & $0.647$ \\
 AT-BiLSTM & 2024 & Attention-augmented bidirectional LSTM, single-channel EEG. & $0.838$ (Sleep-EDF) & $0.692$ \\
