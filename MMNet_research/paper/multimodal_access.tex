@@ -345,11 +345,10 @@ event (Fig.~\ref{fig:arch}).
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_architecture.pdf}
-\caption{The two-stream, multi-task model. Both encoders are shown with their internals
-expanded: layer shapes above each block, operation below. Block height encodes units for
-the multilayer perceptron and temporal length for the convolutional stack. Cross-modal
-fusion is detailed separately (lower right). Dashed outlines mark frozen parameters;
-colours are keyed at the foot of the figure.}
+\caption{The two-stream, multi-task model. Layer shapes above each block, operation
+below; block height encodes units for the multilayer perceptron and temporal length for
+the convolutional stack. Dashed outlines mark frozen parameters. Cross-modal fusion is
+detailed at lower right.}
 \label{fig:arch}
 \end{figure*}
 
@@ -518,13 +517,10 @@ alongside the published single-channel baselines for the corpus~\cite{maiti2026i
 patient-independent, at the hidden-Markov operating point where a model provides one.
 
 \begin{table}[t]
-\caption{Reimplementation check. Each architecture marked $^{\dagger}$ in
-Table~\ref{tab:bench} was rebuilt from its paper, so its score on iSLEEPS is only
-informative if the same code reproduces the corpus its authors used. Ten-fold
-subject-independent cross-validation on Sleep-EDF Expanded, single Fpz-Cz derivation, the
-derivation each paper reports. Published accuracies are as reported by the original
-authors; U-Time reports macro-F1 more prominently than accuracy, so its figure is the
-approximate accuracy implied by the paper and is marked accordingly.}
+\caption{Reimplementation check for the models marked $^{\dagger}$ in
+Table~\ref{tab:bench}: ten-fold subject-independent cross-validation on Sleep-EDF
+Expanded, single Fpz-Cz derivation. $\approx$ marks a published accuracy inferred from
+the macro-F1 its paper reports.}
 \label{tab:reimpl}
 \centering
 \begin{tabular}{@{}l c c c@{}}
@@ -540,22 +536,9 @@ SleepTransformer~\cite{sleeptransformer2022} & 0.848 & $0.823 \pm 0.033$ & $-0.0
 
 \begin{table*}[t]
 \caption{Sleep staging on iSLEEPS, patient-independent, against every architecture we
-evaluated. The upper block retrains each architecture \emph{on} this cohort; the middle
-block trains on healthy sleep (Sleep-EDF Expanded) and applies the checkpoint cold, with
-its healthy-sleep score alongside as the control that separates a cohort effect from a
-weak model. Cells are mean $\pm$ SD across folds where per-fold values were retained:
-five folds for the earlier retrained baselines, ten for the reimplemented literature
-models, and thirty fold-values (ten folds, three seeds) for the proposed rows. CNN-ResNet18 is quoted from the corpus paper and AttnSleep retained only
-aggregates, so neither carries an interval; the zero-shot block is a single pass over all
-$99$ patients and has no fold structure. The final row cross-validates the proposed
-architecture on healthy sleep instead of stroke, ten-fold and subject-independent, as a
-control on the cohort argument; Sleep-EDF has no cardiorespiratory channels, so it is the
-neural branch alone and the comparison row is MM-Net (neural only). $^{\dagger}$ marks a model reimplemented by us from its paper, not run from
-published code; for these the healthy column is the \emph{same} code cross-validated on
-Sleep-EDF, which recovers each published accuracy to within $0.03$
-(Table~\ref{tab:reimpl}) and so establishes that their scores here reflect the cohort and
-not the reimplementation.
-``feat'' marks engineered features. Best per column in \textbf{bold}.}
+evaluated. $^{\dagger}$ marks a model reimplemented by us from its paper
+(Table~\ref{tab:reimpl}). ``feat'' marks engineered features. Cells are mean $\pm$ SD
+across folds where per-fold values were retained. Best per column in \textbf{bold}.}
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c c @{}}
@@ -591,6 +574,18 @@ not the reimplementation.
 \end{table*}
 
 \subsection{Staging Benchmark and Comparison}
+Table~\ref{tab:bench} is organised in three blocks: architectures retrained on this
+cohort, architectures trained on healthy sleep and applied to it zero-shot, and the
+proposed model, with a final row cross-validating the proposed architecture on healthy
+sleep as a control on the cohort argument. Dispersion is reported wherever per-fold values
+survive: five folds for the earlier retrained baselines, ten for the three reimplemented
+literature models, and thirty fold-values (ten folds, three seeds) for the proposed rows.
+CNN-ResNet18 is quoted from the corpus paper and AttnSleep retained only aggregates, so
+neither carries an interval, and the zero-shot block is a single pass over all $99$
+patients with no fold structure. Sleep-EDF carries no cardiorespiratory channels, so every
+healthy-sleep figure exercises the neural branch alone and the comparison row there is
+MM-Net (neural only).
+
 Table~\ref{tab:bench} shows a clear pattern: every deep network, whether trained from scratch,
 transferred from healthy sleep, or applied to the raw multichannel signal, stays between $0.61$
 and $0.69$ accuracy, $15$ to $20$ points below the same architectures' published accuracy on
@@ -794,11 +789,10 @@ no-skill floor.}
 \end{figure}
 
 \begin{table}[t]
-\caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors
-trained on the $14$ cardiorespiratory features on the same folds; chance-level average
-precision equals the event prevalence, $0.157$. \textit{(b)} AUC by event type, scored
-against epochs carrying no scored event, over the $96$ patients with event-type
-annotation. Best per column in \textbf{bold}.}
+\caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)}
+Detectors trained on the $14$ cardiorespiratory features on the same folds; chance-level
+average precision equals the event prevalence, $0.157$. \textit{(b)} AUC by event type
+over the $96$ patients with event-type annotation. Best per column in \textbf{bold}.}
 \label{tab:resp}
 \centering
 \small
@@ -1031,12 +1025,10 @@ alone; but the complementarity saturates after one pretrained encoder, so this i
 general argument for stacking foundation models.
 
 \begin{table*}[t]
-\caption{What each stream should be represented as. Every other hyperparameter is held
-fixed within a block, so one thing varies at a time; ten-fold patient-independent, three
-seeds, thirty fold-values per cell, mean $\pm$ SD. $\Delta$ and Holm $p$ are on the metric
-that block varies (respiratory AUC for the cardiorespiratory block, staging accuracy for
-the neural block) against the engineered-feature baseline of that block, Wilcoxon paired
-on fold-values and Holm-corrected within the block.}
+\caption{What each stream should be represented as. One factor varies per block with
+everything else held fixed; ten-fold patient-independent, three seeds, thirty fold-values
+per cell, mean $\pm$ SD. $\Delta$ and Holm $p$ are against the engineered-feature baseline
+of each block, Wilcoxon paired on fold-values.}
 \label{tab:repr}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l c c c c @{}}
@@ -1146,11 +1138,11 @@ respiratory AUC spans $0.515$--$0.848$, the latter tracking event prevalence clo
 the low-prevalence nights give near-chance estimates.
 
 \begin{table}[t]
-\caption{External validation on two public corpora, zero-shot, one model trained on all
-$99$ iSLEEPS patients with no dataset-specific tuning. In-domain figures are the ten-fold
+\caption{External validation on two public corpora, zero-shot: one model trained on all
+$99$ iSLEEPS patients with no dataset-specific tuning. In-domain figures are ten-fold
 patient-independent means. Sleep-EDF carries no cardiorespiratory channels, so the
-respiratory head is not scored there. The two ISRUC rows are carried over from the
-feature-only configuration and have not been recomputed for the model reported here.}
+respiratory head is not scored there. The ISRUC rows are carried over from the
+feature-only configuration.}
 \label{tab:ext}
 \centering
 \small
@@ -1222,10 +1214,10 @@ diffuse, mirroring the strong staging and the modest respiratory AUC.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/fig_tsne.pdf}
-\caption{Two-dimensional t-SNE of the model's per-epoch embeddings (pooled test epochs).
-\textbf{Left:} coloured by sleep stage -- Wake, N2, N3, and REM form distinct territories while
-N1 is diffuse. \textbf{Right:} coloured by respiratory-event label -- events are spread across
-the manifold, consistent with the modest detection AUC.}
+\caption{Two-dimensional t-SNE of the model's per-epoch embeddings (pooled test
+epochs). \textbf{Left:} by sleep stage; Wake, N2, N3 and REM form distinct territories
+while N1 is diffuse. \textbf{Right:} by respiratory-event label; events spread across the
+manifold, consistent with the modest detection AUC.}
 \label{fig:tsne}
 \end{figure*} Staging accuracy on this cohort saturates
 below $0.75$ for every model family we evaluated, and the proposed model reaches $\mmAcc$ while
