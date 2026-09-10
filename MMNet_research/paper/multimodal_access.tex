@@ -365,20 +365,11 @@ event (Fig.~\ref{fig:arch}).
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_architecture.pdf}
-\caption{The two-stream, multi-task model. Expert physiological features and a frozen
-self-supervised embedding are concatenated into a 388-dimensional neural input; the
-cardiorespiratory stream is the raw $7\times750$ tensor read by a learned convolutional
-encoder. Both encoders are drawn with their internals expanded, since each is instantiated
-once. Layer shapes are given above each block and the operation below it; block height
-encodes units for the multilayer perceptron and temporal length for the convolutional
-stack, so the trade that stack makes is visible --- time resolution is spent to buy
-channels, $750\rightarrow23$ samples against $7\rightarrow96$. The governing equations
-are given in the text rather than on the figure. The two embeddings are fused and read across the night by a bidirectional LSTM. A
-staging head reads the recurrent state; a respiratory head reads it together with a direct
-copy of the cardiorespiratory embedding, so desaturation and effort cues reach the
-respiratory decision without passing through the staging-oriented fusion. Cross-modal
-fusion is the one block detailed separately (right), because attention does not expand
-compactly in line. Dashed outlines mark frozen parameters.}
+\caption{The two-stream, multi-task model. Both encoders are shown with their internals
+expanded: layer shapes above each block, operation below. Block height encodes units for
+the multilayer perceptron and temporal length for the convolutional stack. Cross-modal
+fusion is detailed separately (lower right). Dashed outlines mark frozen parameters;
+colours are keyed at the foot of the figure.}
 \label{fig:arch}
 \end{figure*}
 
@@ -544,12 +535,10 @@ alongside the published single-channel baselines for the corpus~\cite{maiti2026i
 patient-independent, at the hidden-Markov operating point where a model provides one.
 
 \begin{table*}[t]
-\caption{Sleep staging on iSLEEPS (ten-fold, patient-independent): the proposed feature-based
-model against deep networks trained from scratch, transferred from healthy sleep, or applied to
+\caption{Sleep staging on iSLEEPS (ten-fold, patient-independent): the proposed model
+against deep networks trained from scratch, transferred from healthy sleep, or applied to
 the raw multichannel signal. ``feat'' marks engineered features; best per column in
-\textbf{bold}. Deep architectures built for healthy sleep lose $15$--$20$ points on this stroke
-cohort, while the compact feature-based model is the strongest here and the only one that also
-detects respiratory events (Table~\ref{tab:ablate}). }
+\textbf{bold}.}
 \label{tab:bench}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c c c @{}}
@@ -592,10 +581,9 @@ it hesitates.
 \centering
 \includegraphics[width=0.86\textwidth]{figures/fig_hypnogram.pdf}
 \caption{A representative held-out night (patient SN90, staging accuracy $0.80$).
-\textbf{(A)} Predicted and reference hypnograms (REM highlighted). \textbf{(B)} EEG spectrogram
-(C4 derivation, $0$--$25$\,Hz). \textbf{(C)} The model's per-epoch stage-probability ribbon; the
-black line is the maximum posterior, i.e.\ its confidence. Deep sleep aligns with low-frequency
-spectral power, and confidence falls at stage transitions.}
+\textbf{(A)} Predicted and reference hypnograms, REM highlighted. \textbf{(B)} EEG
+spectrogram, C4 derivation, $0$--$25$\,Hz. \textbf{(C)} Per-epoch stage-probability
+ribbon; the black line is the maximum posterior.}
 \label{fig:hypno}
 \end{figure*}
 
@@ -607,6 +595,11 @@ hard stage, because it is transient and rare. The raw convolutional network reac
 N1 F1, which fits its sensitivity to short events, while the proposed model leads on the stable
 stages. The row-normalised confusion matrix (Fig.~\ref{fig:confusion}) shows
 where the errors land: N1 is absorbed mainly into Wake and N2, and part of N3 is read as N2.
+Comparing the neural-only and full rows isolates what the cardiorespiratory stream
+contributes to staging, and the answer is narrow: N1 improves by $0.019$ (Wilcoxon
+$p=0.045$ over thirty fold-values) and no other stage moves ($p \geq 0.15$). That the gain
+lands on N1 is consistent with its physiology --- it is the transitional stage, the hardest
+to score, and the one most often coincident with a respiratory event.
 
 \begin{figure}[t]
 \centering
@@ -618,11 +611,8 @@ hidden-Markov operating point). Errors concentrate on N1, which is absorbed into
 
 \begin{table}[t]
 \caption{Per-class staging F1 (Wake, N1, N2, N3, REM), ten-fold patient-independent, at the
-hidden-Markov operating point, for the proposed model and the raw-signal deep network. Best per
-column in \textbf{bold}. The neural-only and full rows are both means over the same thirty
-fold-values, so the difference between them isolates the cardiorespiratory stream: it improves
-N1 significantly ($+0.019$, Wilcoxon $p=0.045$) and moves no other stage
-($p \geq 0.15$).}
+hidden-Markov operating point. The neural-only and full rows are means over the same thirty
+fold-values. Best per column in \textbf{bold}.}
 \label{tab:perclass}
 \centering
 \setlength{\tabcolsep}{6pt}
@@ -641,10 +631,7 @@ MM-Net (neural only)              & \textbf{0.79} & 0.28 & 0.80 & 0.71 & \textbf
 \centering
 \includegraphics[width=0.86\columnwidth]{figures/fig_mm_perclass.pdf}
 \caption{Per-class staging F1 for the neural-only and the neural-plus-cardiorespiratory
-model, both averaged over the same thirty fold-values. The cardiorespiratory stream's
-contribution to staging is concentrated in N1, the transitional stage that is hardest to score
-and the one most often coincident with a respiratory event; no other stage moves
-significantly.}
+model, both averaged over the same thirty fold-values.}
 \label{fig:perclassfig}
 \end{figure}
 
@@ -685,22 +672,15 @@ modality, and the fusion mechanism has little effect.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.98\columnwidth]{figures/fig_ablation.pdf}
-\caption{Modality-ablation grid. Staging accuracy (blue) and respiratory AUC (red) as each
-modality is removed in turn. Removing the neural channels lowers staging and leaves respiratory
-AUC flat; removing cardiorespiratory channels does the reverse. Within the cardiorespiratory
-stream only effort matters individually, yet removing the stream entirely costs far more than
-the sum of its parts.}
+\caption{Modality-ablation grid. Drop in staging accuracy (blue) and respiratory AUC (red)
+when each modality is removed and the model retrained.}
 \label{fig:ablationfig}
 \end{figure}
 
 \begin{table}[t]
 \caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
-three seeds. Each row removes one modality and keeps the rest. Neural ablations move
-staging and leave respiratory AUC flat; cardiorespiratory ablations do the reverse.
-Within the cardiorespiratory stream only respiratory effort is individually
-necessary, yet removing the stream as a whole costs $2.8\times$ the sum of the
-individual removals --- the signature of a redundant distributed code. Largest
-effect per column in \textbf{bold}.}
+three seeds, thirty fold-values per row. Each row removes one modality and keeps the
+rest. Largest effect per column in \textbf{bold}.}
 \label{tab:ablate}
 \centering
 \setlength{\tabcolsep}{8pt}
@@ -779,18 +759,16 @@ visible rather than hidden; it is a fifth of one fold standard deviation.
 \caption{Respiratory-event detection, operating characteristics, pooled over the ten
 patient-independent test folds. \textbf{(a)} ROC; the dashed line is chance.
 \textbf{(b)} Precision--recall; the dashed line is the $0.157$ event prevalence, the
-no-skill floor. Each panel reports the pooled value and the per-fold mean $\pm$ standard
-deviation, which differ because pooling is a different estimator from cross-validated
-averaging.}
+no-skill floor.}
 \label{fig:rocpr}
 \end{figure}
 
 \begin{table}[t]
-\caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors trained
-on the $14$ cardiorespiratory features on the same folds; chance-level average precision equals the
-event prevalence, $0.157$. \textit{(b)} The proposed model's AUC by event type, scored against
-epochs carrying no respiratory event, over the $96$ patients with event-type annotation --- the
-rarer, more severe events are detected best. Best per column in \textbf{bold}.}
+\caption{Respiratory-event detection, ten-fold patient-independent. \textit{(a)} Detectors
+trained on the $14$ cardiorespiratory features on the same folds; chance-level average
+precision equals the event prevalence, $0.157$. \textit{(b)} AUC by event type, scored
+against epochs carrying no scored event, over the $96$ patients with event-type
+annotation. Best per column in \textbf{bold}.}
 \label{tab:resp}
 \centering
 \small
@@ -958,7 +936,13 @@ channels, so it tests the staging head across both a cohort shift and a montage 
 same central and occipital derivations we use (C4, C3, O2, O1 against the contralateral
 mastoid), with SpO$_2$, airflow, effort and ECG, and with obstructive, central and mixed
 apneas and hypopneas scored --- so it tests the staging head \emph{without} a montage
-confound and provides the only external test of the respiratory head. ISRUC records each
+confound and provides the only external test of the respiratory head. Because Sleep-EDF
+carries no cardiorespiratory channels, that branch is fed zeros there. Zeroing an input the
+network trained on is a train/test mismatch rather than an ablation, so we also trained a
+model with the branch zeroed throughout: it reaches $0.774$ accuracy, below the $0.794$
+reported, which shows the headline figure is not an artefact of the mismatch. Both corpora
+also differ from iSLEEPS in montage, so both transfer figures are lower bounds rather than
+clean estimates. ISRUC records each
 subject twice; respiratory-event prevalence is $10.1\%$ on the first night and $2.4\%$ on
 the second, so we report the two separately rather than pooling a difference that has
 nothing to do with the model.
@@ -1007,15 +991,11 @@ respiratory AUC spans $0.515$--$0.848$, the latter tracking event prevalence clo
 the low-prevalence nights give near-chance estimates.
 
 \begin{table}[t]
-\caption{External validation on two public corpora. One model trained on all $99$ iSLEEPS
-patients, evaluated zero-shot with no dataset-specific tuning. In-domain figures are the
-ten-fold patient-independent means. Sleep-EDF has no cardiorespiratory channels, so the
-respiratory head cannot be scored there and that branch is fed zeros; training with the branch
-zeroed as well gives $0.774$, confirming the figure is not an artefact of the train/test
-mismatch. Both external corpora use a different montage from iSLEEPS, so these are lower bounds
-on transfer rather than clean estimates of it. The two ISRUC rows are carried over from the
-feature-only configuration and are shown for continuity; they have not been recomputed for the
-model reported here.}
+\caption{External validation on two public corpora, zero-shot, one model trained on all
+$99$ iSLEEPS patients with no dataset-specific tuning. In-domain figures are the ten-fold
+patient-independent means. Sleep-EDF carries no cardiorespiratory channels, so the
+respiratory head is not scored there. The two ISRUC rows are carried over from the
+feature-only configuration and have not been recomputed for the model reported here.}
 \label{tab:ext}
 \centering
 \small
@@ -1146,10 +1126,7 @@ larger opportunity, and one the cardiorespiratory signal is well placed to serve
 \begin{table*}[t]
 \caption{Recent single-channel sleep-staging methods: the accuracy each reports on healthy or
 general cohorts, set against its accuracy on the subacute-stroke cohort (iSLEEPS) for the two
-architectures we re-implemented. Healthy-cohort staging reaches $0.82$--$0.88$; the same
-architectures fall to $0.62$--$0.69$ on stroke, while the proposed multimodal model reaches
-$\mmAcc$ on stroke and additionally detects respiratory events at $\mmAuc$ AUC (no staging
-method produces a respiratory output). A dash marks a value we did not evaluate.}
+architectures we re-implemented. A dash marks a value we did not evaluate.}
 \label{tab:litreview}
 \centering
 \small
