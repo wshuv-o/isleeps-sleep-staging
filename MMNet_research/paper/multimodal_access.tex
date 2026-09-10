@@ -358,8 +358,9 @@ event (Fig.~\ref{fig:arch}).
 \includegraphics[width=\textwidth]{figures/fig_architecture.pdf}
 \caption{The two-stream, multi-task model. Layer shapes above each block, operation
 below; block height encodes units for the multilayer perceptron and temporal length for
-the convolutional stack. Dashed outlines mark frozen parameters. Cross-modal fusion is
-detailed at lower right.}
+the convolutional stack. Dashed outlines mark frozen parameters. The junction marked C is the
+concatenation used for every reported result; the panel at lower right details the attention
+fusion evaluated against it in Section~\ref{sec:ablate}, which it matches to within noise.}
 \label{fig:arch}
 \end{figure*}
 
@@ -411,8 +412,8 @@ c_t&=\mathrm{CardioCNN}\big(\mathbf{x}^{\mathrm{car}}_t\big)\in\mathbb{R}^{64}.
 \end{align}
 LayerNorm rather than BatchNorm is used because the recurrent windows are short and mix
 patients within a batch, and the cardiorespiratory stream is deliberately narrower because
-the branch compresses a $7\times750$ tensor to $64$ dimensions, and
-Section~\ref{sec:repr} shows that widening it past $64$ buys nothing.
+the branch compresses a $7\times750$ tensor into the same $64$ dimensions the
+feature encoder it replaced produced, which keeps the substitution the only variable.
 
 \subsection{Fusion}
 The two embeddings are concatenated and projected back to the stream width,
@@ -456,9 +457,10 @@ reader should treat it as an architectural choice we have argued for but not yet
 % 3 seeds x 10 folds, with and without the direct path, Wilcoxon on 30 paired
 % fold-values). Replace the two sentences above with the measured effect when the
 % numbers land; if the effect is null, the design rationale comes out entirely.
-% The trained model holds $2.76$ million parameters. The pretrained encoder that
-supplies the $200$-dimensional neural embedding is run once offline and is not trained
-here, so it adds no trainable parameters to this count.
+%
+The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
+$200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
+trainable parameters to this count.
 
 \subsection{Training and decoding}
 The two tasks are trained together with equal weight, $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\,\mathcal{L}^{\mathrm{apn}}$ with $\lambda=1$, combining a class-weighted staging cross-entropy and a positive-weighted respiratory cross-entropy,
@@ -503,7 +505,10 @@ $0.781$, $0.783$ and $0.781$, so $\mmAuc$ is stable to the third decimal under r
 
 \subsection{Implementation and hyperparameters}
 The model is implemented in PyTorch and trained on a single NVIDIA RTX~2060 GPU (6\,GB) under
-Windows, with all randomness seeded to $42$ so that runs are deterministic and reproducible.
+Windows. Every run is seeded, so each is individually reproducible; headline figures
+average three seeds ($42$, $1$, $7$) over the ten folds, giving the thirty fold-values used
+throughout. Where a result is derived from stored predictions rather than retrained, it comes
+from the seed-$42$ run, and the text says so at that point.
 Table~\ref{tab:hyper} lists the training configuration, which is identical across all folds, all
 baselines we re-implement, and every ablation, so that reported differences come from the model
 and not from tuning.
@@ -531,7 +536,7 @@ Respiratory pos.\ weight & $\pi=n_-/n_+$ \\
 Loss balance $\lambda$ & $1.0$ \\
 Staging post-processing & HMM Viterbi smoothing \\
 Cross-validation & $10$-fold, patient-independent \\
-Random seed & $42$ \\
+Random seeds & $42$, $1$, $7$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -549,8 +554,8 @@ patient-independent, at the hidden-Markov operating point where a model provides
 \begin{table}[t]
 \caption{Reimplementation check for the models marked $^{\dagger}$ in
 Table~\ref{tab:bench}: ten-fold subject-independent cross-validation on the
-$20$-subject Sleep-EDF Cassette subset ($40$ recordings, $21$ subjects), single
-Fpz-Cz derivation. $\approx$ marks an accuracy inferred from the macro-F1 its paper
+Sleep-EDF Cassette subset used throughout this paper, $40$ recordings from $21$
+subjects, single Fpz-Cz derivation. $\approx$ marks an accuracy inferred from the macro-F1 its paper
 reports.}
 \label{tab:reimpl}
 \centering
@@ -975,7 +980,7 @@ across folds.}
 \label{sec:domaingap}
 Table~\ref{tab:bench} retrains published architectures \emph{on} iSLEEPS. A different and
 harder question is what happens when a model built for healthy sleep is applied to this cohort
-as published. We trained three architectures on Sleep-EDF Expanded and applied each to all
+as published. We trained three architectures on the Sleep-EDF Cassette subset and applied each to all
 $99$ iSLEEPS patients zero-shot, with no adaptation of any kind. This is the middle block of
 Table~\ref{tab:bench}, set against the same architectures retrained on this cohort.
 
@@ -1122,7 +1127,7 @@ patients and evaluated it, unchanged, on two public corpora with no dataset-spec
 tuning: no fine-tuning, no threshold search, no re-fitted model or decision threshold (per-recording feature standardisation is applied, as in training), and hidden-Markov
 transitions estimated from iSLEEPS alone (Table~\ref{tab:ext}).
 
-The two corpora test different things. \textbf{Sleep-EDF Expanded}~\cite{kemp2000sleepedf}
+The two corpora test different things. \textbf{Sleep-EDF}~\cite{kemp2000sleepedf}
 is healthy sleep recorded on a frontal montage (Fpz-Cz, Pz-Oz) with no cardiorespiratory
 channels, so it tests the staging head across both a cohort shift and a montage shift.
 \textbf{ISRUC-Sleep}~\cite{khalighi2016isruc} is a sleep-disorders cohort recorded on the
@@ -1193,7 +1198,7 @@ prevalence and are reported separately.}
 \label{tab:ext}
 \centering
 \small
-\begin{tabular}{llccccc}
+\begin{tabular}{llcccc}
 \toprule
 Corpus & Cohort & Rec. & Acc\,$\uparrow$ & $\kappa$\,$\uparrow$ & Resp.\ AUC\,$\uparrow$ \\
 \midrule
