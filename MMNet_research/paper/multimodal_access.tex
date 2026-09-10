@@ -602,14 +602,14 @@ across folds where per-fold values were retained. Best per column in \textbf{bol
 \multirow{3}{*}{\shortstack[l]{\emph{Trained on healthy sleep,}\\\emph{applied zero-shot}}}
  & CNN                                           & 4\,EEG  & $0.49$\,M    & $0.806 \pm 0.001$ & $0.307 \pm 0.016$ & $0.223 \pm 0.013$ & $0.102 \pm 0.010$ \\
  & CNN\,+\,BiLSTM (CRNN)                         & 4\,EEG  & $1.15$\,M    & $0.828 \pm 0.005$ & $0.312 \pm 0.012$ & $0.253 \pm 0.006$ & $0.127 \pm 0.022$ \\
- & StagingSeqNet                                 & 4\,EEG  & $1.08$\,M    & \textbf{0.868} & 0.308 & 0.232 & 0.093 \\
+ & StagingSeqNet                                 & 4\,EEG  & $1.08$\,M    & $0.855 \pm 0.001$ & $0.306 \pm 0.009$ & $0.230 \pm 0.014$ & $0.091 \pm 0.015$ \\
 \midrule
 \multirow{2}{*}{\shortstack[l]{\emph{Proposed feature-based}\\\emph{multi-task model}}}
  & MM-Net (neural only)              & 7\,ch feat  & 2.62\,M & --- & $0.741 \pm 0.017$ & $0.668 \pm 0.020$ & $\mathbf{0.635 \pm 0.022}$ \\
  & \textbf{MM-Net (neural + cardio)} & 7\,ch feat $+$ raw & 2.76\,M & --- & $0.739 \pm 0.020$ & $\mathbf{0.670 \pm 0.020}$ & $0.634 \pm 0.024$ \\
 \midrule
 \emph{Same model, healthy sleep}
- & MM-Net (neural only)              & 2\,EEG feat & 2.62\,M & $0.856 \pm 0.027$ & --- & --- & --- \\
+ & MM-Net (neural only)              & 2\,EEG feat & 2.62\,M & $\mathbf{0.856 \pm 0.027}$ & --- & --- & --- \\
 \bottomrule
 \end{tabular*}
 \end{table*}
@@ -628,9 +628,9 @@ baselines; thirty fold-values, ten folds by three seeds, for AttnSleep, the thre
 reimplemented literature models and the proposed rows. The LSTM and CNN-ResNet18 rows are
 quoted from the corpus paper rather than re-run here, so their protocol is that paper's and
 not ours and neither carries an interval. In the zero-shot block the interval is across
-training seeds and not folds, because that evaluation is a single pass of a finished
-checkpoint over all $99$ patients; StagingSeqNet is a single supplied checkpoint and has
-none. Sleep-EDF carries no cardiorespiratory channels, so every
+pretraining seeds and not folds, because that evaluation is a single pass of a finished
+checkpoint over all $99$ patients. The two best healthy scores, $0.856$ and $0.855$, are
+separated by less than either interval. Sleep-EDF carries no cardiorespiratory channels, so every
 healthy-sleep figure exercises the neural branch alone and the comparison row there is
 MM-Net (neural only).
 
