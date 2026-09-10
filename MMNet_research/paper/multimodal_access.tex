@@ -862,10 +862,14 @@ visible, not hidden; at $0.005$ it is an eighth of one fold standard deviation.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_roc_pr.pdf}
-\caption{Respiratory-event detection, operating characteristics, pooled over the ten
-patient-independent test folds. \textbf{(a)} ROC; the dashed line is chance.
-\textbf{(b)} Precision--recall; the dashed line is the $0.157$ event prevalence, the
-no-skill floor.}
+\caption{Respiratory-event detection, pooled over the ten patient-independent test
+folds. \textbf{(a)} Event-level operating characteristic: consecutive flagged epochs are
+grouped into events per patient, and each point is a decision threshold, labelled with the
+fraction of all epochs it flags. Marker area carries that fraction, because sensitivity and
+false-alarm rate alone would make the low thresholds look strictly better. The curve turns
+back on itself: flagged runs merge, so fewer distinct false alarms are counted even as more
+of the night is flagged. \textbf{(b)} Precision--recall; the dashed line is the $0.157$
+event prevalence, the no-skill floor.}
 \label{fig:rocpr}
 \end{figure}
 
