@@ -181,7 +181,7 @@ channel is indispensable (Section~\ref{sec:noflow}).
 \item \label{c:attrib}We attribute each output causally to the physiology that produces it. A
 leave-one-out modality-ablation grid separates the two outputs: removing the
 cardiorespiratory stream lowers respiratory detection and leaves staging untouched
-($-0.128$ AUC, Wilcoxon on thirty fold-values, Holm $p<10^{-7}$), while no neural ablation
+($-0.128$ AUC, Wilcoxon on ten fold-means, Holm $p=0.018$), while no neural ablation
 moves respiratory AUC. That double dissociation is a falsifiable account of what each
 modality contributes (Table~\ref{tab:ablate}).
 \end{enumerate}
@@ -448,9 +448,10 @@ The connection exists so that the respiratory decision does not have to survive 
 fusion trained mostly for staging, which would weaken the mechanical signature of an
 obstructed breath along the way. Section~\ref{sec:ablate} identifies the channel that
 signature lives in, and it is respiratory effort that names the event. We isolate the connection by removing it and holding everything else fixed, on the
-same thirty fold-values as every other figure here. Respiratory AUC falls from $\mmAuc$ to
-$0.776$ (Wilcoxon $p=0.043$) and average precision from $\mmAp$ to $0.411$ ($p=0.42$), while
-staging is untouched at $0.739$ accuracy ($p=0.97$) and $\kappa$ $0.634$ ($p=0.94$). The gain
+same folds as every other figure here. Respiratory AUC falls from $\mmAuc$ to
+$0.776$ (Wilcoxon on ten fold-means, $p=0.049$) and average precision from $\mmAp$ to
+$0.411$ ($p=0.28$), while staging is untouched at $0.739$ accuracy ($p=0.92$) and $\kappa$
+$0.634$ ($p=0.92$). The gain
 is small, about a sixth of a fold standard deviation, and the $p$-value is marginal enough
 that we would not rest an argument on it alone. What makes it worth reporting is where it
 lands rather than how large it is: the connection feeds the respiratory head and nothing
@@ -499,7 +500,15 @@ $0.020$ across folds, and respiratory AUC by $0.001$ against $0.038$: fold-to-fo
 is four times the seed spread for staging and thirty times it for respiratory detection.
 The uncertainty in these results is therefore dominated by which patients fall in which
 fold, which is a property of a cohort this size. Every headline figure in this paper is the mean over all thirty fold-values, ten
-folds by three seeds. The three seed means for respiratory AUC are
+folds by three seeds. Paired tests, however, are computed on the ten fold-means: the three
+seeds within a fold train and test on the same patients, so they are three re-rolls of one
+experiment and not three independent observations, and treating them as thirty would triple
+the effective sample and shrink every $p$. One consequence is worth stating plainly. With
+ten paired folds the smallest two-sided Wilcoxon $p$ is $2/2^{10}=0.002$, reached when every
+fold moves the same way, so after Holm correction across a family of nine the floor is
+$0.018$. Several effects below sit at that floor and differ in size by more than an order of
+magnitude; the test cannot separate them, and the effect sizes are reported beside every
+$p$ for that reason. The three seed means for respiratory AUC are
 $0.781$, $0.783$ and $0.781$, so $\mmAuc$ is stable to the third decimal under reseeding.
 
 \subsection{Implementation and Hyperparameters}
@@ -665,11 +674,16 @@ across every model in Table~\ref{tab:bench}, so each baseline is scored on exact
 the proposed model was and the comparison is paired. That matters here: fold-to-fold variation
 is large and it is \emph{shared}, because the difficulty lies in the patients (AttnSleep spans $0.627$ to $0.755$ across folds), so reading two overlapping
 $\pm$SD intervals charges the cohort's own variability against the difference and hides it.
-Paired on fold values, with Holm correction within each metric across the four reimplemented
-baselines, the proposed model leads on all three metrics against all four, twelve comparisons
-of twelve: accuracy $+0.023$ to $+0.088$ (Holm $p\le0.008$), macro-F1 $+0.064$ to $+0.142$
-($p\le0.0005$), and $\kappa$ $+0.041$ to $+0.122$ ($p\le0.006$). Against AttnSleep, the
-strongest of them, the macro-F1 margin of $+0.071$ holds on \emph{all thirty} fold-seed pairs.
+Paired on the ten fold-means, with Holm correction across the eight baselines we ran
+ourselves, the proposed model is ahead of every one of them on accuracy, by $+0.019$ to
+$+0.093$, and wins between eight and ten of the ten folds in each comparison. The margin is
+statistically separable for five: Micro SleepNet, SleepTransformer, U-Time, AT-BiLSTM and
+TinySleepNet (Holm $p$ from $0.016$ to $0.039$). For the three closest it is not. AttnSleep
+($+0.023$, Holm $p=0.17$), our reimplementation of the corpus LSTM ($+0.019$, $p=0.17$) and
+1D-ResNet-SE-LSTM ($+0.032$, $p=0.15$) sit inside the noise that ten folds can resolve. We
+report that as it stands, and it is the cohort-ceiling argument arriving by another route:
+three architectures spanning 2021 to 2023 land close enough to the proposed model that this
+cohort cannot tell them apart.
 The accuracy margin is the narrowest of the three and the one most exposed to the cohort's
 noise; macro-F1 and $\kappa$, which do not let a model coast on the two majority stages,
 separate the models by two to three times as much.
@@ -694,7 +708,7 @@ stages. The row-normalised confusion matrix (Fig.~\ref{fig:confusion}) shows
 where the errors land: N1 is absorbed mainly into Wake and N2, and part of N3 is read as N2.
 Comparing the neural-only and full rows isolates what the cardiorespiratory stream
 contributes to staging, and the answer is narrow: N1 improves by $0.019$ (Wilcoxon
-$p=0.045$ over thirty fold-values) and no other stage changes significantly
+$p=0.11$ on ten fold-means, not significant) and no stage changes significantly
 ($p \geq 0.15$; REM shifts by $0.01$ in Table~\ref{tab:perclass}, well inside that). That the gain
 lands on N1 is consistent with its physiology. It is the transitional stage, the hardest
 to score, and the one most often coincident with a respiratory event.
@@ -764,24 +778,24 @@ modality, and the fusion mechanism has little effect.
 \begin{table}[t]
 \caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
 three seeds. Each row removes one modality and keeps the rest; cells are mean
-$\pm$ SD over thirty fold-values. Largest effect per column in \textbf{bold}.}
+Cells are the mean over thirty fold-values; $p$ is Wilcoxon on the ten fold-means, Holm-corrected across the nine ablations within each metric, and is \textbf{bold} where it clears $0.05$. The floor at this sample size is $0.018$.}
 \label{tab:ablate}
 \centering
 \setlength{\tabcolsep}{8pt}
-\begin{tabular}{lcc}
+\begin{tabular}{lcccc}
 \toprule
-Modality removed & Staging acc\,$\uparrow$ & Respiratory AUC\,$\uparrow$ \\
+Modality removed & Staging acc\,$\uparrow$ & Holm $p$ & Respiratory AUC\,$\uparrow$ & Holm $p$ \\
 \midrule
-none (full model)        & $0.739 \pm 0.020$ & $0.782 \pm 0.038$ \\
-EEG (neural)             & $\mathbf{0.680 \pm 0.024}$ & $0.774 \pm 0.041$ \\
-EOG (ocular)             & $0.731 \pm 0.023$ & $0.777 \pm 0.042$ \\
-EMG (muscle)             & $0.735 \pm 0.025$ & $0.778 \pm 0.041$ \\
-SpO$_2$                  & $0.742 \pm 0.019$ & $0.780 \pm 0.041$ \\
-respiratory effort       & $0.741 \pm 0.018$ & $0.744 \pm 0.049$ \\
-pulse / HRV              & $0.741 \pm 0.020$ & $0.785 \pm 0.035$ \\
-ECG                      & $0.737 \pm 0.020$ & $0.777 \pm 0.043$ \\
-airflow                  & $0.740 \pm 0.021$ & $0.778 \pm 0.039$ \\
-all cardiorespiratory    & $0.741 \pm 0.017$ & $\mathbf{0.654 \pm 0.041}$ \\
+none (full model)        & $0.739 \pm 0.020$ & --- & $0.782 \pm 0.038$ & --- \\
+EEG (neural)             & $0.680$ & $\mathbf{0.018}$ & $0.774$ & $0.92$ \\
+EOG (ocular)             & $0.731$ & $0.08$ & $0.777$ & $1.00$ \\
+EMG (muscle)             & $0.735$ & $1.00$ & $0.778$ & $1.00$ \\
+SpO$_2$                  & $0.742$ & $1.00$ & $0.780$ & $1.00$ \\
+respiratory effort       & $0.741$ & $1.00$ & $0.744$ & $\mathbf{0.018}$ \\
+pulse / HRV              & $0.741$ & $1.00$ & $0.785$ & $1.00$ \\
+ECG                      & $0.737$ & $1.00$ & $0.777$ & $1.00$ \\
+airflow                  & $0.740$ & $1.00$ & $0.778$ & $1.00$ \\
+all cardiorespiratory    & $0.741$ & $1.00$ & $0.654$ & $\mathbf{0.018}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
