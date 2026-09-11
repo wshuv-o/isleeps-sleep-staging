@@ -87,3 +87,70 @@ Python 3.14.3; numpy 2.4.4, pandas 3.0.2, scipy 1.17.1, openpyxl 3.1.5, mne 1.12
 joblib 1.5.3, tqdm 4.67.3. The official repo pins (numpy 1.24, pandas 1.5, mne 1.3.1)
 do not build on 3.14 — see `requirements.txt`. `sklearn` not yet installed; `torch`
 import currently broken (needs clean CUDA reinstall before training).
+
+## 7. External validation corpora — provenance
+
+The paper cites both corpora from their canonical references. This section records
+how the bytes were actually obtained, which is not the same question and which
+nothing else in this repository answered.
+
+### Sleep-EDF Expanded
+
+Fetched from PhysioNet by `MMNet_research/domaingap/fetch_sleepedf.py`, the official
+route, no complications. 40 Sleep Cassette recordings; arrays built by
+`preprocessing/build_sleepedf_external.py`.
+
+### ISRUC-Sleep — obtained from a mirror, and why
+
+**The official archive was unreachable.** Every download link on
+`sleeptight.isr.uc.pt` points at `dataset.isr.uc.pt`. That host did not resolve on
+**5 September 2026**, and still did not on **10 September 2026** — `nslookup` times
+out and HTTP returns no connection at all (curl status `000`), while the
+`sleeptight` landing page itself serves normally (`200`). So the dataset was
+advertised but not downloadable.
+
+MIT-BIH `slpdb` was considered as a substitute and rejected: it carries no EOG, EMG,
+SpO2 or airflow, so the respiratory head cannot be evaluated on it at all.
+
+**What was used instead.** A public MEGA mirror:
+
+    https://mega.nz/folder/wVgH2ZAJ#TTxlduGNt4TwaR1eNnl7IQ
+
+MEGA encrypts client-side and the folder key travels in the URL fragment, so no
+ordinary downloader works. `preprocessing/mega_folder.py` is a minimal read-only
+client for exactly this: list a public folder, download from it, nothing else. It is
+in the repository so that `data/isruc/` can be rebuilt; it is an acquisition
+workaround, not part of the method.
+
+    python MMNet_research/preprocessing/mega_folder.py --url "<url above>" --list
+    python MMNet_research/preprocessing/mega_folder.py --url "<url above>" --out data/isruc
+
+Contents: ISRUC-Sleep subgroup II, 8 subjects recorded on two nights, 16 `.rec`
+files plus `.xlsx` and `.txt` annotations, about 2.2 GB.
+
+**Verify the mirror before trusting it.** A third-party copy is a weaker provenance
+claim than the official archive, and while that archive is down there is nothing to
+checksum against. There is, however, a free and decisive check: the results file
+`results/revision/runs/external_validation_isruc.json`, produced when the corpus was
+first used, records exactly what the data contained.
+
+| session | recordings | epochs | respiratory-event prevalence |
+|---|---|---|---|
+| 1 | 8 | 7,122 | 0.10110 |
+| 2 | 8 | 7,019 | 0.02408 |
+
+Run `preprocessing/build_isruc_external.py` over the mirror and compare. If all
+three quantities match per session, the mirror is content-identical to the copy the
+submitted results came from, which is a stronger statement than any mirror could
+otherwise support. **If they do not match, do not use it** — either drop ISRUC or
+disclose the mirror in the paper itself.
+
+**Two format traps**, both of which fail quietly rather than loudly:
+
+- MNE refuses `.rec`, so the EDF headers are parsed by hand.
+- Channel labels are inconsistent between recordings; channel identity has to be
+  resolved from the EDF transducer field instead.
+
+**What the paper should say.** Keep citing Khalighi *et al.* — that is the dataset's
+provenance and it is correct regardless of which server served the files. The mirror
+belongs here, not in the manuscript, *provided the epoch-count check above passes*.
