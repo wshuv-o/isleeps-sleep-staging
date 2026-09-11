@@ -165,8 +165,15 @@ def process(rec_path, xlsx_path):
     Feeg, _ = extract_features_v2(neural)
     from cardio_features import cardio_feats
     Fcard = cardio_feats(card)
+    # The raw arrays are returned as well as the engineered ones. The final
+    # model needs both: the frozen LaBraM embedding is computed from the raw EEG
+    # derivations, and the cardiorespiratory encoder is a CNN over the raw
+    # 7 x 750 tensor rather than over the 14 summary features. Returning only
+    # the features, as this did, silently limits the file to the superseded
+    # configuration.
     return (np.nan_to_num(Feeg).astype(np.float32),
-            np.nan_to_num(Fcard).astype(np.float32), y, apn, sorted(idx))
+            np.nan_to_num(Fcard).astype(np.float32), y, apn, sorted(idx),
+            neural, card)
 
 
 def main():
@@ -186,11 +193,17 @@ def main():
         if not os.path.exists(xlsx):
             print("[FAIL] %s: no annotation" % tag); continue
         try:
-            Feeg, Fcard, y, apn, chans = process(p, xlsx)
+            Feeg, Fcard, y, apn, chans, neural, card = process(p, xlsx)
         except Exception as e:
             print("[FAIL] %s: %s: %s" % (tag, type(e).__name__, e)); continue
+        # x: raw neural [n,7,3000] @100 Hz, the input build_labram_cache reads.
+        # xcard: raw cardio flattened to 5250, the layout CardioCNN expects.
+        # float16 halves 1.5 GB of raw signal at a precision the encoders cannot
+        # distinguish -- both z-score their input before it reaches a weight.
         np.savez_compressed(dst, Feeg=Feeg, Fcard=Fcard, y=y, apnea=apn,
-                            session=int(sess), subject=int(subj))
+                            session=int(sess), subject=int(subj),
+                            x=neural.astype(np.float16),
+                            xcard=card.reshape(len(y), -1).astype(np.float16))
         tot += len(y); ev += int(apn.sum()); ok += 1
         print("[ok]   %-7s %4d epochs  resp %3d (%4.1f%%)  Feeg%s Fcard%s"
               % (tag, len(y), apn.sum(), 100 * apn.mean(), Feeg.shape, Fcard.shape))

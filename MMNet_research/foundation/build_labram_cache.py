@@ -78,7 +78,23 @@ def main():
                     help="directory of per-recording npz with an 'x' array; defaults to processed7")
     ap.add_argument("--out", default=None,
                     help="output directory; defaults to data/cbramod_emb/<variant>")
+    # External corpora do not carry four EEG derivations. Sleep-EDF stores
+    # [Fpz-Cz, Pz-Oz, EOG horizontal, EMG submental], so indices 0-3 would feed
+    # an EOG and an EMG trace to LaBraM as if they were EEG. Passing "0 1 0 1"
+    # duplicates the two real derivations into four slots, which is exactly the
+    # substitution build_sleepedf_external.py already makes for the 188
+    # engineered features -- so both halves of the 388-d input rest on the same
+    # montage assumption instead of two different ones.
+    ap.add_argument("--eeg-idx", type=int, nargs="+", default=None,
+                    help="source channel indices to use as the four EEG inputs "
+                         "(default 0 1 2 3, the iSLEEPS montage)")
     a = ap.parse_args()
+    global EEG_IDX
+    if a.eeg_idx:
+        if len(a.eeg_idx) != len(CH_NAMES):
+            raise SystemExit("--eeg-idx needs exactly %d indices" % len(CH_NAMES))
+        EEG_IDX = list(a.eeg_idx)
+        print("channel map: %s -> %s" % (EEG_IDX, CH_NAMES), flush=True)
 
     src_dir = os.path.abspath(a.source) if a.source else P7
     out_dir = os.path.abspath(a.out) if a.out else os.path.join(REPO, "data", "cbramod_emb", a.variant)
