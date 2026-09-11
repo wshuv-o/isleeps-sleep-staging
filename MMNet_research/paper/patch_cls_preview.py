@@ -14,7 +14,10 @@ SP = (r"C:\Users\ESMEAB~1\AppData\Local\Temp\claude"
       r"\scratchpad\preview")
 CLS = os.path.join(SP, "ieeeaccess.cls")
 
-DROP = (r"\NewSpotColorSpace", r"\AddSpotColor", r"\SetPageColorSpace")
+# spotcolor itself has to go as well: loading it under XeTeX fails inside
+# xcolor.sty with an undefined control sequence, which stops the build.
+DROP = (r"\NewSpotColorSpace", r"\AddSpotColor", r"\SetPageColorSpace",
+        r"\RequirePackage{spotcolor}")
 SPOT_BLUE = r"\definecolor{accessblue}{spotcolor}"
 # closest CMYK equivalent of PANTONE 3015 C, from the class's own 1 0.3 0 0.2
 CMYK_BLUE = r"  \definecolor{accessblue}{cmyk}{1,0.3,0,0.2}%"
