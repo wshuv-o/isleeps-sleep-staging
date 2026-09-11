@@ -284,9 +284,9 @@ patients (mean age $50.5$; 77 male, 23 female), scored by experts into the five 
 We exclude one recording after an audit: the data records of SN28 are byte-identical to those
 of SN15, a duplication consistent with the anonymization and re-numbering the dataset authors
 describe, and keeping it would place a training subject into the test fold in nine of ten fold
-assignments, giving $N=99$. Sleep staging uses all $99$ patients; the respiratory task uses
-the $N=96$ with complete cardiorespiratory channels, and we state which $N$ applies to each
-reported number. The corpus totals $92{,}560$ epochs. The stage distribution
+assignments, giving $N=99$. Both tasks use all $99$ patients: the twelve recordings that
+lack at least one cardiorespiratory channel are scored with those channels zero-filled
+rather than excluded, and we state which $N$ applies to each reported number. The corpus totals $92{,}560$ epochs. The stage distribution
 (Table~\ref{tab:dist}) is strongly imbalanced, with N2 dominant and N1 and N3 scarce, which is
 the clinical norm.
 
@@ -771,7 +771,7 @@ individual removals sum to $-0.046$ AUC against $-0.128$ for removing the stream
 a factor of $2.8$. The learned encoder therefore distributes respiratory information redundantly
 across channels: each is individually dispensable because the others overlap it, while the
 ensemble is essential. That redundancy is clinically favourable, since
-twelve of the hundred recordings are missing at least one cardiorespiratory channel, and it is
+twelve of the ninety-nine recordings are missing at least one cardiorespiratory channel, and it is
 physiologically coherent: the effort belts register the paradoxical thoraco-abdominal motion
 of an obstructive event as it happens, whereas desaturation is a lagged consequence of it.
 Attention and plain concatenation stage and detect alike, so the gain comes from the added
@@ -931,7 +931,7 @@ Central     & 831      & \textbf{0.935} \\
 \subsection{Clinical Validation against AHI and Severity}
 Aggregating the per-epoch respiratory probability into a per-patient burden and correlating it
 with the clinical apnea-hypopnea index (AHI) from the metadata gives a significant positive
-association (Spearman $\rho=0.491$, $p<0.001$, $n=99$, the three recordings with an
+association (Spearman $\rho=0.491$, $p<0.001$, $n=99$, the twelve recordings with an
 incomplete cardiorespiratory montage scored with those channels zero-filled;
 Fig.~\ref{fig:ahi}), so the model's output tracks a
 clinician's summary measure beyond an epoch-level score. Staging, in turn, degrades as
@@ -1387,8 +1387,7 @@ none carries an interval, and ISRUC contributes eight subjects, at which size a 
 rate is an estimate with a width we cannot quote. Per-class transfer should be read as
 direction, not magnitude.
 
-The evidence comes from a single center and the $96$ patients with
-complete cardiorespiratory channels. Section~\ref{sec:external} shows both heads
+The evidence comes from a single center and $99$ patients. Section~\ref{sec:external} shows both heads
 transfer to independent corpora without tuning, but neither external corpus is a stroke
 cohort, so every stroke-specific claim rests on iSLEEPS alone; multi-center validation on
 a second stroke cohort is required before clinical use, and no such public corpus
