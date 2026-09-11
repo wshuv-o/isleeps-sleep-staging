@@ -86,9 +86,8 @@ here has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a tw
 multi-task model that reads the full polysomnogram and produces two clinical outputs from a
 single forward pass, the sleep stage of every 30-second epoch and a per-epoch
 respiratory-event label, with a direct cardiorespiratory path carrying breathing effort to
-the respiratory decision undiminished by the staging objective. On iSLEEPS, the first
-public polysomnography corpus of subacute ischemic stroke ($99$ patients, $92{,}560$
-epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
+the respiratory decision undiminished by the staging objective. On iSLEEPS, a stroke-specific
+polysomnography corpus ($99$ patients, $92{,}560$ epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
 $\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC
 with $2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on
 this cohort and three applied zero-shot from healthy sleep; every retrained baseline lands
@@ -129,16 +128,15 @@ inter-scorer disagreement~\cite{phan2022survey,yang2026review}.
 A clinical polysomnogram (PSG), however, is a recording of the whole sleeping body. It
 carries the EEG, eye movements, muscle tone, the electrocardiogram (ECG), nasal and oral
 airflow, thoracic and abdominal breathing effort, and peripheral oxygen saturation
-(SpO$_2$). These cardiorespiratory channels are where sleep-disordered breathing writes
-itself: a paused breath, a chest that keeps straining against a closed airway, a fall in
+(SpO$_2$). These cardiorespiratory channels are where sleep-disordered breathing shows: a paused breath, a chest that keeps straining against a closed airway, a fall in
 blood oxygen, and the arousal that rescues the breath. A model that reads only the EEG
 cannot see any of this, and so cannot report on the disorder that most damages a patient's
 sleep. We use the full polysomnogram, and we ask a question that the staging race does not:
 what does a model gain, and on which clinical task, when it reads the whole recording rather
 than the brain alone.
 
-We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 as the first public PSG
-corpus dedicated to subacute ischemic stroke. The cohort is well matched to the question.
+We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 and described by its
+authors as the first Asian and one of the largest stroke-specific sleep databases. The cohort is well matched to the question.
 Sleep-disordered breathing is common in the weeks after a stroke and is tied to worse
 recovery~\cite{bassetti2006sleep,denis2024sleep}, and in this corpus the median patient
 carries a scored respiratory event in $13\%$ of epochs, with $79$ of $99$ patients above
@@ -257,7 +255,10 @@ quantitative in Table~\ref{tab:litreview}.
 Three gaps run through the literature above, and each maps onto one of our contributions.
 \emph{(i) Single-task, single-signal design.} Almost every staging model reads one or a few EEG
 channels and predicts only the stage, while apnea detectors read breathing signals and predict
-only events; the two literatures rarely meet in one model, leaving the clinician with two
+only events. Multimodal foundation models have begun to join them, SleepFM~\cite{sleepfm2026}
+staging sleep and classifying apnea severity from one representation on a general population,
+but per-epoch respiratory detection alongside staging has not been shown on a stroke cohort,
+leaving the clinician with two
 separate tools. Contribution~\ref{c:model} answers this with a single model that reads the full
 polysomnogram and produces both outputs.
 \emph{(ii) Evaluation on healthy sleepers.} Staging accuracy is reported almost entirely on
@@ -268,9 +269,9 @@ and classical gradient-boosting
 pipelines~\cite{chen2016xgboost,ke2017lightgbm,prokhorenkova2018catboost} on a
 subacute-stroke cohort, show that the healthy-built networks collapse, and establish by reimplementation that the collapse is a property of the
 cohort.
-\emph{(iii) Attribution, reliability, and cost.} Interpretability is usually post-hoc and
-unfalsifiable, predictive uncertainty is seldom modeled~\cite{angelopoulos2023conformal}, and the
-compute and energy footprint of heavy models is rarely reported~\cite{lacoste2019carbon}.
+\emph{(iii) Attribution and reliability.} Interpretability is usually post-hoc and
+unfalsifiable, and predictive uncertainty is seldom
+modeled~\cite{angelopoulos2023conformal}.
 Contributions~\ref{c:resp} and~\ref{c:attrib} answer this with a physiologically grounded, non-circular respiratory
 read-out and a causal modality-ablation that attributes each output to the channel its physiology
 governs.
@@ -999,7 +1000,7 @@ without it costs $0.002$ AUC, shuffling it under the fitted model costs $0.016$.
 be heavily used and still be replaceable. The claim the comparison supports is therefore the
 one that matters physiologically: two attributions sharing no machinery, one applied to
 retrained models and one to fixed ones, independently identify effort as the dominant
-respiratory cue. Unlike an embedding projection, that was a prediction that could have failed.
+respiratory cue.
 
 \subsection{Data Efficiency and the Cohort Ceiling}
 \label{sec:curve}
@@ -1066,7 +1067,7 @@ uses C4:M1 and O2:M1, so part of this gap is montage shift, not pathology, and q
 the zero-shot number alone would overstate the case. Deep models trained \emph{on} iSLEEPS with
 the matched montage reach $0.61$--$0.69$ (upper block), which puts the cost of
 pathology alone at roughly $0.19$ against healthy-sleep performance; healthy-trained and
-zero-shot, with the montage shift included, the cost is $0.56$. The honest claim is bounded by those two figures together.
+zero-shot, with the montage shift included, the cost is $0.56$. The claim is bounded by those two figures together.
 
 The same argument run in reverse. Every figure above concerns other
 architectures, which leaves the obvious question unanswered: whether $\mmAcc$ is low
@@ -1242,8 +1243,7 @@ matching one, with $34.8\%$. Electrode position is therefore not what governs N3
 here. The only component that changed between the two models is the neural representation
 (Section~\ref{sec:repr}), which points instead at how the cortex is encoded, though with
 one external pass per corpus and eight ISRUC subjects we can identify the effect without
-attributing it confidently. We keep the failed prediction on the record because it was
-falsifiable, it was tested on a corpus chosen for an unrelated reason, and it was wrong.
+attributing it confidently. The prediction stays on the record, and it was wrong.
 
 Two limits keep this in proportion. Accuracy across cohorts with different class balance is
 not directly comparable, which is why $\kappa$ is reported alongside. And ISRUC contributes
