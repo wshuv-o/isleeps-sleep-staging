@@ -124,7 +124,7 @@ through attention and sequence models~\cite{eldele2021attnsleep,phan2021xsleepne
 perslev2019utime} to large self-supervised EEG foundation
 models~\cite{labram2024,cbramod2025,eegpt2024,biot2023}. On healthy sleepers these methods
 reach roughly $85\%$ accuracy, and recent reviews argue the field is near a ceiling set by
-inter-scorer disagreement~\cite{phan2022survey}.
+inter-scorer disagreement~\cite{phan2022survey,yang2026review}.
 
 A clinical polysomnogram (PSG), however, is a recording of the whole sleeping body. It
 carries the EEG, eye movements, muscle tone, the electrocardiogram (ECG), nasal and oral
@@ -181,11 +181,11 @@ cardiac variability and cortical arousals, encoded redundantly enough that no si
 channel is indispensable (Section~\ref{sec:noflow}).
 
 \item \label{c:attrib}We attribute each output causally to the physiology that produces it. A
-leave-one-out modality-ablation grid shows removing the cardiorespiratory stream lowers
-only respiratory detection ($-0.128$ AUC, Wilcoxon on thirty fold-values, Holm
-$p<10^{-7}$), while removing the ocular channel lowers
-only staging, giving a falsifiable account of what each modality contributes
-(Table~\ref{tab:ablate}).
+leave-one-out modality-ablation grid separates the two outputs: removing the
+cardiorespiratory stream lowers respiratory detection and leaves staging untouched
+($-0.128$ AUC, Wilcoxon on thirty fold-values, Holm $p<10^{-7}$), while no neural ablation
+moves respiratory AUC. That double dissociation is a falsifiable account of what each
+modality contributes (Table~\ref{tab:ablate}).
 \end{enumerate}
 
 Together, these results reframe the problem on this cohort: the useful gains come from reading
@@ -208,7 +208,8 @@ spectral views~\cite{phan2021xsleepnet}. More recent backbones push this further
 adds interpretability and uncertainty to an attention model~\cite{sleeptransformer2022}, L-SeqSleepNet
 models whole-night cycles~\cite{lseqsleepnet2023}, ZleepAnlystNet and FlexSleepTransformer explore
 separated training and flexible channel sets~\cite{jirakittayakorn2024zleep,guo2024flexsleep}, and
-linear-time state-space backbones reach competitive accuracy~\cite{gu2023mamba,bitmamsleep2024}.
+sleep stagers built on the linear-time state-space backbone of
+Mamba~\cite{gu2023mamba} reach competitive accuracy~\cite{bitmamsleep2024}.
 These models set the accuracy on healthy corpora but
 depend on the cortical micro-events that stroke disturbs, which is why they transfer poorly to
 patients~\cite{bose2026gap}.
@@ -230,7 +231,8 @@ high-burden clinical cohort and separates the staging effect from the respirator
 \subsection{Detection of Sleep-Disordered Breathing}
 A parallel line of work detects apnea and hypopnea from breathing signals. Airflow and effort
 shape, oximetry, and ECG-derived heart-rate variability are all informative, and oxygen
-desaturation is a defining marker of an event~\cite{jing2025cpap}. These detectors usually run
+desaturation is part of the scoring criterion for a
+hypopnea~\cite{aasm2023manual}. These detectors usually run
 at fine time resolution on the raw breathing waveforms and are trained on that task alone. We
 instead detect respiratory events on the staging epoch grid, jointly with staging, from a
 shared representation, so that one model produces both clinical outputs and the two tasks
