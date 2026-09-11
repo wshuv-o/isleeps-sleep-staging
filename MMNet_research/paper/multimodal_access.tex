@@ -761,10 +761,10 @@ respiratory detection holds. No neural ablation moves respiratory AUC and no car
 ablation moves staging, so each stream serves the outcome its physiology governs.
 
 Within the cardiorespiratory stream, however, only respiratory effort is individually necessary
-($-0.038$ AUC, Holm $p<0.001$). Removing SpO$_2$, pulse/HRV, ECG or airflow individually costs
+($-0.038$ AUC, Holm $p=0.018$). Removing SpO$_2$, pulse/HRV, ECG or airflow individually costs
 at most $0.005$ AUC and none survives correction; SpO$_2$, which the engineered-feature
 configuration was built around, is here among the least necessary channels
-($-0.002$, $p=0.61$). The five
+($-0.002$, $p=1.00$). The five
 individual removals sum to $-0.046$ AUC against $-0.128$ for removing the stream as a whole,
 a factor of $2.8$. The learned encoder therefore distributes respiratory information redundantly
 across channels: each is individually dispensable because the others overlap it, while the
@@ -775,30 +775,32 @@ of an obstructive event as it happens, whereas desaturation is a lagged conseque
 Attention and plain concatenation stage and detect alike, so the gain comes from the added
 modality, and the fusion mechanism has little effect.
 
-\begin{table}[t]
+\begin{table*}[t]
 \caption{Modality-ablation grid (leave-one-out), ten-fold patient-independent,
-three seeds. Each row removes one modality and keeps the rest; cells are mean
-Cells are the mean over thirty fold-values; $p$ is Wilcoxon on the ten fold-means, Holm-corrected across the nine ablations within each metric, and is \textbf{bold} where it clears $0.05$. The floor at this sample size is $0.018$.}
+three seeds. Each row removes one modality and keeps the rest; cells are means over
+thirty fold-values. $p$ is Wilcoxon on the ten fold-means, Holm-corrected across the
+nine ablations within each metric and \textbf{bold} where it clears $0.05$; the
+floor at this sample size is $0.018$.}
 \label{tab:ablate}
 \centering
-\setlength{\tabcolsep}{8pt}
+\setlength{\tabcolsep}{14pt}
 \begin{tabular}{lcccc}
 \toprule
 Modality removed & Staging acc\,$\uparrow$ & Holm $p$ & Respiratory AUC\,$\uparrow$ & Holm $p$ \\
 \midrule
-none (full model)        & $0.739 \pm 0.020$ & --- & $0.782 \pm 0.038$ & --- \\
-EEG (neural)             & $0.680$ & $\mathbf{0.018}$ & $0.774$ & $0.92$ \\
-EOG (ocular)             & $0.731$ & $0.08$ & $0.777$ & $1.00$ \\
-EMG (muscle)             & $0.735$ & $1.00$ & $0.778$ & $1.00$ \\
-SpO$_2$                  & $0.742$ & $1.00$ & $0.780$ & $1.00$ \\
-respiratory effort       & $0.741$ & $1.00$ & $0.744$ & $\mathbf{0.018}$ \\
-pulse / HRV              & $0.741$ & $1.00$ & $0.785$ & $1.00$ \\
-ECG                      & $0.737$ & $1.00$ & $0.777$ & $1.00$ \\
-airflow                  & $0.740$ & $1.00$ & $0.778$ & $1.00$ \\
-all cardiorespiratory    & $0.741$ & $1.00$ & $0.654$ & $\mathbf{0.018}$ \\
+ none (full model)        & $0.739 \pm 0.020$   & ---                 & $0.782 \pm 0.038$   & --- \\
+ EEG (neural)             & $0.680$             & $\mathbf{0.018}$    & $0.774$             & $0.92$ \\
+ EOG (ocular)             & $0.731$             & $0.08$              & $0.777$             & $1.00$ \\
+ EMG (muscle)             & $0.735$             & $1.00$              & $0.778$             & $1.00$ \\
+ SpO$_2$                  & $0.742$             & $1.00$              & $0.780$             & $1.00$ \\
+ respiratory effort       & $0.741$             & $1.00$              & $0.744$             & $\mathbf{0.018}$ \\
+ pulse / HRV              & $0.741$             & $1.00$              & $0.785$             & $1.00$ \\
+ ECG                      & $0.737$             & $1.00$              & $0.777$             & $1.00$ \\
+ airflow                  & $0.740$             & $1.00$              & $0.778$             & $1.00$ \\
+ all cardiorespiratory    & $0.741$             & $1.00$              & $0.654$             & $\mathbf{0.018}$ \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \subsection{Physiological Validity of the Respiratory Read-out}
 \label{sec:noflow}
@@ -1119,7 +1121,8 @@ The architecture makes two representation choices (engineered features plus a fr
 self-supervised embedding on the neural side, a learned convolutional encoder over the raw
 signal on the cardiorespiratory side), and both were selected by experiment, not
 assumed. Each family below holds every other hyperparameter fixed and varies one thing, over
-the same three seeds and ten patient-independent folds, with Holm correction within the family.
+the same three seeds and ten patient-independent folds, with Holm correction within the
+family and every test on the ten fold-means.
 
 The cardiorespiratory features are the bottleneck, and part of the gap needs no new
 information. Each block of Table~\ref{tab:repr} holds the other stream at its baseline, so no single
@@ -1138,10 +1141,10 @@ change of representation itself, and make no claim for the encoder that implemen
 On the neural side a pretrained encoder does not replace expert features, but does
 add to them. The lower block of Table~\ref{tab:repr} varies the neural representation with the
 cardiorespiratory stream held at the engineered features. Used alone, the frozen encoder is
-significantly \emph{worse} than the $188$ features ($-0.029$, Holm $p<0.001$): pretraining on
+significantly \emph{worse} than the $188$ features ($-0.029$, Holm $p=0.008$): pretraining on
 healthy scalp EEG does not by itself substitute for physiology chosen for this task.
-Concatenated with the features it adds $+0.008$ accuracy (Holm $p=0.001$), and a second
-pretrained encoder on top of the first adds nothing further ($-0.004$, $p=0.24$).
+Concatenated with the features it adds $+0.008$ accuracy (Holm $p=0.006$), and a second
+pretrained encoder on top of the first adds nothing further ($-0.004$, $p=0.56$).
 
 The reading we take is narrow, because it is what the numbers support: expert physiology and
 self-supervised pretraining encode partly different information, so their union beats either
@@ -1150,9 +1153,9 @@ general argument for stacking foundation models.
 
 \begin{table*}[t]
 \caption{What each stream should be represented as. One factor varies per block,
-everything else held fixed; thirty fold-values per cell, mean $\pm$ SD. $\Delta$ and Holm
-$p$ are against each block's engineered-feature baseline. ``adopted'' marks the choice
-carried into the final model.}
+everything else held fixed; cells are mean $\pm$ SD over thirty fold-values. $\Delta$ and
+Holm $p$ are against each block's engineered-feature baseline, the latter on the ten
+fold-means. ``adopted'' marks the choice carried into the final model.}
 \label{tab:repr}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l c c c c @{}}
@@ -1161,14 +1164,14 @@ Representation & Variant & Resp.\ AUC\,$\uparrow$ & Staging acc\,$\uparrow$ & $\
 \midrule
 \multirow{4}{*}{\emph{Cardiorespiratory}}
  & $14$ engineered features               & $0.698 \pm 0.051$ & $0.736 \pm 0.014$ & ---      & ---      \\
- & random nonlinear expansion of the $14$ & $0.715 \pm 0.047$ & $0.737 \pm 0.018$ & $+0.018$ & $<0.001$ \\
- & random linear projection of raw signal & $0.731 \pm 0.044$ & $0.735 \pm 0.021$ & $+0.034$ & $<0.001$ \\
- & learned CNN, $0.155$\,M (adopted)      & $\mathbf{0.782 \pm 0.040}$ & $0.740 \pm 0.019$ & $+0.084$ & $<0.001$ \\
+ & random nonlinear expansion of the $14$ & $0.715 \pm 0.047$ & $0.737 \pm 0.018$ & $+0.018$ & $0.012$   \\
+ & random linear projection of raw signal & $0.731 \pm 0.044$ & $0.735 \pm 0.021$ & $+0.034$ & $0.012$   \\
+ & learned CNN, $0.155$\,M (adopted)      & $\mathbf{0.782 \pm 0.040}$ & $0.740 \pm 0.019$ & $+0.084$ & $\mathbf{0.006}$ \\
 \midrule
 \multirow{4}{*}{\emph{Neural}}
  & $188$ engineered features            & $0.685 \pm 0.041$ & $0.741 \pm 0.016$ & ---      & ---      \\
- & frozen pretrained encoder alone      & $0.681 \pm 0.033$ & $0.712 \pm 0.033$ & $-0.029$ & $<0.001$ \\
- & features $+$ pretrained (adopted)    & $0.690 \pm 0.037$ & $\mathbf{0.749 \pm 0.018}$ & $+0.008$ & $\mathbf{0.001}$ \\
+ & frozen pretrained encoder alone      & $0.681 \pm 0.033$ & $0.712 \pm 0.033$ & $-0.029$ & $0.008$   \\
+ & features $+$ pretrained (adopted)    & $0.690 \pm 0.037$ & $\mathbf{0.749 \pm 0.018}$ & $+0.008$ & $\mathbf{0.006}$ \\
  & features $+$ two pretrained encoders & $0.684 \pm 0.043$ & $0.745 \pm 0.018$ & $+0.004$ & $0.23$   \\
 \bottomrule
 \end{tabular*}
