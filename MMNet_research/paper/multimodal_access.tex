@@ -358,8 +358,8 @@ event (Fig.~\ref{fig:arch}).
 \caption{The two-stream, multi-task model. Layer shapes above each block, operation
 below; block height encodes units for the multilayer perceptron and temporal length for
 the convolutional stack. Dashed outlines mark frozen parameters. The junction marked C is the
-concatenation used for every reported result; the lower-right panel details the attention
-fusion evaluated against it (Section~\ref{sec:ablate}).}
+concatenation used for every reported result, and the fusion panel is the single linear
+layer that follows it.}
 \label{fig:arch}
 \end{figure*}
 
@@ -422,8 +422,10 @@ z_t=\mathrm{GELU}\!\big(W_f\,[\,e_t\ ;\ c_t\,]\big)\in\mathbb{R}^{D},\qquad D=12
 This is deliberately the simplest fusion available, and it is what every number in this paper
 was produced with. We arrived at it by evaluating the obvious alternative first: the two
 embeddings as tokens carrying learned modality-type embeddings, refined by four-head scaled
-dot-product attention so each modality can read the other, then projected. That design matches
-concatenation to within noise (Section~\ref{sec:ablate}). Since the elaborate fusion buys
+dot-product attention so each modality can read the other, then projected. On the same ten
+folds, in the feature-only configuration the comparison was run in, attention was
+indistinguishable from concatenation on staging ($+0.005$ accuracy, $p=0.49$) and slightly
+worse on the respiratory head ($-0.014$ AUC, $p=0.06$). Since the elaborate fusion buys
 nothing measurable here, we report and release the simple one, and the gain from the second
 stream should be read as coming from the added modality.
 
