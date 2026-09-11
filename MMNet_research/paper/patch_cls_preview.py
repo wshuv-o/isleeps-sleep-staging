@@ -12,7 +12,10 @@ import os
 SP = os.environ.get("CLS_PREVIEW_DIR", "preview")   # folder holding the class copy
 CLS = os.path.join(SP, "ieeeaccess.cls")
 
-DROP = (r"\NewSpotColorSpace", r"\AddSpotColor", r"\SetPageColorSpace")
+# spotcolor itself has to go as well: loading it under XeTeX fails inside
+# xcolor.sty with an undefined control sequence, which stops the build.
+DROP = (r"\NewSpotColorSpace", r"\AddSpotColor", r"\SetPageColorSpace",
+        r"\RequirePackage{spotcolor}")
 SPOT_BLUE = r"\definecolor{accessblue}{spotcolor}"
 # closest CMYK equivalent of PANTONE 3015 C, from the class's own 1 0.3 0 0.2
 CMYK_BLUE = r"  \definecolor{accessblue}{cmyk}{1,0.3,0,0.2}%"
