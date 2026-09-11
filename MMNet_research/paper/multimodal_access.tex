@@ -814,15 +814,40 @@ mild, dominant $81\%$ of events), $0.898$ on obstructive apneas, and $0.935$ on 
 It is strongest on the most severe events, and the overall AUC is held down by the abundant
 hypopneas.
 
-Scoring at the event level instead of the epoch level worsens the picture. Grouping consecutive flagged epochs into events within each patient, a decision
-threshold of $0.5$ detects $55\%$ of scored events at $2.6$ false alarms per hour; lowering the
-threshold to $0.2$ raises event sensitivity to $86\%$ but flags $68\%$ of all epochs. More
-tellingly, the model recovers the wrong \emph{number} of events: a mean predicted rate of $4.5$
-events per hour against a scored $11.1$, and a per-patient rank correlation of only
-$\rho=0.142$ ($p=0.17$, $n=96$), far weaker than the $\rho=0.491$ obtained from the
-aggregated epoch probability. Consecutive events separated by a few epochs merge into one
-flagged run, so an epoch-level detector systematically under-counts. This is why we report a
-burden, and why event-level scoring is the natural next step instead of a
+\begin{table}[t]
+\caption{Event-level detection, pooled over the ten patient-independent folds.
+Consecutive flagged epochs are grouped into events within each patient. The flagged
+fraction is the share of all epochs the threshold marks.}
+\label{tab:event}
+\centering
+\small
+\begin{tabular}{cccc}
+\toprule
+Threshold & Event sens.\,$\uparrow$ & False alarms/h\,$\downarrow$ & Epochs flagged \\
+\midrule
+$0.2$ & $0.857$ & $2.22$ & $68\%$ \\
+$0.3$ & $0.785$ & $2.35$ & $57\%$ \\
+$0.4$ & $0.683$ & $2.43$ & $45\%$ \\
+$0.5$ & $0.549$ & $2.61$ & $33\%$ \\
+$0.6$ & $0.397$ & $2.21$ & $22\%$ \\
+$0.7$ & $0.270$ & $1.41$ & $13\%$ \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Per-patient agreement with the clinical index}}\\[1pt]
+\multicolumn{3}{@{}l}{Aggregated epoch probability (burden)} & $\rho=0.491$ \\
+\multicolumn{3}{@{}l}{Counted events per hour} & $\rho=0.142$ \\
+\multicolumn{3}{@{}l}{Predicted vs scored event rate} & $4.5$ vs $11.1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Scoring at the event level instead of the epoch level worsens the picture
+(Table~\ref{tab:event}). No threshold is comfortable: the one that finds most events flags
+two thirds of the night, and the one that flags least finds a quarter of them. More
+tellingly, the model recovers the wrong \emph{number} of events, and its per-patient event
+count agrees with the clinical index far more weakly than its aggregated epoch probability
+does ($\rho=0.142$ against $\rho=0.491$). Consecutive events separated by a few epochs merge
+into one flagged run, so an epoch-level detector systematically under-counts. This is why we
+report a burden, and why event-level scoring is the natural next step instead of a
 formality.
 
 Figure~\ref{fig:rocpr} shows the operating characteristics behind these numbers, computed
