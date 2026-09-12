@@ -1516,6 +1516,66 @@ underlying physiology. Reading the whole recording lets one model report on brea
 as on sleep, in the population where breathing matters most. Code and features are released.
 
 %=====================================================================
+\appendices
+\section{The $188$ Neural Descriptors}
+\label{app:features}
+Each $30$\,s epoch is $3000$ samples at $100$\,Hz. Every descriptor below is
+computed on one epoch in isolation, with no smoothing between epochs; cross-epoch
+context comes from the recurrent decoder instead. The vector is $23$ descriptors on
+each of the seven neural channels (C4:M1, C3:M2, O2:M1, O1:M2, E1:M2, E2:M2, chin
+EMG), which is $161$, and $27$ event descriptors applied only to the channels they
+are defined for, giving $188$.
+
+\subsubsection*{Per-channel descriptors}
+Spectra are Welch estimates, $256$-sample segments with $128$-sample overlap. Let
+$P(f)$ be the spectrum and $T=\sum_f P(f)$.
+
+\begin{itemize}\itemsep2pt
+\item Absolute and relative power in five bands: delta $0.5$--$4$, theta $4$--$8$,
+alpha $8$--$13$, sigma $11$--$16$, beta $16$--$30$\,Hz. Sigma is the spindle band
+and overlaps alpha by design.
+\item $\log T$, spectral entropy $-\sum_f \tilde P\log \tilde P$ on
+$\tilde P=P/T$, the $95\%$ spectral edge frequency, and the mean frequency
+$\sum_f fP(f)/T$.
+\item Standard deviation, peak-to-peak, root mean square, skewness, kurtosis, and
+zero-crossing rate.
+\item Hjorth activity $\sigma^2_x$, mobility $\sigma_{x'}/\sigma_x$, and complexity
+$(\sigma_{x''}/\sigma_{x'})/\text{mobility}$, from the first and second
+differences~\cite{hjorth1970eeg}.
+\end{itemize}
+
+\subsubsection*{Event descriptors}
+These follow the graphoelements a scorer reads. Band-pass filters are fourth-order
+Butterworth applied forwards and backwards, so phase is preserved.
+
+\begin{itemize}\itemsep2pt
+\item \emph{Spindles}, three per EEG channel. The channel is filtered to
+$11$--$16$\,Hz and the analytic envelope taken by Hilbert transform. The threshold
+is the $90$th percentile of that envelope within the epoch, so it tracks the
+epoch's own amplitude instead of a fixed microvolt level. Density counts upward
+crossings; the remaining two are the envelope mean and standard deviation.
+\item \emph{Slow waves}, two per EEG channel. Filtered to $0.5$--$4$\,Hz, then
+peak-to-peak and mean absolute amplitude. No duration or morphology criterion is
+applied, so these summarise slow-wave amplitude and are not discrete detections.
+\item \emph{Ocular}, two per EOG channel: the log mean squared first difference and
+the $95$th percentile of its absolute value, which separate REM deflections from
+slow drift.
+\item \emph{Chin EMG}, three: log root-mean-square, the $90$th percentile of the
+absolute signal, and the log variance of the first difference, tracking tonic level
+and its loss in REM.
+\end{itemize}
+
+\subsubsection*{Artifacts, scaling and aggregation}
+No epoch or channel is rejected and no amplitude threshold is applied, so a
+corrupted channel reaches the model. The modality ablations in
+Section~\ref{sec:ablate} show the streams carry enough redundancy to absorb one,
+and any rejection rule would have to be tuned on this cohort. Non-finite values,
+which occur only for a flat channel, become zero. Descriptors are standardised per
+recording against that recording's own mean and standard deviation, the
+transductive step Section~\ref{sec:limitations} returns to. Nothing is aggregated
+across epochs.
+
+%=====================================================================
 \section*{Data and Code Availability}
 The iSLEEPS corpus is publicly available (Zenodo, DOI 10.5281/zenodo.14873844; and the
 india-data.org portal) as described by Maiti \textit{et al.}~\cite{maiti2026isleeps}. Our
@@ -1534,76 +1594,6 @@ The authors received no specific funding for this work.
 %=====================================================================
 \section*{Acknowledgment}
 The authors thank the iSLEEPS investigators for releasing the corpus.
-
-\appendices
-\section{The $188$ Neural Descriptors}
-\label{app:features}
-The neural feature vector is $23$ descriptors computed on each of the seven neural
-channels (C4:M1, C3:M2, O2:M1, O1:M2, E1:M2, E2:M2, chin EMG), giving $161$, plus
-$27$ event descriptors that apply only to the channels whose physiology defines
-them, giving $188$ in total. Every epoch is $30$\,s at $100$\,Hz, so $3000$ samples,
-and every descriptor is computed on that epoch alone with no smoothing across
-epochs; the temporal context is supplied later by the recurrent decoder rather than
-by the features.
-
-\subsubsection*{Per-channel descriptors ($23\times7=161$)}
-The power spectrum is Welch's estimate with a $256$-sample segment and $128$-sample
-overlap. Writing $P(f)$ for that spectrum and $T=\sum_f P(f)$:
-
-\begin{itemize}\itemsep2pt
-\item \emph{Band powers, ten.} Absolute and relative power in delta ($0.5$--$4$),
-theta ($4$--$8$), alpha ($8$--$13$), sigma ($11$--$16$) and beta ($16$--$30$)\,Hz.
-Alpha and sigma overlap deliberately: sigma is the spindle band, not a subdivision
-of alpha.
-\item \emph{Spectral shape, four.} $\log T$; spectral entropy
-$-\sum_f \tilde P(f)\log \tilde P(f)$ on the normalised spectrum
-$\tilde P = P/T$; the $95\%$ spectral edge frequency; and the mean frequency
-$\sum_f f P(f)/T$.
-\item \emph{Time domain, six.} Standard deviation, peak-to-peak, root mean square,
-skewness, kurtosis, and zero-crossing rate.
-\item \emph{Hjorth, three.} Activity $\sigma^2_x$, mobility
-$\sigma_{x'}/\sigma_x$, and complexity $(\sigma_{x''}/\sigma_{x'})/\text{mobility}$,
-from the first and second differences~\cite{hjorth1970eeg}.
-\end{itemize}
-
-\subsubsection*{Event descriptors ($27$)}
-These encode the graphoelements a scorer reads, and each is applied only where it
-is physiologically defined. All band-pass filters are fourth-order Butterworth,
-applied forward and backward so the phase is unchanged.
-
-\begin{itemize}\itemsep2pt
-\item \emph{Spindles, three per EEG channel ($12$).} The channel is filtered to
-$11$--$16$\,Hz and its analytic envelope taken by Hilbert transform. The detection
-threshold is the $90$th percentile of that envelope \emph{within the epoch},
-so it adapts to the epoch's own amplitude rather than to a fixed microvolt level.
-Density is the number of upward crossings of that threshold; the other two are the
-envelope's mean and standard deviation.
-\item \emph{Slow waves, two per EEG channel ($8$).} The channel is filtered to
-$0.5$--$4$\,Hz; we take the peak-to-peak amplitude and the mean absolute amplitude.
-No duration or morphology criterion is imposed, so these are amplitude summaries of
-slow-wave activity rather than discrete detections.
-\item \emph{Ocular, two per EOG channel ($4$).} The log mean squared first
-difference, and the $95$th percentile of its absolute value, which together
-separate the fast deflections of REM from slow drift.
-\item \emph{Chin EMG, three.} Log root-mean-square, the $90$th percentile of the
-absolute signal, and the log variance of the first difference, which track tonic
-level and its loss in REM atonia.
-\end{itemize}
-
-\subsubsection*{Artifact handling}
-No epoch or channel is rejected, and no amplitude threshold is applied. A corrupted
-channel therefore reaches the model, which is deliberate: the ablations in
-Section~\ref{sec:ablate} show the streams are redundant enough to tolerate one, and
-a rejection rule would have to be tuned on this cohort and would then be one more
-thing that does not transfer. The per-patient standardisation below does the work
-that a gain-matching step would otherwise do. Non-finite values, which arise only
-from a flat channel, are replaced by zero.
-
-\subsubsection*{Aggregation and scaling}
-There is no aggregation across epochs. Each descriptor is standardised per
-recording, subtracting that recording's mean and dividing by its standard
-deviation, which is the transductive step discussed in
-Section~\ref{sec:limitations}.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
