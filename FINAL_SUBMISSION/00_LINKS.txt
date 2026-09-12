@@ -8,7 +8,7 @@ GitHub repository (public):
   https://github.com/wshuv-o/isleeps-sleep-staging
 
 My own branch:
-  https://github.com/wshuv-o/isleeps-sleep-staging/tree/suva-final-submission
+  https://github.com/wshuv-o/isleeps-sleep-staging/tree/master
 
 Notebook with saved outputs:
   https://github.com/wshuv-o/isleeps-sleep-staging/blob/master/MMNet_research/MMNet_Submission/all_codes/notebooks/1_MM_Net_reproduction.ipynb
