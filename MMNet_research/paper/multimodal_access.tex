@@ -81,7 +81,7 @@ University-Bangladesh, Dhaka 1229, Bangladesh}
 Sleep-disordered breathing is common in the weeks after an ischemic stroke and predicts
 worse recovery, yet automatic sleep analysis reads only the electroencephalogram and
 reports only sleep stages. A clinical polysomnogram records far more, and in this
-population those cardiorespiratory channels carry the disease itself: the median patient
+population the disease is plainly visible in those cardiorespiratory channels: the median patient
 here has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
 multi-task model that reads fourteen neural and cardiorespiratory channels of the
 polysomnogram and produces two clinical outputs from a
@@ -284,8 +284,8 @@ cohort.
 unfalsifiable, and predictive uncertainty is seldom
 modeled~\cite{angelopoulos2023conformal}.
 Contributions~\ref{c:resp} and~\ref{c:attrib} answer this with a physiologically grounded, non-circular respiratory
-read-out and an interventional modality-ablation that attributes each output to the channel its physiology
-governs.
+read-out and an interventional modality-ablation that attributes each output to the channel whose physiology
+is closest to it.
 
 %=====================================================================
 \section{Dataset and Preprocessing}
@@ -781,7 +781,7 @@ therefore attribute each output by \emph{interventional} ablation, deleting a ph
 channel and measuring the change. This is a falsifiable test of what each modality contributes.
 The proposed model stages sleep at $\mmAcc$ accuracy ($\kappa$ $\mmK$) and detects respiratory
 events at $\mmAuc$ AUC ($\mmAp$ average precision). To test the paper's central claim, that each
-modality carries the task its physiology governs, we remove each modality in turn and keep the
+modality carries the task its physiology is closest to, we remove each modality in turn and keep the
 rest, on the same folds, with three seeds giving thirty fold-values per row
 (Table~\ref{tab:ablate}). The separation between streams is clean, but within the
 cardiorespiratory stream the pattern is not the one the engineered features gave.
@@ -790,7 +790,7 @@ Removing the whole cardiorespiratory stream drops respiratory AUC from $\mmAuc$ 
 the largest single effect in this study, and leaves staging untouched ($0.741$, n.s.).
 Removing the neural stream does the reverse: staging falls from $\mmAcc$ to $0.680$ while
 respiratory detection holds. No neural ablation moves respiratory AUC and no cardiorespiratory
-ablation moves staging, so each stream serves the outcome its physiology governs.
+ablation moves staging, so each stream serves the outcome its physiology is closest to.
 
 Within the cardiorespiratory stream, however, only respiratory effort is individually necessary
 ($-0.038$ AUC, Holm $p=0.018$). Removing SpO$_2$, pulse/HRV, ECG or airflow individually costs
@@ -1504,8 +1504,8 @@ stages their sleep and detects their respiratory events. Deep networks built for
 collapse to $0.61$--$0.72$ accuracy on this cohort, so its $\mmAcc$ staging accuracy is at the
 cohort ceiling for every model family. The contribution is the second output, a respiratory
 read-out at $\mmAuc$ AUC that survives removal of the airflow channel, showing it reads the
-underlying physiology. Reading the whole recording gives the model a second clinical voice in the
-population that needs it most. Code and features are released.
+underlying physiology. Reading the whole recording lets one model report on breathing as well
+as on sleep, in the population where breathing matters most. Code and features are released.
 
 %=====================================================================
 \section*{Data and Code Availability}
