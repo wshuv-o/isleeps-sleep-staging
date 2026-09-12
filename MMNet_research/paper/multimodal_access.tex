@@ -1427,7 +1427,15 @@ so no epoch can be scored until the recording ends, which rules out the real-tim
 bedside monitor would need. And features are standardised per patient, which at test time uses
 that night's own statistics; the model never sees another patient's labels, so this is not
 label leakage, but it is a transductive step and a strictly causal deployment would need
-running or population statistics instead. We have not measured what that substitution costs.
+running or population statistics instead. We have measured what that substitution costs,
+and within the resolution of these folds it costs nothing. Repeating the ten folds with
+the standardisation statistics pooled over each fold's training patients and applied
+unchanged to the held-out ones moves accuracy by $+0.003$, $\kappa$ by $+0.004$, and
+respiratory AUC by $-0.000$, none of which is distinguishable from zero when paired
+across folds (accuracy $p=0.28$, AUC $p=1.00$). The per-recording statistics are a
+convenience rather than a crutch, and the transductive step is not what the numbers rest
+on. The whole-night decoding is the real obstacle to bedside use, and it is untouched by
+this.
 
 A prediction of ours that failed. The montage account of N3 transfer described in
 Section~\ref{sec:external} does not survive retesting under the final model, and we report
