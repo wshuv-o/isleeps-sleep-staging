@@ -296,7 +296,7 @@ of SN15, a duplication consistent with the anonymization and re-numbering the da
 describe, and keeping it would place a training subject into the test fold in nine of ten fold
 assignments, giving $N=99$. Both tasks use all $99$ patients: the twelve recordings that
 lack at least one cardiorespiratory channel are scored with those channels zero-filled
-rather than excluded, and we state which $N$ applies to each reported number. The corpus totals $92{,}560$ epochs. The stage distribution
+instead of excluded, and we state which $N$ applies to each reported number. The corpus totals $92{,}560$ epochs. The stage distribution
 (Table~\ref{tab:dist}) is strongly imbalanced, with N2 dominant and N1 and N3 scarce, which is
 the clinical norm.
 
@@ -412,7 +412,7 @@ desaturation depth (median minus minimum); pulse mean and variability; ECG ampli
 line-length; airflow amplitude and line-length; thoracic, abdominal, and summed effort
 amplitudes; and thoraco-abdominal asynchrony, the loss of coordination between chest and
 abdomen that marks an obstructed breath. The correlation is signed, so synchronous and
-paradoxical motion sit at opposite ends of the range rather than being folded together,
+paradoxical motion sit at opposite ends of the range instead of being folded together,
 \begin{equation}
 \mathrm{asyn}_t=\mathrm{corr}(x^{\mathrm{tho}}_t,\ x^{\mathrm{abd}}_t).
 \end{equation}
@@ -486,7 +486,7 @@ $0.411$ ($p=0.28$), while staging is untouched at $0.739$ accuracy ($p=0.92$) an
 $0.634$ ($p=0.92$). The gain
 is small, about a sixth of a fold standard deviation, and the $p$-value is marginal enough
 that we would not rest an argument on it alone. What makes it worth reporting is where it
-lands rather than how large it is: the connection feeds the respiratory head and nothing
+lands: the connection feeds the respiratory head and nothing
 else, and the respiratory head is the only output that moves.
 
 The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
@@ -666,7 +666,7 @@ MM-Net (neural only)              & 2\,EEG feat & 2.62\,M & $\mathbf{0.856 \pm 0
 \end{table*}
 
 \subsection{Staging Benchmark and Comparison}
-The row marked $^{\ddagger}$ is quoted from the corpus paper rather than run here. It
+The row marked $^{\ddagger}$ is quoted from the corpus paper and was not run here. It
 uses that paper's protocol, an $80/10/10$ patient-wise split over $N=100$ that includes the
 duplicated pair we exclude (Section~\ref{sec:data}), and its own two-channel input, and that
 paper's repository releases preprocessing only, so it can be neither reproduced nor read as
@@ -684,7 +684,7 @@ figures and so are left out of the stroke columns, and quoted in the text instea
 Dispersion is reported wherever it is defined: five folds for the earlier retrained
 baselines; thirty fold-values, ten folds by three seeds, for AttnSleep, the three
 reimplemented literature models and the proposed rows. CNN-ResNet18 is quoted from the
-corpus paper rather than re-run here, so its protocol is that paper's and it
+corpus paper and was not re-run here, so its protocol is that paper's and it
 carries no interval. That paper's LSTM appears only as our reimplementation of it on the
 folds used throughout, because its published figure was never measured on these folds. In the zero-shot block the interval is across
 pretraining seeds and not folds, because that evaluation is a single pass of a finished
@@ -1302,7 +1302,7 @@ Staging moves in opposite directions on the two corpora, for reasons the data
 identify. On Sleep-EDF the model \emph{gains} $0.084$ of $\kappa$ over its in-domain
 score. A representation that had memorised corpus-specific artefacts would degrade out of
 corpus, so the straightforward reading is that the features are physiological and that the
-ceiling reported throughout this paper is a property of \emph{stroke sleep} rather than of
+ceiling reported throughout this paper is a property of \emph{stroke sleep} instead of
 the model. The learning curve reaches the same conclusion (Section~\ref{sec:curve}) by a
 different route. On ISRUC staging falls by $0.090$ accuracy, and the class mix explains
 much of it: ISRUC carries $15.6\%$ N1 against iSLEEPS' $10.2\%$ and Sleep-EDF's $6.6\%$,
@@ -1423,7 +1423,7 @@ cohort-specific, physiologically grounded, multimodal modeling.
 
 The study also draws a clean physiological line. The cortical channels carry sleep staging, and
 the cardiorespiratory channels carry breathing, and the model places each where it belongs
-rather than blurring them. That the neural and multimodal variants stage alike is the expected
+instead of blurring them. That the neural and multimodal variants stage alike is the expected
 outcome: the second modality adds a new capability while leaving staging unchanged. We view this separation as a strength for
 clinical use, because a reader can trust that the respiratory output reflects breathing and the
 staging output reflects the brain.
