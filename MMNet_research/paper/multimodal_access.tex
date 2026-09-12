@@ -83,7 +83,8 @@ worse recovery, yet automatic sleep analysis reads only the electroencephalogram
 reports only sleep stages. A clinical polysomnogram records far more, and in this
 population those cardiorespiratory channels carry the disease itself: the median patient
 here has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
-multi-task model that reads the full polysomnogram and produces two clinical outputs from a
+multi-task model that reads fourteen neural and cardiorespiratory channels of the
+polysomnogram and produces two clinical outputs from a
 single forward pass, the sleep stage of every 30-second epoch and a per-epoch
 respiratory-event label, with a direct cardiorespiratory path carrying breathing effort to
 the respiratory decision undiminished by the staging objective. On iSLEEPS, a stroke-specific
@@ -91,12 +92,13 @@ polysomnography corpus ($99$ patients, $92{,}560$ epochs), under patient-indepen
 $\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC
 with $2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on
 this cohort and three applied zero-shot from healthy sleep; every retrained baseline lands
-between $0.613$ and $0.716$ accuracy, and those we ran ourselves share the proposed model's
+between $0.613$ and $0.720$ accuracy, and those we ran ourselves share the proposed model's
 folds. Six are reimplemented here, each recovering its published accuracy to within $0.04$,
-which indicates that the ceiling belongs to the cohort. Cross-validated on healthy sleep
+which places the limit in the cohort rather than in the implementations. Cross-validated on healthy sleep
 the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
-to $0.148$ for those baselines. Zero-shot on two independent corpora the respiratory
-read-out holds at $0.780$ AUC. Code, features and checkpoints are released.
+to $0.148$ for those baselines. Applied zero-shot to two independent corpora, the
+respiratory read-out could be scored only on ISRUC, which alone carries cardiorespiratory
+channels, reaching $0.780$ AUC on its first night and $0.723$ on its second. Code, features and checkpoints are released.
 \end{abstract}
 
 \begin{keywords}
@@ -131,7 +133,8 @@ airflow, thoracic and abdominal breathing effort, and peripheral oxygen saturati
 (SpO$_2$). These cardiorespiratory channels are where sleep-disordered breathing shows: a paused breath, a chest that keeps straining against a closed airway, a fall in
 blood oxygen, and the arousal that rescues the breath. A model that reads only the EEG
 cannot see any of this, and so cannot report on the disorder that most damages a patient's
-sleep. We use the full polysomnogram, and we ask a question that the staging race does not:
+sleep. We read the polysomnogram across both neural and cardiorespiratory physiology, and we
+ask a question that the staging race does not:
 what does a model gain, and on which clinical task, when it reads the whole recording rather
 than the brain alone.
 
@@ -162,13 +165,13 @@ saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
 \item \label{c:bench}We benchmark the model against sixteen baseline configurations, those we ran ourselves
 on the same patient-independent folds as the proposed model, covering convolutional, recurrent, attentional and fully
-convolutional families, and reimplement three published architectures (U-Time,
+convolutional families, and reimplement six published architectures (U-Time,
 TinySleepNet, SleepTransformer) so that every comparison runs through one pipeline
 (Table~\ref{tab:bench}).
 
 \item \label{c:ceiling}We establish that the accuracy ceiling on this cohort belongs to the patients and
 not to our implementations. Each reimplementation recovers its published Sleep-EDF
-accuracy to within $0.04$, every retrained baseline lands between $0.613$ and $0.716$
+accuracy to within $0.04$, every retrained baseline lands between $0.613$ and $0.720$
 here, and the proposed model loses $0.115$ accuracy crossing from healthy sleep to stroke
 against $0.140$ to $0.148$ for those baselines (Section~\ref{sec:domaingap}).
 
@@ -178,7 +181,8 @@ the decision rests on respiratory effort above all, together with oxygen desatur
 cardiac variability and cortical arousals, encoded redundantly enough that no single
 channel is indispensable (Section~\ref{sec:noflow}).
 
-\item \label{c:attrib}We attribute each output causally to the physiology that produces it. A
+\item \label{c:attrib}We attribute each output to the physiology it depends on, by
+intervention on the model rather than by correlation. A
 leave-one-out modality-ablation grid separates the two outputs: removing the
 cardiorespiratory stream lowers respiratory detection and leaves staging untouched
 ($-0.128$ AUC, Wilcoxon on ten fold-means, Holm $p=0.018$), while no neural ablation
@@ -215,6 +219,13 @@ patients~\cite{bose2026gap}.
 \subsection{Multi-Channel and Foundation Models}
 Later work reads several PSG channels. U-Sleep stages from arbitrary EEG and EOG derivations
 across many cohorts~\cite{perslev2021usleep}, and self-supervised EEG foundation models such
+Joint scoring of the two tasks is itself established. Huttunen~et~al.\ trained a single network to score sleep stages and respiratory events
+simultaneously across $877$ clinical recordings, comparing signal combinations from
+pulse oximetry alone up to a full montage~\cite{huttunen2023simultaneous}, and multitask
+staging-and-apnea models have followed~\cite{multitask2025elderly}. Those studies work in
+suspected-apnea and elderly populations; what is untested is whether the arrangement
+survives a cohort whose neural signal is itself damaged, which is the question this paper
+asks. Foundation models such
 as LaBraM, CBraMod, EEGPT, and BIOT learn transferable representations from large unlabeled
 corpora~\cite{labram2024,cbramod2025,eegpt2024,biot2023}. SleepFM extends this idea to several
 PSG modalities~\cite{sleepfm2026}, while cross-scale foundation models and standardized
@@ -246,7 +257,7 @@ quantitative EEG markers such as the brain symmetry index further track hemisphe
 injury~\cite{anastasi2017bsi}. A model that reports on breathing as well as stage is therefore of
 direct clinical value in this population. Sleep staging on ischemic stroke itself is nascent, reported only as baselines on
 the iSLEEPS corpus~\cite{maiti2026isleeps}, and no prior method addresses staging and respiratory
-detection jointly, from the full polysomnogram, on a stroke population; we make this comparison
+detection jointly, on a stroke population; we make this comparison
 quantitative in Table~\ref{tab:litreview}.
 
 %=====================================================================
@@ -259,8 +270,8 @@ only events. Multimodal foundation models have begun to join them, SleepFM~\cite
 staging sleep and classifying apnea severity from one representation on a general population,
 but per-epoch respiratory detection alongside staging has not been shown on a stroke cohort,
 leaving the clinician with two
-separate tools. Contribution~\ref{c:model} answers this with a single model that reads the full
-polysomnogram and produces both outputs.
+separate tools. Contribution~\ref{c:model} answers this with a single model that reads both
+physiologies and produces both outputs.
 \emph{(ii) Evaluation on healthy sleepers.} Staging accuracy is reported almost entirely on
 healthy corpora such as Sleep-EDF~\cite{kemp2000sleepedf,goldberger2000physionet}, where deep
 and foundation models reach a ceiling, while performance on focal brain injury is largely
@@ -273,7 +284,7 @@ cohort.
 unfalsifiable, and predictive uncertainty is seldom
 modeled~\cite{angelopoulos2023conformal}.
 Contributions~\ref{c:resp} and~\ref{c:attrib} answer this with a physiologically grounded, non-circular respiratory
-read-out and a causal modality-ablation that attributes each output to the channel its physiology
+read-out and an interventional modality-ablation that attributes each output to the channel its physiology
 governs.
 
 %=====================================================================
@@ -324,7 +335,9 @@ stated reasons: periodic limb movement records a different disorder; snore is sc
 same airway sound as the respiratory events and would make the second task circular;
 plethysmography is already summarized by the SpO$_2$ and pulse channels we keep; body position
 is coarse and slow; and the ambient-light and battery traces are device housekeeping, not
-physiology. All neural channels are resampled to $100$\,Hz and the cardiorespiratory channels
+physiology. All neural channels are resampled to $100$\,Hz for the engineered descriptors,
+and independently to $200$\,Hz for the pretrained encoder as described below; the
+cardiorespiratory channels go
 to a common $25$\,Hz grid; SpO$_2$, recorded natively at $4$\,Hz, is upsampled to this grid, so
 its effective resolution remains that of the $4$\,Hz oximeter. Signals are read in physical
 units, which matters because SpO$_2$ near $90\%$,
@@ -342,7 +355,22 @@ engineered descriptors below with a $200$-dimensional embedding from LaBraM, a f
 pretrained EEG encoder~\cite{labram2024} (Section~\ref{sec:repr}), and a raw cardiorespiratory tensor
 $\mathbf{x}^{\mathrm{car}}_t\in\mathbb{R}^{7\times750}$, the seven channels at $25$\,Hz.
 The $14$ engineered cardiorespiratory descriptors defined below are used by the baseline
-configuration against which the learned encoder is measured. We learn a subject-independent
+configuration against which the learned encoder is measured.
+
+The pretrained encoder is fed on its own terms rather than on ours. LaBraM was
+pretrained at $200$\,Hz and fixes its input length at $3000$ samples, so the EEG is
+resampled from our $100$\,Hz working rate to $200$\,Hz before it reaches the encoder.
+Feeding the $100$\,Hz signal directly would have been silent but wrong: $3000$ samples
+would then span $30$ rather than $15$\,seconds and every rhythm would present at half
+its frequency, so a $12$\,Hz spindle would arrive as $6$\,Hz. At $200$\,Hz a $30$\,s
+epoch no longer fits the positional embedding in one piece, so each epoch is split into
+two $15$\,s sub-windows of $3000$ samples, encoded separately, and mean-pooled; the two
+embeddings were checked to differ before caching, so the pooling carries information
+rather than averaging duplicates. The encoder also requires canonical $10$--$20$ names
+and rejects mastoid references, so C4:M1, C3:M2, O2:M1 and O1:M2 are presented as C4,
+C3, O2 and O1, and the ocular and chin channels are dropped for having no canonical EEG
+name. Amplitudes are scaled to $\mu$V$/100$. The encoder therefore sees four EEG
+channels, strictly fewer signals than the engineered descriptors read. We learn a subject-independent
 map
 \begin{equation}
 f_\theta:\big(\mathbf{f}^{\mathrm{eeg}}_{1:T},\mathbf{x}^{\mathrm{car}}_{1:T}\big)\ \longmapsto\
@@ -383,9 +411,10 @@ From the seven cardiorespiratory channels we compute SpO$_2$ mean, minimum, vari
 desaturation depth (median minus minimum); pulse mean and variability; ECG amplitude and
 line-length; airflow amplitude and line-length; thoracic, abdominal, and summed effort
 amplitudes; and thoraco-abdominal asynchrony, the loss of coordination between chest and
-abdomen that marks an obstructed breath,
+abdomen that marks an obstructed breath. The correlation is signed, so synchronous and
+paradoxical motion sit at opposite ends of the range rather than being folded together,
 \begin{equation}
-\mathrm{asyn}_t=\big\lvert\,\mathrm{corr}(x^{\mathrm{tho}}_t,\ x^{\mathrm{abd}}_t)\,\big\rvert .
+\mathrm{asyn}_t=\mathrm{corr}(x^{\mathrm{tho}}_t,\ x^{\mathrm{abd}}_t).
 \end{equation}
 Both feature sets are standardized per patient, which removes person-to-person offsets so the
 model generalizes across people.
@@ -494,7 +523,7 @@ average precision (AP), which suits the $16\%$ event rate.
 
 Every number we report is a mean over the ten folds with its standard deviation, and the
 folds are fixed across all configurations so that comparisons are paired. The proposed
-model, its ablations and the three reimplemented literature models all use the full ten; the
+model, its ablations and the six reimplemented literature models all use the full ten; the
 earlier retrained baselines were run at five, which Table~\ref{tab:bench} states per row. Because a single
 training seed can flatter a result, we retrained the headline configuration under five
 seeds on the same folds. Staging accuracy varies by $0.005$ across seeds against
@@ -553,7 +582,7 @@ Random seeds & $42$, $1$, $7$ \\
 \subsection{Compared Methods}
 We compare the model against deep networks evaluated on the same folds: convolutional and
 recurrent networks trained from scratch (DeepSleepNet, AttnSleep, a four-channel CNN--BiLSTM),
-three further published architectures we reimplemented for this comparison (U-Time, a
+six further published architectures we reimplemented for this comparison (U-Time, a
 fully convolutional encoder--decoder; TinySleepNet, a compact convolutional--recurrent model;
 and SleepTransformer, a purely attentional one), a
 network transferred from Sleep-EDF, and a raw-signal convolutional network on all $14$ channels,
@@ -747,7 +776,7 @@ This ablation is also our attribution method. Because the model is feature-based
 a raw spectrogram or a raw EEG trace, a gradient heat-map or Grad-CAM would have no
 faithful spatial support on the neural side, which is where a staging attribution would be
 read; we
-therefore attribute each output by \emph{causal} intervention, deleting a physiological
+therefore attribute each output by \emph{interventional} ablation, deleting a physiological
 channel and measuring the change. This is a falsifiable test of what each modality contributes.
 The proposed model stages sleep at $\mmAcc$ accuracy ($\kappa$ $\mmK$) and detects respiratory
 events at $\mmAuc$ AUC ($\mmAp$ average precision). To test the paper's central claim, that each
@@ -774,6 +803,25 @@ ensemble is essential. That redundancy is clinically favourable, since
 twelve of the ninety-nine recordings are missing at least one cardiorespiratory channel, and it is
 physiologically coherent: the effort belts register the paradoxical thoraco-abdominal motion
 of an obstructive event as it happens, whereas desaturation is a lagged consequence of it.
+
+\subsection{Recordings With an Incomplete Montage}
+Those twelve recordings are scored with the absent channels zero-filled rather than being
+excluded, which raises a fair question: does the network read missingness instead of
+physiology? It does not appear to. Removing all twelve from the pooled respiratory
+evaluation moves AUC from $0.778$ to $0.775$ and moves average precision the other way,
+from $0.419$ to $0.439$, so the respiratory result does not rest on them. Predicted
+per-patient burden is independent of whether a montage was complete ($p=0.91$), so the
+shortcut is not available even in principle.
+
+Staging is lower on those twelve, $0.670$ against $0.743$ ($p=0.017$), and that needs a
+control rather than an assurance. The neural-only configuration receives no
+cardiorespiratory channel at all and so has nothing zero-filled, yet it shows the same
+gap in the same direction, $0.689$ against $0.744$ ($p=0.040$). Most of the difference
+therefore belongs to the recordings, which are harder for a model that cannot see the
+missing channels either. Stated precisely rather than generously: on those twelve the
+full model sits $0.019$ below neural-only, which at $n=12$ is not distinguishable from
+noise (Wilcoxon $p=0.18$), so a small cost cannot be excluded, only bounded. On the
+eighty-seven complete recordings the two agree to within $0.002$.
 Attention and plain concatenation stage and detect alike, so the gain comes from the added
 modality, and the fusion mechanism has little effect.
 
@@ -1434,13 +1482,14 @@ SleepTransformer~\cite{sleeptransformer2022} & 2022 & Transformer encoder with e
 Micro SleepNet~\cite{liu2023microsleepnet} & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.828$ (Sleep-EDF-20) & $0.647$ \\
 AT-BiLSTM~\cite{fu2021atbilstm} & 2021 & Attention-augmented bidirectional LSTM, single-channel EEG. & $0.838$ (Sleep-EDF) & $0.692$ \\
 \midrule
-\textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the full polysomnogram. & -- & $\mathbf{0.739}$ \\
+\textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the fourteen-channel polysomnogram. & -- & $\mathbf{0.739}$ \\
 \bottomrule
 \end{tabular*}
 \end{table*}
 
 \section{Conclusion}
-We built a model that reads the full polysomnogram of stroke patients and, from one pass,
+We built a model that reads the neural and cardiorespiratory channels of a stroke patient's
+polysomnogram and, from one pass,
 stages their sleep and detects their respiratory events. Deep networks built for healthy sleep
 collapse to $0.61$--$0.72$ accuracy on this cohort, so its $\mmAcc$ staging accuracy is at the
 cohort ceiling for every model family. The contribution is the second output, a respiratory
