@@ -81,24 +81,23 @@ University-Bangladesh, Dhaka 1229, Bangladesh}
 Sleep-disordered breathing is common in the weeks after an ischemic stroke and predicts
 worse recovery, yet automatic sleep analysis reads only the electroencephalogram and
 reports only sleep stages. A clinical polysomnogram records far more, and in this
-population the disease is plainly visible in those cardiorespiratory channels: the median patient
-here has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
+population the disease is visible in those cardiorespiratory channels: the median patient
+has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
 multi-task model that reads fourteen neural and cardiorespiratory channels of the
-polysomnogram and produces two clinical outputs from a
-single forward pass, the sleep stage of every 30-second epoch and a per-epoch
+polysomnogram and produces two outputs from one
+forward pass: the sleep stage of every 30-second epoch and a per-epoch
 respiratory-event label, with a direct cardiorespiratory path carrying breathing effort to
-the respiratory decision undiminished by the staging objective. On iSLEEPS, a stroke-specific
+the respiratory decision, bypassing the staging objective. On iSLEEPS, a stroke-specific
 polysomnography corpus ($99$ patients, $92{,}560$ epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
 $\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and detects respiratory events at $\mmAuc$ AUC
 with $2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on
 this cohort and three applied zero-shot from healthy sleep; every retrained baseline lands
-between $0.613$ and $0.720$ accuracy, and those we ran ourselves share the proposed model's
-folds. Six are reimplemented here, each recovering its published accuracy to within $0.04$,
-which places the limit in the cohort rather than in the implementations. Cross-validated on healthy sleep
+between $0.613$ and $0.720$ accuracy. Six are reimplemented here, each recovering its published accuracy to within $0.04$,
+placing the limit in the cohort rather than the implementations. Cross-validated on healthy sleep
 the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
 to $0.148$ for those baselines. Applied zero-shot to two independent corpora, the
-respiratory read-out could be scored only on ISRUC, which alone carries cardiorespiratory
-channels, reaching $0.780$ AUC on its first night and $0.723$ on its second. Code, features and checkpoints are released.
+respiratory read-out could be scored only on ISRUC, reaching $0.780$ and $0.723$ AUC on its
+two nights. Code, features and checkpoints are released.
 \end{abstract}
 
 \begin{keywords}
