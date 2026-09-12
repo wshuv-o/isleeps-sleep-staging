@@ -523,10 +523,19 @@ Cohen's $\kappa$. The respiratory task is scored by the area under the ROC curve
 average precision (AP), which suits the $16\%$ event rate.
 
 Every number we report is a mean over the ten folds with its standard deviation, and the
-folds are fixed across all configurations so that comparisons are paired. The proposed
+folds are fixed across all configurations so that comparisons are paired. Fixing them buys
+paired comparisons at a price we should state plainly: the configuration reported here was
+chosen by comparing forty-nine candidates on these same ten folds, so the folds that
+selected the model are the folds that score it, and the in-domain figures are not free of
+selection optimism. Two things bound how much that can matter. The ten best candidates span
+$0.004$ accuracy against a fold-to-fold standard deviation of $0.019$, so the margin
+available to selection is about a fifth of the uncertainty we already report; and the
+external corpora in Section~\ref{sec:external} took no part in selection, so the zero-shot
+figures there are unaffected by it. A nested selection loop would remove the concern rather
+than bound it, and we did not run one. The proposed
 model, its ablations and the six reimplemented literature models all use the full ten; the
 earlier retrained baselines were run at five, which Table~\ref{tab:bench} states per row. Because a single
-training seed can flatter a result, we retrained the headline configuration under five
+training seed can flatter a result, we retrained the headline configuration under three
 seeds on the same folds. Staging accuracy varies by $0.005$ across seeds against
 $0.020$ across folds, and respiratory AUC by $0.001$ against $0.038$: fold-to-fold spread
 is four times the seed spread for staging and thirty times it for respiratory detection.
