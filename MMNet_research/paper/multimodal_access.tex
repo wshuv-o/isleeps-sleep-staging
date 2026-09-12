@@ -391,6 +391,7 @@ layer that follows it.}
 \end{figure*}
 
 \subsection{Physiological Feature Representations}
+\label{sec:features}
 \paragraph{Neural features ($188$)}
 Per channel we take absolute and relative band powers from the Welch spectrum $P(f)$ in delta
 ($0.5$--$4$), theta ($4$--$8$), alpha ($8$--$13$), sigma ($11$--$16$), and beta
@@ -1519,61 +1520,48 @@ as on sleep, in the population where breathing matters most. Code and features a
 \appendices
 \section{The $188$ Neural Descriptors}
 \label{app:features}
-Each $30$\,s epoch is $3000$ samples at $100$\,Hz. Every descriptor below is
-computed on one epoch in isolation, with no smoothing between epochs; cross-epoch
-context comes from the recurrent decoder instead. The vector is $23$ descriptors on
-each of the seven neural channels (C4:M1, C3:M2, O2:M1, O1:M2, E1:M2, E2:M2, chin
-EMG), which is $161$, and $27$ event descriptors applied only to the channels they
-are defined for, giving $188$.
+Each $30$-second epoch is $3000$ samples at $100$\,Hz, and every descriptor below is
+computed on one epoch alone. Nothing is smoothed across epochs, because the
+cross-epoch context the model needs is supplied by the recurrent decoder rather
+than by the features. Twenty-three descriptors are computed on each of the seven
+neural channels, C4:M1, C3:M2, O2:M1, O1:M2, E1:M2, E2:M2 and the chin EMG, which
+gives $161$; a further $27$ event descriptors are applied only to the channels whose
+physiology defines them, giving $188$ in total.
 
-\subsubsection*{Per-channel descriptors}
-Spectra are Welch estimates, $256$-sample segments with $128$-sample overlap. Let
-$P(f)$ be the spectrum and $T=\sum_f P(f)$.
+The per-channel set begins with the spectrum, a Welch estimate over $256$-sample
+segments overlapping by $128$. From it we take absolute and relative power in the
+five bands of Section~\ref{sec:features}, the logarithm of total power, spectral
+entropy on the normalised spectrum, the $95\%$ spectral-edge frequency and the mean
+frequency. Six time-domain statistics follow, namely standard deviation,
+peak-to-peak, root mean square, skewness, kurtosis and zero-crossing rate, and to
+these are added the three Hjorth descriptors, activity, mobility and complexity,
+computed from the first and second differences~\cite{hjorth1970eeg}.
 
-\begin{itemize}\itemsep2pt
-\item Absolute and relative power in five bands: delta $0.5$--$4$, theta $4$--$8$,
-alpha $8$--$13$, sigma $11$--$16$, beta $16$--$30$\,Hz. Sigma is the spindle band
-and overlaps alpha by design.
-\item $\log T$, spectral entropy $-\sum_f \tilde P\log \tilde P$ on
-$\tilde P=P/T$, the $95\%$ spectral edge frequency, and the mean frequency
-$\sum_f fP(f)/T$.
-\item Standard deviation, peak-to-peak, root mean square, skewness, kurtosis, and
-zero-crossing rate.
-\item Hjorth activity $\sigma^2_x$, mobility $\sigma_{x'}/\sigma_x$, and complexity
-$(\sigma_{x''}/\sigma_{x'})/\text{mobility}$, from the first and second
-differences~\cite{hjorth1970eeg}.
-\end{itemize}
+The event descriptors follow the graphoelements a scorer reads, and every band-pass
+among them is a fourth-order Butterworth applied forwards and backwards so that
+phase is preserved. Spindles contribute three descriptors per EEG channel: the
+channel is filtered to $11$--$16$\,Hz, its analytic envelope is taken by Hilbert
+transform, and the threshold is set at the $90$th percentile of that envelope within
+the epoch, so that it tracks the amplitude of the epoch itself rather than a fixed
+microvolt level; density counts upward crossings of that threshold, and the mean and
+standard deviation of the envelope complete the three. Slow waves contribute two per
+EEG channel, the peak-to-peak and the mean absolute amplitude of the $0.5$--$4$\,Hz
+band, with no duration or morphology criterion imposed, so that they summarise
+slow-wave amplitude rather than detect discrete waves. Each EOG channel contributes
+the log mean squared first difference and the $95$th percentile of its absolute
+value, which separate the fast deflections of REM from slow drift, and the chin EMG
+contributes log root-mean-square, the $90$th percentile of the absolute signal, and
+the log variance of the first difference, which together track tonic level and its
+loss in REM.
 
-\subsubsection*{Event descriptors}
-These follow the graphoelements a scorer reads. Band-pass filters are fourth-order
-Butterworth applied forwards and backwards, so phase is preserved.
-
-\begin{itemize}\itemsep2pt
-\item \emph{Spindles}, three per EEG channel. The channel is filtered to
-$11$--$16$\,Hz and the analytic envelope taken by Hilbert transform. The threshold
-is the $90$th percentile of that envelope within the epoch, so it tracks the
-epoch's own amplitude instead of a fixed microvolt level. Density counts upward
-crossings; the remaining two are the envelope mean and standard deviation.
-\item \emph{Slow waves}, two per EEG channel. Filtered to $0.5$--$4$\,Hz, then
-peak-to-peak and mean absolute amplitude. No duration or morphology criterion is
-applied, so these summarise slow-wave amplitude and are not discrete detections.
-\item \emph{Ocular}, two per EOG channel: the log mean squared first difference and
-the $95$th percentile of its absolute value, which separate REM deflections from
-slow drift.
-\item \emph{Chin EMG}, three: log root-mean-square, the $90$th percentile of the
-absolute signal, and the log variance of the first difference, tracking tonic level
-and its loss in REM.
-\end{itemize}
-
-\subsubsection*{Artifacts, scaling and aggregation}
-No epoch or channel is rejected and no amplitude threshold is applied, so a
-corrupted channel reaches the model. The modality ablations in
-Section~\ref{sec:ablate} show the streams carry enough redundancy to absorb one,
-and any rejection rule would have to be tuned on this cohort. Non-finite values,
-which occur only for a flat channel, become zero. Descriptors are standardised per
-recording against that recording's own mean and standard deviation, the
-transductive step Section~\ref{sec:limitations} returns to. Nothing is aggregated
-across epochs.
+No epoch and no channel is rejected, and no amplitude threshold is applied, so a
+corrupted channel reaches the model. The modality ablations of
+Section~\ref{sec:ablate} show the streams carry enough redundancy to absorb one, and
+any rejection rule would have to be tuned on this cohort. Non-finite values, which
+arise only from a flat channel, are set to zero. Each descriptor is finally
+standardised against the mean and standard deviation of its own recording, the
+transductive step Section~\ref{sec:limitations} returns to, and nothing is
+aggregated across epochs.
 
 %=====================================================================
 \section*{Data and Code Availability}
