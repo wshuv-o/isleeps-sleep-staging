@@ -173,6 +173,13 @@ def main():
                 try:
                     a = train_eval(parse(label), fit, es, va_i, SEED)
                     res["inner"][key] = a
+                except (MemoryError, RuntimeError) as e:
+                    # Running out of memory says nothing about the candidate. Recording
+                    # it as a failure would skip it on every later run, which is how a
+                    # transient collision turned into forty-nine permanently missing
+                    # evaluations the first time this ran.
+                    print("  transient on %s: %s -- will retry on the next pass"
+                          % (key, type(e).__name__), flush=True)
                 except Exception as e:
                     res["failed"][key] = "%s: %s" % (type(e).__name__, e)
                     print("  FAILED %s -> %s" % (key, res["failed"][key]), flush=True)
