@@ -1029,8 +1029,13 @@ It is strongest on the most severe events, and the overall AUC is held down by t
 hypopneas.
 
 \begin{table}[t]
-\caption{Event-level detection, pooled over the ten patient-independent folds.
-Consecutive flagged epochs are grouped into events within each patient. The flagged
+\caption{Event-level detection, pooled over the ten patient-independent folds
+($8{,}400$ scored events over $771$ hours). Within a patient an event is a maximal run of
+consecutive epochs, with no gap tolerance, and counts as detected when any epoch inside it
+is flagged; a false alarm is a flagged run overlapping no scored epoch, and the rate
+denominator is the whole recording, wake included. One flagged run spanning several events
+therefore marks each detected while costing at most one false alarm, which is where the
+under-counting below comes from. The flagged
 fraction is the share of all epochs the threshold marks.}
 \label{tab:event}
 \centering
@@ -1039,27 +1044,27 @@ fraction is the share of all epochs the threshold marks.}
 \toprule
 Threshold & Event sens.\,$\uparrow$ & False alarms/h\,$\downarrow$ & Epochs flagged \\
 \midrule
-$0.2$ & $0.857$ & $2.22$ & $68\%$ \\
-$0.3$ & $0.785$ & $2.35$ & $57\%$ \\
-$0.4$ & $0.683$ & $2.43$ & $45\%$ \\
-$0.5$ & $0.549$ & $2.61$ & $33\%$ \\
-$0.6$ & $0.397$ & $2.21$ & $22\%$ \\
-$0.7$ & $0.270$ & $1.41$ & $13\%$ \\
+$0.2$ & $0.854$ & $3.21$ & $59\%$ \\
+$0.3$ & $0.792$ & $3.25$ & $49\%$ \\
+$0.4$ & $0.727$ & $3.05$ & $41\%$ \\
+$0.5$ & $0.660$ & $2.82$ & $34\%$ \\
+$0.6$ & $0.576$ & $2.42$ & $27\%$ \\
+$0.7$ & $0.469$ & $1.94$ & $20\%$ \\
 \midrule
 \multicolumn{4}{@{}l}{\emph{Per-patient agreement with the clinical index}}\\[1pt]
 \multicolumn{3}{@{}l}{Aggregated epoch probability (burden)} & $\rho=0.491$ \\
-\multicolumn{3}{@{}l}{Counted events per hour} & $\rho=0.142$ \\
-\multicolumn{3}{@{}l}{Predicted vs scored event rate} & $4.5$ vs $11.1$ \\
+\multicolumn{3}{@{}l}{Counted events per hour} & $\rho=0.148$ \\
+\multicolumn{3}{@{}l}{Predicted vs scored event rate} & $4.8$ vs $11.0$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Scoring at the event level instead of the epoch level worsens the picture
 (Table~\ref{tab:event}). No threshold is comfortable: the one that finds most events flags
-two thirds of the night, and the one that flags least finds a quarter of them. More
+three fifths of the night, and the one that flags least finds under half of them. More
 tellingly, the model recovers the wrong \emph{number} of events, and its per-patient event
 count agrees with the clinical index far more weakly than its aggregated epoch probability
-does ($\rho=0.142$ against $\rho=0.491$). Consecutive events separated by a few epochs merge
+does ($\rho=0.148$ against $\rho=0.491$). Consecutive events separated by a few epochs merge
 into one flagged run, so an epoch-level detector systematically under-counts. This is why we
 report a burden, and why event-level scoring is the natural next step instead of a
 formality.
@@ -1068,8 +1073,9 @@ Figure~\ref{fig:rocpr} shows the operating characteristics behind these numbers,
 from the pooled held-out predictions of all ten folds. The precision--recall panel is the
 more informative of the two: respiratory events occupy $16\%$ of epochs, and under that
 imbalance a ROC curve flatters any detector. Read at fixed sensitivity, the trade-off is
-explicit: at $0.80$ sensitivity the model holds $0.47$ specificity and $0.22$ precision,
-which is a research-grade burden estimate, not a scoring-grade detector, and we
+explicit: at $0.80$ sensitivity the model holds $0.59$ specificity and $0.27$ precision,
+and pushing sensitivity to $0.90$ costs both, $0.40$ and $0.22$. Either way this is a
+research-grade burden estimate, not a scoring-grade detector, and we
 describe it as
 such. We also note that pooling every fold's epochs into a single curve is not the same
 estimator as averaging the ten per-fold scores: pooling weights folds by epoch count and
@@ -1635,8 +1641,9 @@ currently exists. The external respiratory result rests on eight subjects, two o
 seven cardiorespiratory inputs were unavailable, so it establishes that the read-out
 transfers, not how well. Respiratory detection, at $\mmAuc$ AUC, is a useful signal but not yet a
 screening-grade one, and it is scored per epoch. At
-event level it detects $55\%$ of events at $2.6$ false alarms per hour and under-counts
-the event rate by more than half, so it cannot substitute for a scored index. The
+event level it detects $66\%$ of events at $2.8$ false alarms per hour and under-counts
+the event rate by more than half, $4.8$ against $11.0$ per hour, so it cannot substitute
+for a scored index. The
 staging head is also overconfident (expected calibration error $0.076$), so its
 posteriors should be used for ranking and abstention. Staging does not improve on the
 published baseline for this corpus, and while every architecture we ran saturates in the same
