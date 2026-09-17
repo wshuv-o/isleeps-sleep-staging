@@ -524,6 +524,21 @@ that we would not rest an argument on it alone. What makes it worth reporting is
 lands: the connection feeds the respiratory head and nothing
 else, and the respiratory head is the only output that moves.
 
+Removing the path is not by itself a clean test of what it carries. The head reads
+$2\,\text{hidden}+d_{\mathrm{card}}$ inputs whether or not the bypass is used, because the
+ablation zeroes the cardiorespiratory block instead of deleting it, so both arms hold the
+same $2{,}764{,}774$ parameters and capacity is already controlled. What is not controlled
+is that a head fed a constant can learn to ignore that block, which leaves open whether the
+gain comes from the epoch's own breathing or merely from the presence of a plausible signal.
+We therefore ran a third arm that feeds the head the same cardiorespiratory embeddings
+permuted across the epochs of the window: identical capacity, identical statistics,
+identical gradient path, with only the alignment to the epoch destroyed. It reaches $0.774$
+AUC, which is at or just below the zeroed arm's $0.776$ and below the $\mmAuc$ of the real
+path. Shuffling therefore buys nothing over zeroing, and the gain is not a capacity
+artefact. We stop short of the stronger claim: against the shuffled arm the difference is
+larger than against the zeroed one and yet not significant ($p=0.28$ against $p=0.049$),
+because the signed test reads how consistently the folds move and not how far.
+
 The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
 $200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
 trainable parameters to this count.
