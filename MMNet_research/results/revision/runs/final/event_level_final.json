@@ -1,0 +1,78 @@
+{
+ "config": {
+  "arm": "A+labram",
+  "cardio": "raw_cnn",
+  "cardio_mode": "concat",
+  "temporal": "lstm",
+  "hidden": 256,
+  "drop": 0.3,
+  "lr": 0.0003,
+  "wd": 0.0001
+ },
+ "seed": 42,
+ "params": 2764774,
+ "patients": 99,
+ "epochs": 92560,
+ "scored_events": 8400,
+ "hours": 771.3,
+ "threshold_sweep": [
+  {
+   "th": 0.2,
+   "event_sens": 0.8536904761904762,
+   "fa_per_hour": 3.2087294727744164,
+   "epoch_sens": 0.8763805995746724,
+   "epoch_prec": 0.23553597109037944,
+   "flagged_frac": 0.5859766637856525
+  },
+  {
+   "th": 0.3,
+   "event_sens": 0.7921428571428571,
+   "fa_per_hour": 3.245030250648228,
+   "epoch_sens": 0.8225286410098099,
+   "epoch_prec": 0.263238781066128,
+   "flagged_frac": 0.4920916162489196
+  },
+  {
+   "th": 0.4,
+   "event_sens": 0.7271428571428571,
+   "fa_per_hour": 3.0479688850475366,
+   "epoch_sens": 0.7650408177265555,
+   "epoch_prec": 0.2922585041144714,
+   "flagged_frac": 0.41225151253241143
+  },
+  {
+   "th": 0.5,
+   "event_sens": 0.6604761904761904,
+   "fa_per_hour": 2.8171996542783058,
+   "epoch_sens": 0.7022020991973658,
+   "epoch_prec": 0.32508654365293616,
+   "flagged_frac": 0.34017934312878134
+  },
+  {
+   "th": 0.6,
+   "event_sens": 0.5757142857142857,
+   "fa_per_hour": 2.4165946413137425,
+   "epoch_sens": 0.6218700692872333,
+   "epoch_prec": 0.3634723336006415,
+   "flagged_frac": 0.26944684528954194
+  },
+  {
+   "th": 0.7,
+   "event_sens": 0.4692857142857143,
+   "fa_per_hour": 1.9356093344857388,
+   "epoch_sens": 0.5160183851272553,
+   "epoch_prec": 0.40913788414468316,
+   "flagged_frac": 0.19862791702679344
+  }
+ ],
+ "event_rate": {
+  "rho": 0.14802721088435372,
+  "p": 0.14368225439204108,
+  "n": 99,
+  "scored_mean": 10.998491066276177,
+  "predicted_mean": 4.794497781716103,
+  "mae": 7.268896872910655
+ },
+ "_note": "the published configuration, unlike the earlier notebook run which used mmnet_core defaults (773,254 parameters, feature-only)",
+ "minutes": 13.68
+}
