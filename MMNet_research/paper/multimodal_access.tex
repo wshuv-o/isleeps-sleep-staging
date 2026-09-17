@@ -85,26 +85,26 @@ University-Bangladesh, Dhaka 1229, Bangladesh}
 \begin{abstract}
 Sleep-disordered breathing is common in the weeks after an ischemic stroke and predicts
 worse recovery, yet automatic sleep analysis reads only the electroencephalogram and
-reports only sleep stages. A clinical polysomnogram records far more, and in this
-population the disease is visible in those cardiorespiratory channels: the median patient
+reports only sleep stages. A clinical polysomnogram records far more, and here the disease
+is visible in its cardiorespiratory channels: the median patient
 has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
-multi-task model that reads fourteen neural and cardiorespiratory channels of the
-polysomnogram and produces two outputs from one
-forward pass: the sleep stage of every 30-second epoch and a per-epoch
+multi-task model reading fourteen neural and cardiorespiratory channels, which produces two
+outputs from one
+forward pass, the sleep stage of every 30-second epoch and a per-epoch
 respiratory-event label, with a direct cardiorespiratory path carrying breathing effort to
-the respiratory decision, bypassing the staging objective. On iSLEEPS, a stroke-specific
+the respiratory decision. On iSLEEPS, a stroke-specific
 polysomnography corpus ($99$ patients, $92{,}560$ epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
-$\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and flags the $30$-second epochs that carry a
+$\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and flags the epochs carrying a
 respiratory event at $\mmAuc$ AUC, an epoch-level read-out and not an event-level one,
-with $2.76$\,M trainable parameters. We benchmark thirteen deep architectures retrained on
-this cohort and three applied zero-shot from healthy sleep; every retrained baseline lands
-between $0.613$ and $0.720$ accuracy. Six are reimplemented here, and the five that publish
+with $2.76$\,M trainable parameters. Against matched single-task models, identical but for
+the loss, the joint objective leads on both tasks, by $0.006$ staging accuracy in nine
+folds of ten and $0.007$ respiratory AUC in seven. We benchmark thirteen deep architectures retrained
+here and three applied zero-shot from healthy sleep; every retrained baseline lands
+between $0.613$ and $0.720$ accuracy, and the five reimplementations publishing
 an accuracy are recovered to within $0.04$,
 placing the limit in the cohort itself. Cross-validated on healthy sleep
 the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
-to $0.148$ for those baselines. Applied zero-shot to two independent corpora, the
-respiratory read-out could be scored only on ISRUC, reaching $0.780$ and $0.723$ AUC on its
-two nights. Code, features and checkpoints are released.
+to $0.148$ for those baselines. Code, features and checkpoints are released.
 \end{abstract}
 
 \begin{keywords}
@@ -166,7 +166,10 @@ accuracy ($\kappa$ $\mmK$) and, from the same forward pass, detects respiratory 
 $\mmAuc$ AUC, with a direct cardiorespiratory path to the respiratory head so
 cardiorespiratory cues reach the decision undiminished by a fusion trained mostly
 for staging; removing that path costs $0.006$ respiratory AUC and leaves staging unchanged
-(Section~\ref{sec:method}). The ablation identifies respiratory effort, not oxygen
+(Section~\ref{sec:method}). Against matched single-task models differing only in the
+surviving loss term, the joint objective is ahead on both outputs, by $0.006$ staging
+accuracy in nine folds of ten and $0.007$ respiratory AUC in seven, so the second task is
+obtained without spending the first (Section~\ref{sec:joint}). The ablation identifies respiratory effort, not oxygen
 saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
 \item \label{c:bench}We benchmark the model against sixteen baseline configurations, those we ran ourselves
@@ -885,6 +888,69 @@ twelve of the ninety-nine recordings are missing at least one cardiorespiratory 
 physiologically coherent: the effort belts register the paradoxical thoraco-abdominal motion
 of an obstructive event as it happens, whereas desaturation is a lagged consequence of it.
 
+\subsection{What the Joint Objective Contributes}
+\label{sec:joint}
+The ablation grid asks which physiology carries which output. A different question is
+whether the two outputs should share a network at all, and nothing so far answers it: a
+model that produces two outputs has demonstrated integration, not benefit. The control is a
+pair of single-task models, and it has to be matched properly or it measures the wrong
+thing. Ours changes one line. The architecture, the ten folds, the three seeds, the
+optimiser, the budget and the cardiorespiratory bypass are those of the full model; only the
+surviving term of $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\mathcal{L}^{\mathrm{apn}}$
+differs, so the staging-only model still builds the cardiorespiratory stream and still feeds
+the respiratory head and simply never receives a respiratory gradient. What separates the
+rows is the objective and not the network.
+
+Training both tasks together is better than training either alone
+(Table~\ref{tab:joint}). Staging rises from $0.733$ to $\mmAcc$ accuracy, in nine folds of
+ten (Wilcoxon on the ten fold-means, $p=0.014$), and $\kappa$ from $0.625$ to $\mmK$ on the
+same nine. Respiratory AUC rises from $0.774$ to $\mmAuc$ in seven folds of ten ($p=0.049$).
+Average precision moves $+0.005$ and does not separate ($p=0.63$), which we report as the
+null it is.
+
+Two readings of that are available and only the narrower one is supported. The gains are
+small: $0.006$ accuracy against a fold-to-fold SD of $0.019$, and $0.007$ AUC against
+$0.038$, so roughly a third and a fifth of the spread the cohort already imposes. What
+carries them is consistency instead of size, nine and seven folds of ten moving the same
+way, which is what the paired test is reading. The claim we make is therefore that the
+second task costs the first nothing and returns a little to it, which is the claim the
+architecture needs: a clinician gets the respiratory read-out without trading away staging
+accuracy for it. We do not claim multi-task learning as a source of large gains here.
+
+The two diagnostic cells are what make the comparison trustworthy. The respiratory-only
+model stages at $0.303$ accuracy and $\kappa$ $0.039$, and the staging-only model detects at
+$0.495$ AUC. Both are chance for their untrained head, which confirms that the switch
+isolated the loss and did not quietly leave the other objective running.
+
+\begin{table}[t]
+\caption{The joint objective against matched single-task models, ten-fold
+patient-independent, three seeds. Every row shares the architecture, folds, seeds and
+budget; only the surviving loss term differs. $p$ is Wilcoxon on the ten fold-means, the
+unit used throughout. The upper cells of each block are the metric that model was trained
+for; the lower, in grey, are its untrained head and are chance by construction.}
+\label{tab:joint}
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llccc}
+\toprule
+Trained on & Metric & Single & Joint & $p$ \\
+\midrule
+\multirow{2}{*}{Staging only}
+ & Accuracy & $0.733$ & $\mathbf{\mmAcc}$ & $\mathbf{0.014}$ \\
+ & $\kappa$ & $0.625$ & $\mathbf{\mmK}$   & $\mathbf{0.014}$ \\
+\addlinespace[2pt]
+\multirow{2}{*}{Respiratory only}
+ & AUC & $0.774$ & $\mathbf{\mmAuc}$ & $\mathbf{0.049}$ \\
+ & AP  & $0.414$ & $0.419$           & $0.63$ \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Untrained heads, reported as the check that the switch worked}}\\[1pt]
+Respiratory only & Accuracy & $0.303$ & --- & --- \\
+Staging only     & AUC      & $0.495$ & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Recordings With an Incomplete Montage}
 Those twelve recordings are scored with the absent channels zero-filled instead of being
 excluded, which raises a fair question: does the network read missingness instead of
@@ -1527,6 +1593,13 @@ instead of blurring them. That the neural and multimodal variants stage alike is
 outcome: the second modality adds a new capability while leaving staging unchanged. We view this separation as a strength for
 clinical use, because a reader can trust that the respiratory output reflects breathing and the
 staging output reflects the brain.
+
+Separating the modalities is not the same as separating the tasks, and the two questions
+come apart. Section~\ref{sec:joint} trains each task alone and finds the joint model ahead
+of both, slightly and consistently. So the physiology divides while the objective does not,
+which is the arrangement a shared temporal decoder would predict: the streams carry
+different information, and the recurrent state that reads them benefits from being asked two
+questions about the same ten minutes of sleep.
 
 \subsection{Limitations}
 \label{sec:limitations}
