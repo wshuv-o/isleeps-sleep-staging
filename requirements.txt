@@ -14,4 +14,10 @@ scipy>=1.11
 
 # modelling / evaluation (Phase 1+)
 scikit-learn>=1.4    # metrics, subject-independent CV splitters
-# torch                # add the CUDA build matching your GPU for training
+
+# Install PyTorch first, with the CUDA build matching your GPU:
+#   https://pytorch.org/get-started/locally/
+# The reported results were produced on an RTX 5080 with torch 2.13.0+cu130,
+# where a fold takes about forty seconds and a ten-fold run about six minutes.
+torch>=2.0           # the model, training, and every reimplemented baseline
+braindecode>=0.8     # the frozen LaBraM encoder
