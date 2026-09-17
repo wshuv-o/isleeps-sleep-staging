@@ -581,7 +581,16 @@ early stopping. Staging is scored by accuracy, macro-F1 $\tfrac{1}{K}\sum_k\math
 Cohen's $\kappa$. The respiratory task is scored by the area under the ROC curve (AUC) and
 average precision (AP), which suits the $16\%$ event rate.
 
-Every number we report is a mean over the ten folds with its standard deviation, and the
+Every number we report is a mean over the ten folds with its standard deviation. That
+standard deviation is a spread and not a confidence interval, and the distinction matters
+here because the folds share training patients and are therefore dependent. The unit that
+is close to independent is the patient, so we also resample patients with replacement,
+$10{,}000$ times, rebuilding the pooled epoch set and recomputing every metric. That gives
+$0.734$ accuracy with a $95\%$ interval of $[0.717,\ 0.750]$, $\kappa$ $0.628$
+$[0.604,\ 0.651]$, respiratory AUC $0.778$ $[0.752,\ 0.802]$ and average precision $0.419$
+$[0.355,\ 0.480]$. These condition on the fitted procedure: they carry the variation in
+which patients were recorded, and not retraining variability, and nothing in them undoes
+the selection optimism described below. The
 folds are fixed across all configurations so that comparisons are paired. Fixing them buys
 paired comparisons at a price we should state plainly: the configuration reported here was
 chosen by comparing forty-nine candidates on these same ten folds, so the folds that
@@ -1272,10 +1281,10 @@ Table~\ref{tab:bench}, set against the same architectures retrained on this coho
 The result is not a degradation but a collapse. All three stage healthy sleep competently,
 $0.806$ to $0.855$ accuracy and $\kappa$ $0.73$ to $0.81$; on stroke the same checkpoints reach
 $0.306$ to $0.312$ with $\kappa$ $0.09$ to $0.13$, which is close to chance for a five-class
-problem with this prior. The failure mode is more informative than the headline. For the two
-checkpoints whose predicted stage distributions were retained, Wake takes $62$ to $67\%$ of
-stroke epochs against a true $26.6\%$, while N2 falls to between $1.8$ and $4.9\%$ of
-predictions on the stage that is $42.3\%$ of the data. These models do not lose accuracy
+problem with this prior. The failure mode is more informative than the headline. Wake takes
+$62$ to $79\%$ of predicted stroke epochs against a true $26.7\%$, while N2 falls to between
+$1$ and $5\%$ of predictions on the stage that is $42.3\%$ of the data, and N2 recall on the
+worst of the three is $0.015$. These models do not lose accuracy
 gracefully; they stop recognising sleep architecture at all.
 
 The control is what makes this interpretable. A healthy-trained stager scoring $0.31$
