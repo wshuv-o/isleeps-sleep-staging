@@ -1,0 +1,108 @@
+{
+ "seed": 42,
+ "config": {
+  "arm": "A+labram",
+  "cardio": "raw_cnn",
+  "cardio_mode": "concat",
+  "temporal": "lstm",
+  "hidden": 256,
+  "drop": 0.3,
+  "lr": 0.0003,
+  "wd": 0.0001
+ },
+ "folds": [
+  {
+   "fold": 0,
+   "file": "mmnet_seed42_fold0.pt",
+   "acc": 0.7274580879021296,
+   "kappa": 0.6256339452994888,
+   "auc": 0.786844923436206,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 1,
+   "file": "mmnet_seed42_fold1.pt",
+   "acc": 0.7196639701306783,
+   "kappa": 0.6126481360459277,
+   "auc": 0.7639382238658489,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 2,
+   "file": "mmnet_seed42_fold2.pt",
+   "acc": 0.7379,
+   "kappa": 0.6240373397909211,
+   "auc": 0.7507392773223927,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 3,
+   "file": "mmnet_seed42_fold3.pt",
+   "acc": 0.7101359062143376,
+   "kappa": 0.5931981344375266,
+   "auc": 0.8499693043710086,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 4,
+   "file": "mmnet_seed42_fold4.pt",
+   "acc": 0.7564550682151313,
+   "kappa": 0.6595525192678886,
+   "auc": 0.8140852892636464,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 5,
+   "file": "mmnet_seed42_fold5.pt",
+   "acc": 0.7472829070150401,
+   "kappa": 0.637846337024774,
+   "auc": 0.7632106978867476,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 6,
+   "file": "mmnet_seed42_fold6.pt",
+   "acc": 0.7420996818663839,
+   "kappa": 0.636717766589562,
+   "auc": 0.8364320596871907,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 7,
+   "file": "mmnet_seed42_fold7.pt",
+   "acc": 0.7574273951262935,
+   "kappa": 0.6609737110591041,
+   "auc": 0.7730644006133811,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 8,
+   "file": "mmnet_seed42_fold8.pt",
+   "acc": 0.7177213899928666,
+   "kappa": 0.6157194847708085,
+   "auc": 0.7261472530540409,
+   "n_test_subjects": 10,
+   "mb": 10.57
+  },
+  {
+   "fold": 9,
+   "file": "mmnet_seed42_fold9.pt",
+   "acc": 0.737352905495572,
+   "kappa": 0.624343857711658,
+   "auc": 0.7597097487624147,
+   "n_test_subjects": 9,
+   "mb": 10.57
+  }
+ ],
+ "mean_acc": 0.7353497311958433,
+ "mean_auc": 0.7824141178262878,
+ "total_mb": 105.7
+}
