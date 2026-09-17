@@ -49,11 +49,28 @@ PIS = [1.0, 2.5, 8.0, 11.0]
 
 LOSS_LINE = "loss = ls if task == \"stage\" else la if task == \"apnea\" else ls + la"
 PI_EXPR = "pos_weight=torch.tensor([ac[0]/max(1,ac[1])]"
+LR_EXPR = "lr=1e-3"
+WD_EXPR = "weight_decay=1e-4"
+
+# Captured now, while train_fold is still the function mmnet_core defined. Inside a
+# sweep.config block it has been replaced by one compiled from a string, and a
+# string-compiled function has no source file for inspect to read -- which is what
+# broke the first attempt at this sweep. Patching this text means the lr and weight
+# decay have to be substituted here too, since sweep's own patch is bypassed.
+ORIG_SRC = textwrap.dedent(inspect.getsource(C.train_fold))
 
 
-def patched(lam=None, pi=None):
-    """train_fold with lambda and/or the positive weight substituted."""
-    src = textwrap.dedent(inspect.getsource(C.train_fold))
+def patched(lam=None, pi=None, lr=None, wd=None):
+    """train_fold with the loss constants, lr and weight decay substituted."""
+    src = ORIG_SRC
+    if lr is not None:
+        src, n = re.subn(re.escape(LR_EXPR), "lr=%g" % lr, src)
+        if n != 1:
+            raise RuntimeError("lr: replaced %d, expected 1" % n)
+    if wd is not None:
+        src, n = re.subn(re.escape(WD_EXPR), "weight_decay=%g" % wd, src)
+        if n != 1:
+            raise RuntimeError("weight_decay: replaced %d, expected 1" % n)
     if lam is not None:
         new = LOSS_LINE.replace("ls + la", "ls + %g*la" % lam)
         src, n = re.subn(re.escape(LOSS_LINE), new, src)
@@ -78,7 +95,10 @@ def run(key, lam, pi, res, path):
                       lr=FINAL["lr"], wd=FINAL["wd"], cardio=FINAL["cardio"],
                       cardio_mode=FINAL["cardio_mode"]):
         keep = C.train_fold
-        C.train_fold = patched(lam, pi)
+        # sweep.config has already baked lr and wd into its own copy; this replaces
+        # that copy, so both are substituted here as well and the configuration is
+        # the published one in every respect but the constant under test.
+        C.train_fold = patched(lam, pi, FINAL["lr"], FINAL["wd"])
         try:
             r = C.run_10fold(fusion="concat", temporal=FINAL["temporal"],
                              seed=int(key.split("|")[-1]))

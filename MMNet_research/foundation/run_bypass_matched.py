@@ -125,7 +125,7 @@ def main():
                          np.mean(res[key]["acc"]), res[key]["minutes"]), flush=True)
 
     # ---- compare against the two published arms ----------------------------
-    pub = json.load(open(os.path.join(OUT, "bypass_ablation.json")))
+    pub = json.load(open(os.path.join(OUT, "bypass_ablation.json")))["per_seed"]
 
     def fold_means(block, metric):
         rows = [block["seed|%d" % s][metric] for s in SEEDS]
