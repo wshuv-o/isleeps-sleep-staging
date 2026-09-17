@@ -70,7 +70,7 @@ OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final
 FS = 32                         # their sampling rate, kept
 SAMP = FS * 30                  # 960 samples per 30 s epoch
 SEQ = 20                        # epochs per segment; SEQ*SAMP must divide 768
-EPOCHS, BS, LR = 25, 4, 1e-3
+EPOCHS, BS, LR = 25, 8, 1e-3
 SEEDS = [42, 1, 7]
 DEV = C.DEV
 
@@ -315,32 +315,47 @@ def main():
     del probe
     t0 = time.time()
 
+    # Folds are checkpointed individually. The first run of this script lost three
+    # folds of a seed to a host-memory failure because only whole seeds were saved,
+    # and each fold is several minutes.
+    partial = res.setdefault("_partial", {})
     for seed in SEEDS:
         key = "seed|%d" % seed
         if key in res:
             print("[skip]", key, flush=True); continue
-        per_fold = []
         for fi, (tr_all, te) in enumerate(C.FOLDS):
+            pkey = "%d|%d" % (seed, fi)
+            if pkey in partial:
+                continue
             rng = np.random.RandomState(100 + fi)
             tr_all = list(tr_all); rng.shuffle(tr_all)
             nv = max(10, len(tr_all) // 9)
             va, tr = tr_all[:nv], tr_all[nv:]
             r = run_fold(data, tr, va, te, seed)
-            per_fold.append(r)
+            partial[pkey] = r
+            json.dump(res, open(path, "w"), indent=1)
             print("  seed %d fold %d  acc %.4f  kappa %.4f  auc %.4f  [%.1f min]"
                   % (seed, fi, r["acc"], r["kappa"], r["auc"], (time.time() - t0) / 60),
                   flush=True)
-        res[key] = {k: [f[k] for f in per_fold] for k in ("acc", "mf1", "kappa", "auc", "ap")}
+        folds = [partial["%d|%d" % (seed, fi)] for fi in range(len(C.FOLDS))]
+        res[key] = {k: [f[k] for f in folds] for k in ("acc", "mf1", "kappa", "auc", "ap")}
         json.dump(res, open(path, "w"), indent=1)
 
     # ---- against MM-Net on the same fold-means -----------------------------
     fm = json.load(open(os.path.join(OUT, "final_model.json")))
+    have = [s for s in SEEDS if "seed|%d" % s in res]
+    if not have:
+        print("\nno seed completed; nothing to compare")
+        return
+    if len(have) < len(SEEDS):
+        print("\ncomparing on %d of %d seeds (%s); the rest did not finish"
+              % (len(have), len(SEEDS), have))
     from scipy.stats import wilcoxon
     print("\n%-10s %10s %10s %10s %8s" % ("metric", "Huttunen", "MM-Net", "delta", "p"))
-    summary = {}
+    summary = {"seeds": have}
     for m in ("acc", "mf1", "kappa", "auc", "ap"):
-        h = np.mean(np.asarray([res["seed|%d" % s][m] for s in SEEDS], float), axis=0)
-        j = np.mean(np.asarray([fm["final|%d" % s][m] for s in SEEDS], float), axis=0)
+        h = np.mean(np.asarray([res["seed|%d" % s][m] for s in have], float), axis=0)
+        j = np.mean(np.asarray([fm["final|%d" % s][m] for s in have], float), axis=0)
         p = wilcoxon(j, h).pvalue
         summary[m] = dict(huttunen=round(float(h.mean()), 4), mmnet=round(float(j.mean()), 4),
                           delta=round(float((j - h).mean()), 4), p=round(float(p), 4),
