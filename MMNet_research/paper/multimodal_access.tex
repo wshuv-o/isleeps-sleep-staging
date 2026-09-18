@@ -140,12 +140,12 @@ airflow, thoracic and abdominal breathing effort, and peripheral oxygen saturati
 blood oxygen, and the arousal that rescues the breath. A model that reads only the EEG
 cannot see any of this, and so cannot report on the disorder that most damages a patient's
 sleep. We read the polysomnogram across both neural and cardiorespiratory physiology, and we
-ask a question that the staging race does not:
+ask a question that conventional staging evaluation does not:
 what does a model gain, and on which clinical task, from reading the whole recording. We
 state the answer here, since it governs how the results should be
 read. The cardiorespiratory channels do not improve sleep staging: the model reaches $0.741$
 accuracy from the neural stream alone and $\mmAcc$ with both, a difference well inside
-fold-to-fold variation. What they provide is a second clinical output, respiratory-event
+fold-to-fold variation. They provide a second clinical output, respiratory-event
 detection at $\mmAuc$ AUC, from the same forward pass and without reducing staging accuracy.
 The two physiologies therefore carry complementary information about different clinical
 questions, and the experiments below are designed to test that separation.
@@ -302,7 +302,7 @@ and foundation models reach a ceiling, while performance on focal brain injury i
 unmeasured. Contributions~\ref{c:bench} and~\ref{c:ceiling} benchmark strong deep architectures,
 and classical gradient-boosting
 pipelines~\cite{chen2016xgboost,ke2017lightgbm,prokhorenkova2018catboost} on a
-subacute-stroke cohort, show that the healthy-built networks collapse, and establish by reimplementation that the collapse is a property of the
+subacute-stroke cohort, show that the healthy-built networks degrade to near-chance accuracy, and establish by reimplementation that this degradation is a property of the
 cohort.
 \emph{(iii) Attribution and reliability.} Interpretability is usually post-hoc and
 unfalsifiable, and predictive uncertainty is seldom
@@ -594,7 +594,7 @@ discriminative score computed from a bidirectional window; inserting it in the e
 applies the stage prior a second time, once through $A^{\mathrm H}$ and once through the
 score itself. Dividing by the prior would not repair this, because the class weights and the
 recurrent context have already displaced the score from any posterior it might have been.
-What the pass buys is a transition prior on the output sequence, and that is what we claim
+The pass supplies a transition prior on the output sequence, which is the property we claim
 for it. The respiratory
 head is left unsmoothed. Optimization uses AdamW with cosine annealing and early stopping on a
 held-out set of patients.
@@ -857,13 +857,15 @@ and $0.72$ accuracy, $12$ to $20$ points below the same architectures' published
 healthy sleepers. The feature-based model reaches $\mmAcc$, above every deep architecture we
 retrained here, which matches the concurrent finding that depth alone does not help on this
 cohort~\cite{bose2026gap}: with under a hundred patients a convolutional network cannot
-rediscover what decades of sleep science already encode in the features. The corpus paper's own recurrent
+recover the physiological structure the engineered descriptors encode explicitly, which
+suggests that those descriptors supply useful inductive structure at this sample size. The corpus paper's own recurrent
 baseline, reimplemented here and run on the same folds, reaches $0.720 \pm 0.032$ over
-thirty fold-values. Staging accuracy is nonetheless capped: nothing we have run on this
-corpus exceeds $0.75$. Section~\ref{sec:curve} shows why: the
-staging learning curve has flattened, which points at the cohort.
-We therefore do not position the model as a staging leader. What sets it apart is
-a second output. Of the models that stage competitively here it is the only one that also
+thirty fold-values. Staging performance remains within a narrow range across the evaluated
+methods: nothing we have run on this
+corpus exceeds $0.75$. Section~\ref{sec:curve} reports evidence consistent with this
+observation, in that the staging learning curve has flattened.
+We therefore do not position the model as a staging leader. Its principal distinction is
+the additional respiratory output. Of the models that stage competitively here it is the only one that also
 detects respiratory events; the raw multimodal CNN produces both outputs but stages at
 $0.654$.
 
@@ -884,7 +886,7 @@ thermocouple, so it reads four of the five signals of their fullest configuratio
 respiratory output is a three-way decision every second, which this corpus cannot supply and
 which we replaced with the same per-epoch binary label used throughout; and a single EEG
 derivation at their $32$\,Hz is a thin neural input for staging, which is most of why the
-staging gap is wider than the respiratory one. What the row supports is that a joint
+staging gap is wider than the respiratory one. The row supports the conclusion that a joint
 architecture tuned on a general sleep-apnea population does not transfer to a stroke cohort
 of this size, which is the same conclusion the rest of Table~\ref{tab:bench} reaches for
 single-task architectures.
@@ -986,7 +988,7 @@ The proposed model stages sleep at $\mmAcc$ accuracy ($\kappa$ $\mmK$) and detec
 events at $\mmAuc$ AUC ($\mmAp$ average precision). To test the paper's central claim, that each
 modality carries the task its physiology is closest to, we remove each modality in turn and keep the
 rest, on the same folds, with three seeds giving thirty fold-values per row
-(Table~\ref{tab:ablate}). The separation between streams is clean, but within the
+(Table~\ref{tab:ablate}). The results show a task-specific separation between streams. Within the
 cardiorespiratory stream the pattern is not the one the engineered features gave.
 
 Removing the whole cardiorespiratory stream drops respiratory AUC from $\mmAuc$ to $0.654$,
@@ -1010,9 +1012,10 @@ of an obstructive event as it happens, whereas desaturation is a lagged conseque
 
 \subsection{What the Joint Objective Contributes}
 \label{sec:joint}
-The ablation grid asks which physiology carries which output. A different question is
-whether the two outputs should share a network at all, and nothing so far answers it: a
-model that produces two outputs has demonstrated integration, not benefit. The control is a
+The ablation grid establishes which physiology carries which output. It does not establish
+whether the two outputs should share a network at all: a
+model producing two outputs demonstrates integration, and integration alone does not
+demonstrate benefit. The control is a
 pair of single-task models, and it has to be matched properly or it measures the wrong
 thing. Ours changes one line. The architecture, the ten folds, the three seeds, the
 optimiser, the budget and the cardiorespiratory bypass are those of the full model; only the
@@ -1259,8 +1262,8 @@ sleep-disordered breathing worsens: accuracy falls from $0.769$ in patients with
 $0.719$ in the severe group (Table~\ref{tab:severity}). The pathology that motivates the second output also makes the first
 harder, which is the clinical reality of this cohort.
 
-The association is real but modest, and it is worth saying why it is
-so. Three mechanisms plausibly cap it, and each is a property of the formulation rather
+The association is statistically significant but modest in magnitude.
+Three mechanisms plausibly limit it, and each is a property of the formulation rather
 than of the model. First, mean per-epoch probability is a poor estimator of an hourly event
 rate: a $30$-second epoch holding one hypopnea and one holding three both contribute a
 single positive, so the aggregate compresses exactly the variation the index is built from.
@@ -1458,14 +1461,14 @@ respiratory AUC for what both call an engineered-feature reference ($0.698$ agai
 and why the adopted cardiorespiratory row reads $0.740$ staging accuracy against the headline
 $\mmAcc$, which adds the pretrained embedding on top of it. The upper block replaces the $14$ engineered cardiorespiratory features
 with progressively richer representations of the same underlying signal. Every step is
-significant, and the ordering is instructive. A \emph{random} nonlinear expansion of the same
-$14$ numbers recovers $0.018$ AUC: that gain needs no new measurement at all, only more
+significant, and the ordering identifies where the limitation lies. A \emph{random} nonlinear expansion of the same
+$14$ numbers recovers $0.018$ AUC, which is obtained without additional input information and with only more
 capacity to read what was already computed, which says the summary features leave nonlinear
 structure unextracted. A random linear projection of the raw waveform adds a further $0.016$,
 so part of what the features discard is recoverable without learning anything. The learned
 convolutional encoder reaches $0.782$, $0.084$ above the engineered features.
 
-What this establishes is that the representation of the cardiorespiratory stream is what limited the respiratory read-out, with the detector above it held fixed throughout. We therefore claim the
+These results identify the representation of the cardiorespiratory stream, rather than the detector above it, as the factor limiting the respiratory read-out; the detector is held fixed throughout. We therefore claim the
 change of representation itself, and make no claim for the encoder that implements it.
 
 On the neural side a pretrained encoder does not replace expert features, but does
@@ -1476,7 +1479,7 @@ healthy scalp EEG does not by itself substitute for physiology chosen for this t
 Concatenated with the features it adds $+0.008$ accuracy (Holm $p=0.006$), and a second
 pretrained encoder on top of the first adds nothing further ($-0.004$, $p=0.56$).
 
-The reading we take is narrow, because it is what the numbers support: expert physiology and
+These results support a narrow interpretation: expert physiology and
 self-supervised pretraining encode partly different information, so their union beats either
 alone; but the complementarity saturates after one pretrained encoder, so this is not a
 general argument for stacking foundation models.
@@ -1714,9 +1717,10 @@ Raw multimodal CNN                        & 14\,ch      & 0.95\,M     & stage + 
 
 \section{Discussion}
 The result is a single model that reads the whole sleeping body and speaks to two clinical
-questions at once, in the population where both matter. The learned per-epoch embedding separates cleanly by sleep stage while the
-respiratory structure stays diffuse, mirroring the strong staging and the modest
-respiratory AUC.
+questions at once, in a population in which both are clinically relevant. The learned
+per-epoch embedding separates by sleep stage while the
+respiratory structure remains diffuse, consistent with the higher staging accuracy and the
+lower respiratory AUC.
 
  Staging accuracy on this cohort saturates
 below $0.75$ for every model family we evaluated, and the proposed model reaches $\mmAcc$ while
@@ -1726,21 +1730,22 @@ rests on respiratory effort, desaturation, and arousal, the same signs a physici
 bedside.
 
 The $\mmAcc$ staging figure should be judged on this cohort, where healthy-sleep accuracy does not transfer. Deep
-architectures developed on healthy sleepers collapse here: DeepSleepNet reaches $0.615$,
+architectures developed on healthy cohorts show substantial performance degradation here:
+DeepSleepNet reaches $0.615$,
 CNN-ResNet18 $0.617$, and a network pretrained on the healthy Sleep-EDF corpus and applied to
 this cohort $0.623$, each roughly fifteen to twenty points below its healthy accuracy of about
 $0.85$. The injured brain distorts the very micro-events, spindles, slow waves, and atonia, that
-those models learned to read. What holds up is physiologically grounded modeling on engineered
-features, at $0.72$ to $0.75$, which matches the published baseline on this corpus. The lesson is
-that healthy-sleep deep learning fails on the injured brain, and this cohort requires
-cohort-specific, physiologically grounded, multimodal modeling.
+those models learned to read. Physiologically grounded modelling on engineered
+features retains accuracy of $0.72$ to $0.75$, matching the published baseline on this corpus.
+Taken together, these observations indicate that architectures developed on healthy sleep do
+not transfer to this population, and that cohort-specific physiologically grounded multimodal
+modelling is required.
 
-The study also draws a clean physiological line. The cortical channels carry sleep staging, and
-the cardiorespiratory channels carry breathing, and the model places each where it belongs
-instead of blurring them. That the neural and multimodal variants stage alike is the expected
-outcome: the second modality adds a new capability while leaving staging unchanged. We view this separation as a strength for
-clinical use, because a reader can trust that the respiratory output reflects breathing and the
-staging output reflects the brain.
+The modality-ablation results demonstrate a task-specific dependence on neural and
+cardiorespiratory information: the cortical channels support sleep staging and the
+cardiorespiratory channels support respiratory-event detection. That the neural and multimodal variants stage alike is the expected
+outcome, since the second modality adds a capability while leaving staging unchanged. This separation is favourable for
+clinical use, since each output can be attributed to the physiology it derives from.
 
 Separating the modalities is not the same as separating the tasks, and the two questions
 come apart. Section~\ref{sec:joint} trains each task alone and finds the joint model ahead
@@ -1764,16 +1769,17 @@ unchanged to the held-out ones moves accuracy by $+0.003$, $\kappa$ by $+0.004$,
 respiratory AUC by $-0.000$, none of which is distinguishable from zero when paired
 across folds (accuracy $p=0.28$, AUC $p=1.00$). The per-recording statistics are a
 convenience, and the transductive step is not what the numbers rest
-on. The whole-night decoding is the real obstacle to bedside use, and it is untouched by
-this.
+on. Whole-night decoding therefore remains the primary constraint on real-time bedside
+deployment, and is unaffected by this substitution.
 
-A prediction of ours that failed. The montage account of N3 transfer described in
+One hypothesis evaluated in the external analysis was not supported. The montage account of
+N3 transfer described in
 Section~\ref{sec:external} does not survive retesting under the final model, and we report
 it as falsified. Two cautions follow for every other per-class
 figure in that section: each rests on a single external pass with no fold structure, so
 none carries an interval, and ISRUC contributes eight subjects, at which size a per-class
-rate is an estimate with a width we cannot quote. Per-class transfer should be read as
-direction, not magnitude.
+rate is an estimate whose width we cannot quote. The per-class transfer results are therefore
+interpreted qualitatively rather than as precise estimates of effect magnitude.
 
 The evidence comes from a single center and $99$ patients. Section~\ref{sec:external} shows both heads
 transfer to independent corpora without tuning, but neither external corpus is a stroke
@@ -1807,12 +1813,13 @@ larger opportunity, and one the cardiorespiratory signal is well placed to serve
 \section{Conclusion}
 We built a model that reads the neural and cardiorespiratory channels of a stroke patient's
 polysomnogram and, from one pass,
-stages their sleep and detects their respiratory events. Deep networks built for healthy sleep
-collapse to $0.61$--$0.72$ accuracy on this cohort, and its $\mmAcc$ sits at the top of the
-band every model family we ran reaches here. The contribution is the second output, a respiratory
-read-out at $\mmAuc$ AUC that survives removal of the airflow channel, showing it reads the
-underlying physiology. Reading the whole recording lets one model report on breathing as well
-as on sleep, in the population where breathing matters most. Code and features are released.
+stages their sleep and detects their respiratory events. Deep networks developed on
+healthy-sleep cohorts achieved $0.61$--$0.72$ accuracy on iSLEEPS, whereas MM-Net achieved
+$\mmAcc$, the highest of the model families evaluated here. Its principal contribution is the
+concurrent respiratory read-out at $\mmAuc$ AUC, which is retained after removal of the
+airflow channel and therefore does not depend on the signal the events were scored from.
+Reading the full recording allows a single model to report on breathing and on sleep in a
+population in which sleep-disordered breathing is prevalent. Code and features are released.
 
 %=====================================================================
 \appendices
