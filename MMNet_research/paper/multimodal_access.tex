@@ -212,9 +212,9 @@ moves respiratory AUC. That double dissociation is a falsifiable account of what
 modality contributes (Table~\ref{tab:ablate}).
 \end{enumerate}
 
-Together, these results reframe the problem on this cohort: the useful gains come from reading
-the whole sleeping body and attributing each output to the physiology that produces it;
-deeper single-channel staging does not help on this cohort. The remainder of the paper develops the model
+Together, these results reframe the problem on this cohort: the useful gains arise from
+integrating neural and cardiorespiratory physiology and attributing each output to the
+modality that supports it, while deeper single-channel staging does not help here. The remainder of the paper develops the model
 (Section~\ref{sec:method}) and tests each claim in turn.
 
 %=====================================================================
@@ -470,12 +470,14 @@ linear layer, LayerNorm, GELU and dropout to the same
 $64$ dimensions the feature MLP produced, so the encoder is a drop-in replacement and every
 other part of the network is unchanged. The branch holds $155{,}232$ trainable parameters,
 of which the projection LayerNorm supplies $128$. Section~\ref{sec:repr} reports what that substitution
-is worth. The effect is the largest of any representation change we measure, and
+is worth. Section~\ref{sec:repr} quantifies the effect of this substitution, which is the
+largest of any representation change we measure, and
 Sections~\ref{sec:repr} and~\ref{sec:nested} together show that it belongs to the change of
 representation: random encoders of comparable capacity
-over the same raw signal recover much of it. We use this one because it is small, trained
-end-to-end with the rest of the network, and adds no external dependency, and we claim the
-representation.
+over the same raw signal recover much of it. This encoder is used because it is small,
+trained end-to-end with the rest of the network, and adds no external dependency. We
+therefore attribute the observed improvement to the representation rather than to the
+specific encoder architecture.
 
 \subsection{Two-Stream Encoders}
 The neural stream is a two-layer perceptron with LayerNorm; the
@@ -546,7 +548,7 @@ else, and the respiratory head is the only output that changes.
 Capacity is not what produces that gain. The head reads
 $2\,\text{hidden}+d_{\mathrm{card}}$ inputs whether or not the bypass is used, since the
 ablation zeroes the cardiorespiratory block instead of deleting it, so both arms hold the
-same $2{,}764{,}774$ parameters. A third arm tests the sharper version of the question by
+same $2{,}764{,}774$ parameters. A third configuration provides a stricter control by
 feeding the head the same embeddings permuted across the epochs of the window, which keeps
 capacity, statistics and gradient path and destroys only the alignment to the epoch. It
 reaches $0.774$ AUC, at or just below the zeroed arm's $0.776$, indicating that a misaligned
@@ -589,7 +591,7 @@ and prior are counted from the training labels~\cite{chen2024hmm},
 recovered by back-tracking, which restores the natural persistence of sleep.
 
 This is a transition-regularised discriminative decoder and not a generative hidden Markov
-model, and the distinction is worth keeping. A generative emission term is
+model. A generative emission term is
 $\log P(\mathbf{x}_t\mid s_t=j)$, whereas $\hat y^{\mathrm{stg}}_t(j)$ is a class-weighted
 discriminative score computed from a bidirectional window; inserting it in the emission slot
 applies the stage prior a second time, once through $A^{\mathrm H}$ and once through the
@@ -833,9 +835,10 @@ than the rest. A third is weaker still. U-Time publishes macro-F1 and not accura
 row is the only one compared in macro-F1, and there our reimplementation sits $0.130$ below
 the published figure. Macro-F1 is governed by N1, the stage whose prevalence moves most
 between Sleep-EDF subsets, and the published figure comes from the $39$-recording subset
-under twenty-fold cross-validation against our $40$ recordings under ten, so the gap is not
-readable as a failure of the reimplementation; it is readable as a comparison we cannot make
-cleanly, and we mark it as such.
+under twenty-fold cross-validation against our $40$ recordings under ten. The discrepancy
+cannot be attributed reliably to reimplementation error, because the evaluation protocols
+differ substantially, and we therefore do not treat this row as a direct quantitative
+comparison.
 Table~\ref{tab:bench} is organised in three blocks: architectures retrained on this
 cohort, architectures trained on healthy sleep and applied to it zero-shot, and the
 proposed model, with a final row cross-validating the proposed architecture on healthy
@@ -1458,8 +1461,8 @@ assumed. Each family below holds every other hyperparameter fixed and varies one
 the same three seeds and ten patient-independent folds, with Holm correction within the
 family and every test on the ten fold-means.
 
-The cardiorespiratory features are the bottleneck, and part of the gap needs no new
-information. Each block of Table~\ref{tab:repr} holds the other stream at its baseline, so no single
+The engineered cardiorespiratory representation appears to be the principal limitation, and
+part of the gap can be recovered without additional input information. Each block of Table~\ref{tab:repr} holds the other stream at its baseline, so no single
 row there is the full model, and the two baselines differ: the cardiorespiratory block runs
 the $188$ neural descriptors without the pretrained embedding, while the neural block runs the
 $14$ engineered cardiorespiratory descriptors. That is why the two blocks report different
@@ -1470,12 +1473,13 @@ with progressively richer representations of the same underlying signal. Every s
 significant, and the ordering identifies where the limitation lies. A \emph{random} nonlinear expansion of the same
 $14$ numbers recovers $0.018$ AUC, which is obtained without additional input information and with only more
 capacity to read what was already computed, which says the summary features leave nonlinear
-structure unextracted. A random linear projection of the raw waveform adds a further $0.016$,
+structure unrepresented. A random linear projection of the raw waveform adds a further $0.016$,
 so part of what the features discard is recoverable without learning anything. The learned
 convolutional encoder reaches $0.782$, $0.084$ above the engineered features.
 
-These results identify the representation of the cardiorespiratory stream, rather than the detector above it, as the factor limiting the respiratory read-out; the detector is held fixed throughout. We therefore claim the
-change of representation itself, and make no claim for the encoder that implements it.
+These results identify the representation of the cardiorespiratory stream, rather than the detector above it, as the factor limiting the respiratory read-out; the detector is held fixed throughout. These results
+attribute the improvement to the change in representation rather than to the specific encoder
+architecture.
 
 On the neural side a pretrained encoder does not replace expert features, but does
 add to them. The lower block of Table~\ref{tab:repr} varies the neural representation with the
@@ -1722,8 +1726,9 @@ Raw multimodal CNN                        & 14\,ch      & 0.95\,M     & stage + 
 % =========================================================================
 
 \section{Discussion}
-The result is a single model that reads the whole sleeping body and speaks to two clinical
-questions at once, in a population in which both are clinically relevant. The learned
+The result is a single model that reads both the neural and the cardiorespiratory channels of
+the polysomnogram and addresses two clinical
+questions at once, in a population in which both are relevant. The learned
 per-epoch embedding separates by sleep stage while the
 respiratory structure remains diffuse, consistent with the higher staging accuracy and the
 lower respiratory AUC.
@@ -1753,12 +1758,11 @@ cardiorespiratory channels support respiratory-event detection. That the neural 
 outcome, since the second modality adds a capability while leaving staging unchanged. This separation is favourable for
 clinical use, since each output can be attributed to the physiology it derives from.
 
-Separating the modalities is not the same as separating the tasks, and the two questions
-come apart. Section~\ref{sec:joint} trains each task alone and finds the joint model ahead
-of both, slightly and consistently. So the physiology divides while the objective does not,
-which is the arrangement a shared temporal decoder would predict: the streams carry
-different information, and the recurrent state that reads them benefits from being asked two
-questions about the same ten minutes of sleep.
+Modality-specific contributions do not imply that the tasks should be trained independently.
+Section~\ref{sec:joint} trains each task alone and finds the joint model ahead of both,
+slightly and consistently. This is the behaviour a shared temporal decoder would predict: the
+streams carry different information, and the recurrent state that reads them benefits from
+being trained on two objectives over the same ten-minute window.
 
 \subsection{Limitations}
 \label{sec:limitations}
@@ -1768,14 +1772,14 @@ so no epoch can be scored until the recording ends, which rules out the real-tim
 bedside monitor would need. And features are standardised per patient, which at test time uses
 that night's own statistics; the model never sees another patient's labels, so this is not
 label leakage, but it is a transductive step and a strictly causal deployment would need
-running or population statistics instead. We have measured what that substitution costs,
-and within the resolution of these folds it costs nothing. Repeating the ten folds with
+running or population statistics instead. We quantified the effect of this substitution and
+observed no measurable performance degradation within the resolution of the present
+evaluation. Repeating the ten folds with
 the standardisation statistics pooled over each fold's training patients and applied
 unchanged to the held-out ones moves accuracy by $+0.003$, $\kappa$ by $+0.004$, and
 respiratory AUC by $-0.000$, none of which is distinguishable from zero when paired
-across folds (accuracy $p=0.28$, AUC $p=1.00$). The per-recording statistics are a
-convenience, and the transductive step is not what the numbers rest
-on. Whole-night decoding therefore remains the primary constraint on real-time bedside
+across folds (accuracy $p=0.28$, AUC $p=1.00$). These results indicate that the reported
+performance is not dependent on per-recording standardisation. Whole-night decoding therefore remains the primary constraint on real-time bedside
 deployment, and is unaffected by this substitution.
 
 One hypothesis evaluated in the external analysis was not supported. The montage account of
@@ -1809,11 +1813,10 @@ the raw signal, a deliberate trade for data
 efficiency on a small cohort.
 
 \subsection{Future Work}
-Two directions follow naturally. Event-level metrics, such as sensitivity per event and false
-alarms per hour, would sit beside the epoch-level AUC and speak more directly to a sleep
-technician, and finer modeling of the breathing waveforms is likely to raise the respiratory
-number further. Linking the multimodal representation to stroke severity and recovery is the
-larger opportunity, and one the cardiorespiratory signal is well placed to serve.
+Future evaluation should include event-level metrics, including event sensitivity and false
+alarms per hour, which are more directly relevant to clinical scoring than the epoch-level
+AUC reported here. A further direction is to evaluate whether the multimodal representation
+is associated with stroke severity and recovery outcomes.
 
 %=====================================================================
 \section{Conclusion}
