@@ -142,14 +142,14 @@ cannot see any of this, and so cannot report on the disorder that most damages a
 sleep. We read the polysomnogram across both neural and cardiorespiratory physiology, and we
 ask a question that the staging race does not:
 what does a model gain, and on which clinical task, when it reads the whole recording rather
-than the brain alone. The answer this cohort gives is worth stating at the outset, because it
-is not the expected one. Reading the cardiorespiratory channels does not make sleep staging
-more accurate: the model stages at $0.741$ from the neural stream alone and $\mmAcc$ with
-both, a difference well inside fold-to-fold noise. What those channels buy is a second
-clinical output, respiratory-event detection at $\mmAuc$ AUC, obtained from the same forward
-pass at no cost to the first. The two physiologies carry complementary information about
-different questions instead of redundant information about one, and the experiments below are
-arranged to test exactly that.
+than the brain alone. We state the answer here, since it governs how the results should be
+read. The cardiorespiratory channels do not improve sleep staging: the model reaches $0.741$
+accuracy from the neural stream alone and $\mmAcc$ with both, a difference well inside
+fold-to-fold variation. What they provide is a second clinical output, respiratory-event
+detection at $\mmAuc$ AUC, from the same forward pass and without reducing staging accuracy.
+The two physiologies therefore carry complementary information about different clinical
+questions rather than redundant information about one, and the experiments below are designed
+to test that separation.
 
 We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 and described by its
 authors as the first Asian and one of the largest stroke-specific sleep databases. The cohort is well matched to the question.
@@ -539,10 +539,10 @@ same folds as every other figure here. Respiratory AUC falls from $\mmAuc$ to
 $0.776$ (Wilcoxon on ten fold-means, $p=0.049$) and average precision from $\mmAp$ to
 $0.411$ ($p=0.28$), while staging is untouched at $0.739$ accuracy ($p=0.92$) and $\kappa$
 $0.634$ ($p=0.92$). The gain
-is small, about a sixth of a fold standard deviation, and the $p$-value is marginal enough
-that we would not rest an argument on it alone. What makes it worth reporting is where it
-lands: the connection feeds the respiratory head and nothing
-else, and the respiratory head is the only output that moves.
+is small, about a sixth of a fold standard deviation, and the $p$-value is marginal, so it
+does not support an argument on its own. Its relevance lies in where the effect appears: the
+connection feeds the respiratory head and nothing
+else, and the respiratory head is the only output that changes.
 
 Capacity is not what produces that gain. The head reads
 $2\,\text{hidden}+d_{\mathrm{card}}$ inputs whether or not the bypass is used, since the
@@ -550,9 +550,9 @@ ablation zeroes the cardiorespiratory block instead of deleting it, so both arms
 same $2{,}764{,}774$ parameters. A third arm tests the sharper version of the question by
 feeding the head the same embeddings permuted across the epochs of the window, which keeps
 capacity, statistics and gradient path and destroys only the alignment to the epoch. It
-reaches $0.774$ AUC, at or just below the zeroed arm's $0.776$, so a misaligned
-cardiorespiratory signal is worth no more than none at all. The bypass is a supporting design
-choice on this evidence rather than a load-bearing one, and we treat it as such.
+reaches $0.774$ AUC, at or just below the zeroed arm's $0.776$, indicating that a misaligned
+cardiorespiratory signal confers no advantage over its absence. On this evidence the bypass
+is a supporting design choice rather than a primary contribution.
 
 The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
 $200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
@@ -622,7 +622,7 @@ $[0.355,\ 0.480]$. These condition on the fitted procedure: they carry the varia
 which patients were recorded and not retraining variability, and they say nothing about the
 selection optimism measured below. The
 folds are fixed across all configurations so that comparisons are paired. Fixing them has a
-cost worth quantifying: the reported configuration was chosen by comparing forty-nine
+cost that we quantify below: the reported configuration was chosen by comparing forty-nine
 candidates on these same ten folds, which is the standard route by which an in-domain figure
 acquires selection optimism. We therefore measured how much it acquired, by repeating the
 selection with the test patients quarantined (Section~\ref{sec:nested}): five outer
@@ -645,7 +645,7 @@ fold, which is a property of a cohort this size. Every headline figure in this p
 folds by three seeds. Paired tests, however, are computed on the ten fold-means: the three
 seeds within a fold train and test on the same patients, so they are three re-rolls of one
 experiment and not three independent observations, and treating them as thirty would triple
-the effective sample and shrink every $p$. One consequence is worth stating plainly. With
+the effective sample and shrink every $p$. One consequence follows directly. With
 ten paired folds the smallest two-sided Wilcoxon $p$ is $2/2^{10}=0.002$, reached when every
 fold moves the same way, so after Holm correction across a family of nine the floor is
 $0.018$. Several effects below sit at that floor and differ in size by more than an order of
@@ -939,16 +939,15 @@ accuracy is $0.741$ without the stream and $\mmAcc$ with it; per stage, N1 impro
 $0.019$ (Wilcoxon $p=0.11$ on ten fold-means) and no stage changes significantly
 ($p \geq 0.15$; REM shifts by $0.01$ in Table~\ref{tab:perclass}, well inside that).
 
-This is the result the paper is organised around, so it should be read for what it is rather
-than as a disappointment. Breathing is not what sleep stages are scored from, and a
-cardiorespiratory stream that improved staging would be the surprising outcome, not this one.
-What matters clinically is the pair of numbers together: the second modality delivers
-respiratory-event detection at $\mmAuc$ AUC while leaving staging exactly where it was. A
-model that bought the second output by giving up accuracy on the first would be a poor
-trade for a reader who needs both, and the ablation grid of Section~\ref{sec:ablate} shows
-the same separation from the other side, each stream serving the output its physiology is
-closest to. That the small staging gain
-lands on N1 is consistent with its physiology: it is the transitional stage, the hardest
+This is consistent with the physiology. Sleep stages are scored from cortical, ocular and
+muscular activity, none of which the cardiorespiratory channels observe, so the absence of a
+staging gain is the expected result. The clinically relevant quantity is the pair taken
+together: the second stream yields respiratory-event detection at $\mmAuc$ AUC while staging
+is unchanged, so the second output is obtained without a reduction in the first. The
+modality-ablation grid of Section~\ref{sec:ablate} shows the same separation by the
+complementary experiment, each stream supporting the output its physiology is closest to.
+That the small staging gain
+lands on N1 is also consistent with its physiology: it is the transitional stage, the hardest
 to score, and the one most often coincident with a respiratory event.
 
 \begin{figure}[t]
@@ -1330,8 +1329,8 @@ directly. Every channel's drop is distinguishable from zero (one-sample on ten p
 Holm across the eight channels): effort $0.071$ ($p<10^{-4}$), airflow $0.027$ ($p=0.0005$),
 SpO$_2$ $0.016$ ($p=0.0002$), pulse/HRV $0.012$ ($p=0.004$), and the remainder below $0.006$.
 Significance here is not importance. The magnitudes span a factor of $32$, and what the test
-establishes is that the \emph{ordering} is real. The ordering is the
-result worth having: the three channels the model leans on most, effort, airflow and SpO$_2$,
+establishes is that the \emph{ordering} is real. That ordering is the substantive
+result: the three channels the model relies on most, effort, airflow and SpO$_2$,
 are exactly the three the AASM definition of a respiratory event is written in, and they are
 one to two orders above the cardiac and muscle channels.
 
@@ -1519,22 +1518,23 @@ the task balance $\lambda=1$ and the positive weight $\pi=n_-/n_+$, which is $5.
 corpus. Equal coefficients do not make equal influence, since the two terms differ in scale
 and curvature, so $\lambda=1$ is a claim about arithmetic and not about balance. We therefore
 swept each with everything else at the published setting, three seeds by ten folds per value,
-and read both heads at every point, because the failure worth finding is not a lower number
-on one head but a trade between them.
+and evaluate both heads at every point, since the relevant outcome is not a lower value on
+one head but a trade-off between them.
 
-There is no trade, and there is very little effect. Across $\lambda$ from $0.25$ to $4$
+No trade-off is observed, and the effect of either constant is small. Across $\lambda$ from
+$0.25$ to $4$
 staging accuracy spans $0.003$ and respiratory AUC $0.018$, and across $\pi$ from $1$ to $11$
 they span $0.003$ and $0.007$; the fold-to-fold standard deviations are $0.019$ and $0.038$.
-Both heads also peak at the same $\lambda$, which is the specific thing a compromise would
-have ruled out: if $\lambda=1$ were balancing one task against the other, the two curves
+Both heads attain their maximum at the same $\lambda$, which is inconsistent with a
+compromise setting: were $\lambda=1$ balancing one task against the other, the two curves
 would peak on opposite sides of it.
 
-Neither published value is quite the best of those tested. Staging is highest at $\lambda=2$
+Neither published value is the maximum of those tested. Staging is highest at $\lambda=2$
 ($0.7403$) and at $\pi=11$ ($0.7422$), and respiratory AUC at $\lambda=2$ ($0.7840$) and
-$\pi=8$ ($0.7846$). Every one of those margins is under a fifth of a fold standard deviation,
-so we have not found better settings, only confirmed that the objective is insensitive to
-both constants over the range a reader would ask about. That insensitivity is the result:
-fixing them by fiat costs nothing measurable here.
+$\pi=8$ ($0.7846$). All of these margins are below a fifth of a fold standard deviation, so
+the sweep does not identify better settings; it establishes that the objective is insensitive
+to both constants across the range examined, and that fixing them a priori has no measurable
+cost on this corpus.
 
 \subsection{Calibration and Selective Prediction}
 A clinical reader needs to know not only how often the model is right but whether it knows when
