@@ -170,12 +170,12 @@ contributions are:
 \item \label{c:model}We introduce MM-Net, a two-stream multi-task model that stages sleep at $\mmAcc$
 accuracy ($\kappa$ $\mmK$) and, from the same forward pass, detects respiratory events at
 $\mmAuc$ AUC, with a direct cardiorespiratory path to the respiratory head so
-cardiorespiratory cues reach the decision undiminished by a fusion trained mostly
-for staging; removing that path costs $0.006$ respiratory AUC and leaves staging unchanged
+a direct cardiorespiratory path to the respiratory head avoids attenuation of
+task-specific information during fusion; removing that path costs $0.006$ respiratory AUC and leaves staging unchanged
 (Section~\ref{sec:method}). Against matched single-task models differing only in the
 surviving loss term, the joint objective is ahead on both outputs, by $0.006$ staging
 accuracy in nine folds of ten and $0.007$ respiratory AUC in seven, so the second task is
-obtained without spending the first (Section~\ref{sec:joint}). The ablation identifies respiratory effort, not oxygen
+obtained without degrading performance on the first (Section~\ref{sec:joint}). The ablation identifies respiratory effort, not oxygen
 saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
 \item \label{c:bench}We benchmark the model against seventeen baseline configurations, those we ran ourselves
@@ -193,9 +193,9 @@ reimplementations whose papers report an accuracy
 recover their published Sleep-EDF
 figure to within $0.04$, every retrained baseline lands between $0.613$ and $0.720$
 here, and the proposed model loses $0.115$ accuracy crossing from healthy sleep to stroke
-against $0.140$ to $0.148$ for those baselines (Section~\ref{sec:domaingap}). A better model
-may yet do better; what these results rule out is that the implementations are what hold the
-numbers down.
+against $0.140$ to $0.148$ for those baselines (Section~\ref{sec:domaingap}). These results
+provide evidence that the observed performance is not primarily attributable to
+implementation differences.
 
 \item \label{c:resp}We show the respiratory read-out is physiologically grounded: removing the airflow
 channel from which the events were scored leaves detection at $\noflowAuc$ AUC, because
@@ -302,8 +302,9 @@ and foundation models reach a ceiling, while performance on focal brain injury i
 unmeasured. Contributions~\ref{c:bench} and~\ref{c:ceiling} benchmark strong deep architectures,
 and classical gradient-boosting
 pipelines~\cite{chen2016xgboost,ke2017lightgbm,prokhorenkova2018catboost} on a
-subacute-stroke cohort, show that the healthy-built networks degrade to near-chance accuracy, and establish by reimplementation that this degradation is a property of the
-cohort.
+subacute-stroke cohort, show substantial degradation of architectures developed on
+healthy-sleep cohorts, and provide evidence by reimplementation that this degradation is
+associated with the cohort rather than with implementation differences.
 \emph{(iii) Attribution and reliability.} Interpretability is usually post-hoc and
 unfalsifiable, and predictive uncertainty is seldom
 modeled~\cite{angelopoulos2023conformal}.
@@ -469,10 +470,10 @@ after the first two. Mean and max pooling over time are concatenated and project
 linear layer, LayerNorm, GELU and dropout to the same
 $64$ dimensions the feature MLP produced, so the encoder is a drop-in replacement and every
 other part of the network is unchanged. The branch holds $155{,}232$ trainable parameters,
-of which the projection LayerNorm supplies $128$. Section~\ref{sec:repr} reports what that substitution
-is worth. Section~\ref{sec:repr} quantifies the effect of this substitution, which is the
+of which the projection LayerNorm supplies $128$. Section~\ref{sec:repr} quantifies the
+effect of this substitution, which is the
 largest of any representation change we measure, and
-Sections~\ref{sec:repr} and~\ref{sec:nested} together show that it belongs to the change of
+Section~\ref{sec:nested} shows that the effect belongs to the change of
 representation: random encoders of comparable capacity
 over the same raw signal recover much of it. This encoder is used because it is small,
 trained end-to-end with the rest of the network, and adds no external dependency. We
@@ -687,8 +688,9 @@ where a random expansion of the same fourteen numbers recovers a large part of t
 learned encoder. Read together, the two experiments locate the effect: what matters is that
 the cardiorespiratory stream is given a high-capacity representation of the raw signal rather
 than fourteen summary statistics, and several encoders supply that equally well at this
-cohort size. We therefore claim the change of representation, as Section~\ref{sec:repr} says,
-itself. The encoder implementing it is interchangeable at this cohort size, and the
+cohort size. These results therefore attribute the observed effect to the change in
+representation rather than to the specific encoder architecture. The encoder implementing it
+is interchangeable at this cohort size, and the
 accuracy is unaffected either way,
 since every configuration the search selected lands within $0.006$ of the reported one.
 
@@ -1645,9 +1647,10 @@ matching one, with $34.8\%$. Electrode position is therefore not what governs N3
 here. The only component that changed between the two models is the neural representation
 (Section~\ref{sec:repr}), which points instead at how the cortex is encoded, though with
 one external pass per corpus and eight ISRUC subjects we can identify the effect without
-attributing it confidently. The prediction stays on the record, and it was wrong.
+attributing it confidently. The prediction was therefore not supported by the final-model
+analysis.
 
-Two limits keep this in proportion. Accuracy across cohorts with different class balance is
+Two limitations qualify this analysis. Accuracy across cohorts with different class balance is
 not directly comparable, which is why $\kappa$ is reported alongside. And ISRUC contributes
 only eight subjects. Per-recording accuracy spans $0.458$--$0.748$, so the ISRUC
 figures in Table~\ref{tab:ext} are quoted to three decimals for consistency with the rest of
@@ -1733,11 +1736,11 @@ per-epoch embedding separates by sleep stage while the
 respiratory structure remains diffuse, consistent with the higher staging accuracy and the
 lower respiratory AUC.
 
- Staging accuracy on this cohort saturates
-below $0.75$ for every model family we evaluated, and the proposed model reaches $\mmAcc$ while
+ Staging accuracy remained below $0.75$ across the model families evaluated on this cohort, and the proposed model reaches $\mmAcc$ while
 adding a respiratory capability the staging models lack. The respiratory
-read-out does not depend on the labeling channel: it survives deletion of the airflow channel and
-rests on respiratory effort, desaturation, and arousal, the same signs a physician reads at the
+read-out does not depend on the labelling channel: performance is retained after removal of
+the airflow channel, with the remaining attribution concentrated on respiratory effort,
+desaturation and arousal, the same signs a physician reads at the
 bedside.
 
 The $\mmAcc$ staging figure should be judged on this cohort, where healthy-sleep accuracy does not transfer. Deep
