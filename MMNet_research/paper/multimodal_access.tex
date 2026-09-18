@@ -164,8 +164,8 @@ contributions are:
 \begin{enumerate}
 \item \label{c:model}We introduce MM-Net, a two-stream multi-task model that stages sleep at $\mmAcc$
 accuracy ($\kappa$ $\mmK$) and, from the same forward pass, detects respiratory events at
-$\mmAuc$ AUC, with a direct cardiorespiratory path to the respiratory head so
-a direct cardiorespiratory path to the respiratory head avoids attenuation of
+$\mmAuc$ AUC, with a direct cardiorespiratory path to the respiratory head that avoids
+attenuation of
 task-specific information during fusion; removing that path costs $0.006$ respiratory AUC and leaves staging unchanged
 (Section~\ref{sec:method}). Against matched single-task models differing only in the
 surviving loss term, the joint objective is ahead on both outputs, by $0.006$ staging
@@ -689,7 +689,8 @@ is interchangeable at this cohort size, and the
 accuracy is unaffected either way,
 since every configuration the search selected lands within $0.006$ of the reported one.
 
-Two limits. Five outer folds are fewer than the ten used everywhere else, so this estimate is
+Two limitations qualify this estimate. Five outer folds are fewer than the ten used
+everywhere else, so it is
 noisier than the figures it is compared against; and it uses a single seed, because five
 outer folds by forty-nine candidates by three inner folds is already seven hundred and
 thirty-five trainings.
