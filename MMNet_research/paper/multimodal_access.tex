@@ -1354,10 +1354,10 @@ one that matters physiologically: two attributions sharing no machinery, one app
 retrained models and one to fixed ones, independently identify effort as the dominant
 respiratory cue.
 
-\subsection{Data Efficiency and the Cohort Ceiling}
+\subsection{Data Efficiency and the Limits of Cohort Size}
 \label{sec:curve}
-Staging on this corpus saturates near $0.72$--$0.75$ for every model family tried here and
-elsewhere. Whether that reflects the architecture or the cohort is testable: retrain the
+Staging accuracy on this corpus remains near $0.72$--$0.75$ across the model families
+evaluated here. Whether that reflects the architecture or the cohort is testable: retrain the
 identical model on a shrinking fraction of the \emph{training patients}, always evaluating on
 the full held-out fold (Fig.~\ref{fig:curve}). Subsampling is by patient,
 because epochs within a patient are heavily correlated.
@@ -1629,8 +1629,9 @@ Staging moves in opposite directions on the two corpora, for reasons the data
 identify. On Sleep-EDF the model \emph{gains} $0.084$ of $\kappa$ over its in-domain
 score. A representation that had memorised corpus-specific artefacts would degrade out of
 corpus, so the straightforward reading is that the features are physiological and that the
-ceiling reported throughout this paper is a property of \emph{stroke sleep} instead of
-the model. The learning curve reaches the same conclusion (Section~\ref{sec:curve}) by a
+accuracy range reported throughout this paper is associated with \emph{stroke sleep} rather
+than with the model. The learning curve supports the same interpretation
+(Section~\ref{sec:curve}) by a
 different route. On ISRUC staging falls by $0.090$ accuracy, and the class mix explains
 much of it: ISRUC carries $15.6\%$ N1 against iSLEEPS' $10.2\%$ and Sleep-EDF's $6.6\%$,
 and N1 is the weakest stage in every cohort we have measured (recall $0.168$ on ISRUC,
@@ -1807,9 +1808,9 @@ the event rate by more than half, $4.8$ against $11.0$ per hour, so it cannot su
 for a scored index. The
 staging head is also overconfident (expected calibration error $0.076$), so its
 posteriors should be used for ranking and abstention. Staging does not improve on the
-published baseline for this corpus, and while every architecture we ran saturates in the same
+published baseline for this corpus, and while every architecture we ran lands in the same
 narrow band, we have not established that the band is a limit rather than the reach of the
-methods and the sample size we had. Finally, the model is feature-based: it inherits the assumptions of the engineered
+methods and the sample size available to us. Finally, the model is feature-based: it inherits the assumptions of the engineered
 representations and is only partly an end-to-end raw-signal learner, since the neural stream reads
 engineered descriptors and a frozen embedding while the cardiorespiratory stream is trained on
 the raw signal, a deliberate trade for data
