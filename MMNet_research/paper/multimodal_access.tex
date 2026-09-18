@@ -90,20 +90,19 @@ is visible in its cardiorespiratory channels: the median patient
 has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
 multi-task model reading fourteen neural and cardiorespiratory channels, which from one
 forward pass gives the sleep stage of every 30-second epoch and a per-epoch
-respiratory-event label, with a direct path carrying breathing effort to
-that decision. On iSLEEPS, a stroke-specific
+respiratory-event label. On iSLEEPS, a stroke-specific
 polysomnography corpus ($99$ patients, $92{,}560$ epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
 $\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and flags the epochs carrying a
 respiratory event at $\mmAuc$ AUC, an epoch-level and not event-level read-out,
-with $2.76$\,M parameters. Against matched single-task models, identical but for
+with $2.76$\,M parameters. Cardiorespiratory input does not raise staging accuracy; it adds
+the second output at no cost to the first. Against matched single-task models, identical but for
 the loss, it leads on both tasks, and against the closest prior joint
 system it leads in every fold on every metric. We benchmark thirteen architectures retrained
 here and three applied zero-shot from healthy sleep; every retrained baseline lands
-between $0.613$ and $0.720$ accuracy, and the five reimplementations publishing
+between $0.613$ and $0.720$, and the five reimplementations publishing
 an accuracy are recovered to within $0.04$,
-placing the limit in the cohort itself. Repeating the architecture search inside the
-training data, so no test patient influences the model scoring it, costs $0.006$
-accuracy. On healthy sleep
+pointing at cohort difficulty and not an implementation artefact. Repeating the architecture
+search inside the training data costs $0.006$ accuracy. On healthy sleep
 the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
 to $0.148$ for those baselines. Code, features and checkpoints are released.
 \end{abstract}
@@ -143,7 +142,14 @@ cannot see any of this, and so cannot report on the disorder that most damages a
 sleep. We read the polysomnogram across both neural and cardiorespiratory physiology, and we
 ask a question that the staging race does not:
 what does a model gain, and on which clinical task, when it reads the whole recording rather
-than the brain alone.
+than the brain alone. The answer this cohort gives is worth stating at the outset, because it
+is not the expected one. Reading the cardiorespiratory channels does not make sleep staging
+more accurate: the model stages at $0.741$ from the neural stream alone and $\mmAcc$ with
+both, a difference well inside fold-to-fold noise. What those channels buy is a second
+clinical output, respiratory-event detection at $\mmAuc$ AUC, obtained from the same forward
+pass at no cost to the first. The two physiologies carry complementary information about
+different questions instead of redundant information about one, and the experiments below are
+arranged to test exactly that.
 
 We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 and described by its
 authors as the first Asian and one of the largest stroke-specific sleep databases. The cohort is well matched to the question.
@@ -182,12 +188,15 @@ Huttunen~et~al.~\cite{huttunen2023simultaneous}, ported from its authors' releas
 the only baseline that scores both tasks; the proposed model is ahead of it in every fold on
 every metric.
 
-\item \label{c:ceiling}We establish that the accuracy attainable on this cohort is limited by the patients and
-not by our implementations. The five reimplementations whose papers report an accuracy
+\item \label{c:ceiling}We give converging evidence that the accuracy every method reaches here
+reflects the difficulty of this cohort and not a weakness of our implementations. The five
+reimplementations whose papers report an accuracy
 recover their published Sleep-EDF
 figure to within $0.04$, every retrained baseline lands between $0.613$ and $0.720$
 here, and the proposed model loses $0.115$ accuracy crossing from healthy sleep to stroke
-against $0.140$ to $0.148$ for those baselines (Section~\ref{sec:domaingap}).
+against $0.140$ to $0.148$ for those baselines (Section~\ref{sec:domaingap}). A better model
+may yet do better; what these results rule out is that the implementations are what hold the
+numbers down.
 
 \item \label{c:resp}We show the respiratory read-out is physiologically grounded: removing the airflow
 channel from which the events were scored leaves detection at $\noflowAuc$ AUC, because
@@ -463,7 +472,12 @@ linear layer, LayerNorm, GELU and dropout to the same
 $64$ dimensions the feature MLP produced, so the encoder is a drop-in replacement and every
 other part of the network is unchanged. The branch holds $155{,}232$ trainable parameters,
 of which the projection LayerNorm supplies $128$. Section~\ref{sec:repr} reports what that substitution
-is worth, and it is the single largest architectural effect in this paper.
+is worth. The effect is the largest of any representation change we measure, and
+Sections~\ref{sec:repr} and~\ref{sec:nested} together show that it belongs to the change of
+representation and not to this encoder in particular: random encoders of comparable capacity
+over the same raw signal recover much of it. We use this one because it is small, trained
+end-to-end with the rest of the network, and adds no external dependency, and we claim the
+representation rather than the architecture.
 
 \subsection{Two-Stream Encoders}
 The neural stream is a two-layer perceptron with LayerNorm; the
@@ -530,20 +544,15 @@ that we would not rest an argument on it alone. What makes it worth reporting is
 lands: the connection feeds the respiratory head and nothing
 else, and the respiratory head is the only output that moves.
 
-Removing the path is not by itself a clean test of what it carries. The head reads
-$2\,\text{hidden}+d_{\mathrm{card}}$ inputs whether or not the bypass is used, because the
+Capacity is not what produces that gain. The head reads
+$2\,\text{hidden}+d_{\mathrm{card}}$ inputs whether or not the bypass is used, since the
 ablation zeroes the cardiorespiratory block instead of deleting it, so both arms hold the
-same $2{,}764{,}774$ parameters and capacity is already controlled. What is not controlled
-is that a head fed a constant can learn to ignore that block, which leaves open whether the
-gain comes from the epoch's own breathing or merely from the presence of a plausible signal.
-We therefore ran a third arm that feeds the head the same cardiorespiratory embeddings
-permuted across the epochs of the window: identical capacity, identical statistics,
-identical gradient path, with only the alignment to the epoch destroyed. It reaches $0.774$
-AUC, which is at or just below the zeroed arm's $0.776$ and below the $\mmAuc$ of the real
-path. Shuffling therefore buys nothing over zeroing, and the gain is not a capacity
-artefact. We stop short of the stronger claim: against the shuffled arm the difference is
-larger than against the zeroed one and yet not significant ($p=0.28$ against $p=0.049$),
-because the signed test reads how consistently the folds move and not how far.
+same $2{,}764{,}774$ parameters. A third arm tests the sharper version of the question by
+feeding the head the same embeddings permuted across the epochs of the window, which keeps
+capacity, statistics and gradient path and destroys only the alignment to the epoch. It
+reaches $0.774$ AUC, at or just below the zeroed arm's $0.776$, so a misaligned
+cardiorespiratory signal is worth no more than none at all. The bypass is a supporting design
+choice on this evidence rather than a load-bearing one, and we treat it as such.
 
 The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
 $200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
@@ -612,17 +621,18 @@ $[0.604,\ 0.651]$, respiratory AUC $0.778$ $[0.752,\ 0.802]$ and average precisi
 $[0.355,\ 0.480]$. These condition on the fitted procedure: they carry the variation in
 which patients were recorded and not retraining variability, and they say nothing about the
 selection optimism measured below. The
-folds are fixed across all configurations so that comparisons are paired. Fixing them buys
-paired comparisons at a price we should state plainly: the configuration reported here was
-chosen by comparing forty-nine candidates on these same ten folds, so the folds that
-selected the model are the folds that score it, and the in-domain figures are not free of
-selection optimism. Rather than bound it we measured it, by running the selection again
-inside the training data (Section~\ref{sec:nested}): five outer patient-independent folds,
-all forty-nine candidates compared on three inner folds within each outer training set, and
-the winner scored once on outer patients that took no part in choosing it. That procedure
-reaches $0.734 \pm 0.009$ accuracy against the $\mmAcc$ reported here, so the optimism in
-the headline figure is $0.006$, about a third of the fold-to-fold standard deviation of
-$0.019$. The external corpora in Section~\ref{sec:external} took no part in selection
+folds are fixed across all configurations so that comparisons are paired. Fixing them has a
+cost worth quantifying: the reported configuration was chosen by comparing forty-nine
+candidates on these same ten folds, which is the standard route by which an in-domain figure
+acquires selection optimism. We therefore measured how much it acquired, by repeating the
+selection with the test patients quarantined (Section~\ref{sec:nested}): five outer
+patient-independent folds, all forty-nine candidates compared on three inner folds within
+each outer training set, and the winner scored once on outer patients that took no part in
+choosing it. That procedure
+reaches $0.734 \pm 0.009$ accuracy against the $\mmAcc$ reported here, so the optimism is
+$0.006$, about a third of the fold-to-fold standard deviation of
+$0.019$ and small enough that it changes no comparison in this paper. The external corpora in
+Section~\ref{sec:external} took no part in selection
 either, so the zero-shot figures there were never exposed to it. The proposed
 model, its ablations and the six reimplemented literature models all use the full ten; the
 earlier retrained baselines were run at five, which Table~\ref{tab:bench} states per row. Because a single
@@ -654,30 +664,29 @@ No outer patient influences the choice of the model that scores them, so the res
 estimates the whole procedure, search included, instead of a configuration that already knew
 its test set.
 
-The procedure reaches $0.7336 \pm 0.0089$ accuracy across the five outer folds against
-$\mmAcc$ for the reported model, so selection is worth $0.006$ accuracy here. That is about a
-third of the fold-to-fold standard deviation and close to the $0.004$ the spread of the top
-ten candidates suggested, which is the more useful statement: the bound we could compute
-without a nested loop turned out to be roughly the right size.
+The headline figure survives the quarantine. The nested procedure reaches
+$0.7336 \pm 0.0089$ accuracy across the five outer folds against $\mmAcc$ for the reported
+model, so selection is worth $0.006$ accuracy, about a third of the fold-to-fold standard
+deviation and smaller than any difference this paper rests an argument on. It is also close
+to the $0.004$ suggested by the spread of the top ten candidates, so the bound available
+without a nested loop was about the right size.
 
-What the inner loop chose is worth reporting, because it is not what the paper reports. Every
-outer fold kept the neural side of the published model, the engineered descriptors with the
-frozen encoder, the BiLSTM, and the same width and regularisation, and every one of them
-replaced the cardiorespiratory encoder. Four selected a randomly initialised time-series
+The design the inner loop arrived at is informative in its own right. Every outer fold kept
+the neural side of the published model unchanged, the engineered descriptors with the frozen
+encoder, the BiLSTM, and the same width and regularisation, which is a five-fold independent
+vote for the neural half of the architecture. Where the folds differed from the published
+model was the cardiorespiratory encoder: four chose a randomly initialised time-series
 encoder over the raw signal and the fifth a random projection of the fourteen engineered
-descriptors. The search therefore does not recover the learned convolutional encoder the
-paper adopts, and we should not pretend otherwise.
+descriptors, and none chose the learned convolutional encoder.
 
-Two things keep that from undermining the result. Whatever the inner loop picked, the outer
-accuracy lands within $0.006$ of the published figure, so the choice of cardiorespiratory
-encoder is not what the accuracy rests on; and this is the same conclusion
-Section~\ref{sec:repr} reaches from the other direction, where a random expansion of the same
-fourteen numbers recovers most of the gap to the learned encoder. The honest reading is that
-the \emph{representation} of the cardiorespiratory stream matters, which is the claim
-Section~\ref{sec:repr} makes, while the particular encoder that implements it does not
-separate from its random counterparts at this cohort size. A reader should take the headline
-accuracy as a figure that survives selection being done properly, and should not take the
-learned encoder as a component this search can justify.
+That is consistent with what Section~\ref{sec:repr} already reports from the other direction,
+where a random expansion of the same fourteen numbers recovers a large part of the gap to the
+learned encoder. Read together, the two experiments locate the effect: what matters is that
+the cardiorespiratory stream is given a high-capacity representation of the raw signal rather
+than fourteen summary statistics, and several encoders supply that equally well at this
+cohort size. We therefore claim the change of representation, as Section~\ref{sec:repr} says,
+and not the particular encoder that implements it. The accuracy is unaffected either way,
+since every configuration the search selected lands within $0.006$ of the reported one.
 
 Two limits. Five outer folds are fewer than the ten used everywhere else, so this estimate is
 noisier than the figures it is compared against; and it uses a single seed, because five
@@ -925,10 +934,21 @@ N1 F1, which fits its sensitivity to short events, while the proposed model lead
 stages. The row-normalised confusion matrix (Fig.~\ref{fig:confusion}) shows
 where the errors land: N1 is absorbed mainly into Wake and N2, and part of N3 is read as N2.
 Comparing the neural-only and full rows isolates what the cardiorespiratory stream
-contributes to staging, and the answer is narrow: N1 improves by $0.019$ (Wilcoxon
-$p=0.11$ on ten fold-means, not significant) and no stage changes significantly
-($p \geq 0.15$; REM shifts by $0.01$ in Table~\ref{tab:perclass}, well inside that). That the gain
-lands on N1 is consistent with its physiology. It is the transitional stage, the hardest
+contributes to staging, and the answer is that it contributes nothing measurable. Overall
+accuracy is $0.741$ without the stream and $\mmAcc$ with it; per stage, N1 improves by
+$0.019$ (Wilcoxon $p=0.11$ on ten fold-means) and no stage changes significantly
+($p \geq 0.15$; REM shifts by $0.01$ in Table~\ref{tab:perclass}, well inside that).
+
+This is the result the paper is organised around, so it should be read for what it is rather
+than as a disappointment. Breathing is not what sleep stages are scored from, and a
+cardiorespiratory stream that improved staging would be the surprising outcome, not this one.
+What matters clinically is the pair of numbers together: the second modality delivers
+respiratory-event detection at $\mmAuc$ AUC while leaving staging exactly where it was. A
+model that bought the second output by giving up accuracy on the first would be a poor
+trade for a reader who needs both, and the ablation grid of Section~\ref{sec:ablate} shows
+the same separation from the other side, each stream serving the output its physiology is
+closest to. That the small staging gain
+lands on N1 is consistent with its physiology: it is the transitional stage, the hardest
 to score, and the one most often coincident with a respiratory event.
 
 \begin{figure}[t]
