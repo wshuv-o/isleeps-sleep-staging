@@ -101,7 +101,7 @@ system it leads in every fold on every metric. We benchmark thirteen architectur
 here and three applied zero-shot from healthy sleep; every retrained baseline lands
 between $0.613$ and $0.720$, and the five reimplementations publishing
 an accuracy are recovered to within $0.04$,
-pointing at cohort difficulty and not an implementation artefact. Repeating the architecture
+pointing at the difficulty of the cohort. Repeating the architecture
 search inside the training data costs $0.006$ accuracy. On healthy sleep
 the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
 to $0.148$ for those baselines. Code, features and checkpoints are released.
@@ -141,15 +141,14 @@ blood oxygen, and the arousal that rescues the breath. A model that reads only t
 cannot see any of this, and so cannot report on the disorder that most damages a patient's
 sleep. We read the polysomnogram across both neural and cardiorespiratory physiology, and we
 ask a question that the staging race does not:
-what does a model gain, and on which clinical task, when it reads the whole recording rather
-than the brain alone. We state the answer here, since it governs how the results should be
+what does a model gain, and on which clinical task, from reading the whole recording. We
+state the answer here, since it governs how the results should be
 read. The cardiorespiratory channels do not improve sleep staging: the model reaches $0.741$
 accuracy from the neural stream alone and $\mmAcc$ with both, a difference well inside
 fold-to-fold variation. What they provide is a second clinical output, respiratory-event
 detection at $\mmAuc$ AUC, from the same forward pass and without reducing staging accuracy.
 The two physiologies therefore carry complementary information about different clinical
-questions rather than redundant information about one, and the experiments below are designed
-to test that separation.
+questions, and the experiments below are designed to test that separation.
 
 We study this on iSLEEPS~\cite{maiti2026isleeps}, released in 2026 and described by its
 authors as the first Asian and one of the largest stroke-specific sleep databases. The cohort is well matched to the question.
@@ -189,7 +188,7 @@ the only baseline that scores both tasks; the proposed model is ahead of it in e
 every metric.
 
 \item \label{c:ceiling}We give converging evidence that the accuracy every method reaches here
-reflects the difficulty of this cohort and not a weakness of our implementations. The five
+reflects the difficulty of this cohort. The five
 reimplementations whose papers report an accuracy
 recover their published Sleep-EDF
 figure to within $0.04$, every retrained baseline lands between $0.613$ and $0.720$
@@ -434,7 +433,7 @@ Per channel we take absolute and relative band powers from the Welch spectrum $P
 The bands are the conventional sleep bands and alpha and sigma overlap between $11$ and
 $13$\,Hz, so the five relative powers are not a partition and do not sum to one. We keep the
 conventional definitions because both bands name physiology a scorer reads, and the model
-treats the five as five correlated descriptors and not as shares of a whole.
+treats the five as correlated descriptors whose sum is unconstrained.
 We add spectral entropy $H=-\sum_i p_i\log p_i$ with $p_i$ the normalized spectrum, the
 $95\%$ spectral-edge frequency, the three Hjorth descriptors~\cite{hjorth1970eeg}, and
 time-domain statistics. Sleep spindles are detected on the sigma-band analytic envelope,
@@ -452,8 +451,7 @@ desaturation depth (median minus minimum); pulse mean and variability; ECG ampli
 line-length; airflow amplitude and line-length; thoracic, abdominal, and summed effort
 amplitudes; and signed thoraco-abdominal synchrony, whose loss is the paradoxical motion of
 chest against abdomen that marks an obstructed breath. The correlation is kept signed, so
-synchronous and paradoxical motion sit at opposite ends of the range instead of being folded
-together; a value near $+1$ is synchronous motion and a negative value is paradox,
+synchronous and paradoxical motion sit at opposite ends of the range; a value near $+1$ is synchronous motion and a negative value is paradox,
 \begin{equation}
 \mathrm{sync}_t=\mathrm{corr}(x^{\mathrm{tho}}_t,\ x^{\mathrm{abd}}_t).
 \end{equation}
@@ -474,10 +472,10 @@ other part of the network is unchanged. The branch holds $155{,}232$ trainable p
 of which the projection LayerNorm supplies $128$. Section~\ref{sec:repr} reports what that substitution
 is worth. The effect is the largest of any representation change we measure, and
 Sections~\ref{sec:repr} and~\ref{sec:nested} together show that it belongs to the change of
-representation and not to this encoder in particular: random encoders of comparable capacity
+representation: random encoders of comparable capacity
 over the same raw signal recover much of it. We use this one because it is small, trained
 end-to-end with the rest of the network, and adds no external dependency, and we claim the
-representation rather than the architecture.
+representation.
 
 \subsection{Two-Stream Encoders}
 The neural stream is a two-layer perceptron with LayerNorm; the
@@ -552,7 +550,7 @@ feeding the head the same embeddings permuted across the epochs of the window, w
 capacity, statistics and gradient path and destroys only the alignment to the epoch. It
 reaches $0.774$ AUC, at or just below the zeroed arm's $0.776$, indicating that a misaligned
 cardiorespiratory signal confers no advantage over its absence. On this evidence the bypass
-is a supporting design choice rather than a primary contribution.
+is a supporting design choice.
 
 The trained model holds $2.76$ million parameters. The pretrained encoder that supplies the
 $200$-dimensional neural embedding is run once offline and is not trained here, so it adds no
@@ -644,7 +642,7 @@ The uncertainty in these results is therefore dominated by which patients fall i
 fold, which is a property of a cohort this size. Every headline figure in this paper is the mean over all thirty fold-values, ten
 folds by three seeds. Paired tests, however, are computed on the ten fold-means: the three
 seeds within a fold train and test on the same patients, so they are three re-rolls of one
-experiment and not three independent observations, and treating them as thirty would triple
+experiment, and treating them as thirty would triple
 the effective sample and shrink every $p$. One consequence follows directly. With
 ten paired folds the smallest two-sided Wilcoxon $p$ is $2/2^{10}=0.002$, reached when every
 fold moves the same way, so after Holm correction across a family of nine the floor is
@@ -661,8 +659,7 @@ five outer patient-independent folds; inside each outer training set, three inne
 forty-nine candidates of the original search compared on those inner folds alone; and the
 inner winner retrained on the full outer training set and scored once on the outer patients.
 No outer patient influences the choice of the model that scores them, so the resulting number
-estimates the whole procedure, search included, instead of a configuration that already knew
-its test set.
+estimates the whole procedure, search included.
 
 The headline figure survives the quarantine. The nested procedure reaches
 $0.7336 \pm 0.0089$ accuracy across the five outer folds against $\mmAcc$ for the reported
@@ -685,7 +682,8 @@ learned encoder. Read together, the two experiments locate the effect: what matt
 the cardiorespiratory stream is given a high-capacity representation of the raw signal rather
 than fourteen summary statistics, and several encoders supply that equally well at this
 cohort size. We therefore claim the change of representation, as Section~\ref{sec:repr} says,
-and not the particular encoder that implements it. The accuracy is unaffected either way,
+itself. The encoder implementing it is interchangeable at this cohort size, and the
+accuracy is unaffected either way,
 since every configuration the search selected lands within $0.006$ of the reported one.
 
 Two limits. Five outer folds are fewer than the ten used everywhere else, so this estimate is
@@ -833,7 +831,7 @@ the published figure. Macro-F1 is governed by N1, the stage whose prevalence mov
 between Sleep-EDF subsets, and the published figure comes from the $39$-recording subset
 under twenty-fold cross-validation against our $40$ recordings under ten, so the gap is not
 readable as a failure of the reimplementation; it is readable as a comparison we cannot make
-cleanly, and we mark it as such instead of converting one metric into the other.
+cleanly, and we mark it as such.
 Table~\ref{tab:bench} is organised in three blocks: architectures retrained on this
 cohort, architectures trained on healthy sleep and applied to it zero-shot, and the
 proposed model, with a final row cross-validating the proposed architecture on healthy
@@ -863,7 +861,7 @@ rediscover what decades of sleep science already encode in the features. The cor
 baseline, reimplemented here and run on the same folds, reaches $0.720 \pm 0.032$ over
 thirty fold-values. Staging accuracy is nonetheless capped: nothing we have run on this
 corpus exceeds $0.75$. Section~\ref{sec:curve} shows why: the
-staging learning curve has flattened, which points at the cohort and not at any one model.
+staging learning curve has flattened, which points at the cohort.
 We therefore do not position the model as a staging leader. What sets it apart is
 a second output. Of the models that stage competitively here it is the only one that also
 detects respiratory events; the raw multimodal CNN produces both outputs but stages at
@@ -872,14 +870,14 @@ $0.654$.
 The comparison that speaks to this directly is against Huttunen~et~al., the closest prior
 system: one network scoring sleep stages and respiratory events at once, which makes it the
 only baseline in Table~\ref{tab:bench} that answers the same two questions this model does.
-We ported the architecture from the authors' released code and not from the paper, so the
+We ported the architecture from the authors' released code, so the
 encoder blocks, the squeeze-and-excitation ratios, the atrous pyramid at the bottleneck and
 the shape of the two segment classifiers are theirs. On the same folds it reaches
 $0.599$ accuracy and $0.710$ respiratory AUC against $\mmAcc$ and $\mmAuc$, and the
 proposed model is ahead in all ten folds on every metric (Wilcoxon on fold-means, $p=0.002$,
 the floor at this sample size).
 
-That margin should be read as a statement about this corpus and not about their result.
+That margin should be read as a statement about this corpus.
 Their model was built for, and reported on, $877$ suspected-obstructive-sleep-apnea
 recordings; three things had to change to bring it here. iSLEEPS has no oronasal
 thermocouple, so it reads four of the five signals of their fullest configuration; their
@@ -1021,7 +1019,7 @@ optimiser, the budget and the cardiorespiratory bypass are those of the full mod
 surviving term of $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\mathcal{L}^{\mathrm{apn}}$
 differs, so the staging-only model still builds the cardiorespiratory stream and still feeds
 the respiratory head and simply never receives a respiratory gradient. What separates the
-rows is the objective and not the network.
+rows is the objective.
 
 Training both tasks together is better than training either alone
 (Table~\ref{tab:joint}). Staging rises from $0.733$ to $\mmAcc$ accuracy, in nine folds of
@@ -1033,7 +1031,7 @@ null it is.
 Two readings of that are available and only the narrower one is supported. The gains are
 small: $0.006$ accuracy against a fold-to-fold SD of $0.019$, and $0.007$ AUC against
 $0.038$, so roughly a third and a fifth of the spread the cohort already imposes. What
-carries them is consistency instead of size, nine and seven folds of ten moving the same
+carries them is consistency, nine and seven folds of ten moving the same
 way, which is what the paired test is reading. The claim we make is therefore that the
 second task costs the first nothing and returns a little to it, which is the claim the
 architecture needs: a clinician gets the respiratory read-out without trading away staging
@@ -1082,14 +1080,14 @@ from $0.419$ to $0.439$, so the respiratory result does not rest on them. Predic
 per-patient burden is independent of whether a montage was complete ($p=0.91$), so the
 shortcut is not available even in principle.
 
-Staging is lower on those twelve, $0.670$ against $0.743$ ($p=0.017$), and that needs a
-control rather than an assurance. The neural-only configuration receives no
+Staging is lower on those twelve, $0.670$ against $0.743$ ($p=0.017$), which calls for a
+control. The neural-only configuration receives no
 cardiorespiratory channel at all and so has nothing zero-filled, yet it shows the same
 gap in the same direction, $0.689$ against $0.744$ ($p=0.040$). Most of the difference
 therefore belongs to the recordings, which are harder for a model that cannot see the
-missing channels either. Stated precisely rather than generously: on those twelve the
+missing channels either. On those twelve the
 full model sits $0.019$ below neural-only, which at $n=12$ is not distinguishable from
-noise (Wilcoxon $p=0.18$), so a small cost cannot be excluded, only bounded. On the
+noise (Wilcoxon $p=0.18$), so a small cost can be bounded but not excluded. On the
 eighty-seven complete recordings the two agree to within $0.002$.
 Attention and plain concatenation stage and detect alike, so the gain comes from the added
 modality, and the fusion mechanism has little effect.
@@ -1181,15 +1179,14 @@ $0.7$ & $0.469$ & $1.94$ & $20\%$ \\
 \end{tabular}
 \end{table}
 
-Scoring at the event level instead of the epoch level worsens the picture
+Scoring at the event level worsens the picture
 (Table~\ref{tab:event}). No threshold is comfortable: the one that finds most events flags
 three fifths of the night, and the one that flags least finds under half of them. More
 tellingly, the model recovers the wrong \emph{number} of events, and its per-patient event
 count agrees with the clinical index far more weakly than its aggregated epoch probability
 does ($\rho=0.148$ against $\rho=0.491$). Consecutive events separated by a few epochs merge
 into one flagged run, so an epoch-level detector systematically under-counts. This is why we
-report a burden, and why event-level scoring is the natural next step instead of a
-formality.
+report a burden, and why event-level scoring is the natural next step.
 
 Figure~\ref{fig:rocpr} shows the operating characteristics behind these numbers, computed
 from the pooled held-out predictions of all ten folds. The precision--recall panel is the
@@ -1316,8 +1313,8 @@ accuracy against $0.030$ for the ocular and $0.006$ for the muscle channel, the 
 the ablation gives, and the rank correlation between the two attributions is $\rho=0.833$
 ($p=0.010$).
 
-On the respiratory head the agreement is narrower, and we state it precisely instead of
-pooling the two into a single coefficient. Both methods place respiratory effort first by a wide
+On the respiratory head the agreement is narrower, and we report the two attributions
+separately. Both methods place respiratory effort first by a wide
 margin: $0.038$ AUC under retraining, $0.071$ under permutation, in each case well clear of
 the runner-up. The remaining four cardiorespiratory channels, however, have retraining effects
 that are not distinguishable from zero, so their rank order carries no signal there and the
@@ -1427,8 +1424,7 @@ statement than any comparison against other people's architectures can make.
 
 The cohort does not cost every architecture equally. Because the three reimplemented
 models carry a healthy-sleep score produced by the same code under the same protocol, the
-table supports a comparison it could not before: not merely where each model lands, but how
-much it loses in the crossing. TinySleepNet falls $0.148$ from healthy sleep to stroke
+table supports a comparison it could not before: how much each model loses in the crossing. TinySleepNet falls $0.148$ from healthy sleep to stroke
 ($0.824 \to 0.676$), SleepTransformer $0.140$ ($0.823 \to 0.683$) and U-Time $0.145$
 ($0.791 \to 0.646$), against $0.115$ for the proposed model ($0.856 \to 0.741$). It is therefore not simply higher at both ends; it
 degrades least. We report this as an observation. Four paired differences
@@ -1469,7 +1465,7 @@ structure unextracted. A random linear projection of the raw waveform adds a fur
 so part of what the features discard is recoverable without learning anything. The learned
 convolutional encoder reaches $0.782$, $0.084$ above the engineered features.
 
-What this establishes is that the representation of the cardiorespiratory stream, and not the detector on top of it, is what limited the respiratory read-out. We therefore claim the
+What this establishes is that the representation of the cardiorespiratory stream is what limited the respiratory read-out, with the detector above it held fixed throughout. We therefore claim the
 change of representation itself, and make no claim for the encoder that implements it.
 
 On the neural side a pretrained encoder does not replace expert features, but does
@@ -1513,10 +1509,10 @@ Representation & Variant & Resp.\ AUC\,$\uparrow$ & Staging acc\,$\uparrow$ & $\
 
 \subsection{The Two Loss Constants}
 \label{sec:losssens}
-Two constants in Section~\ref{sec:method} were fixed by argument instead of by experiment:
+Two constants in Section~\ref{sec:method} were fixed by argument:
 the task balance $\lambda=1$ and the positive weight $\pi=n_-/n_+$, which is $5.35$ on this
 corpus. Equal coefficients do not make equal influence, since the two terms differ in scale
-and curvature, so $\lambda=1$ is a claim about arithmetic and not about balance. We therefore
+and curvature, so $\lambda=1$ is a claim about arithmetic. We therefore
 swept each with everything else at the published setting, three seeds by ten folds per value,
 and evaluate both heads at every point, since the relevant outcome is not a lower value on
 one head but a trade-off between them.
@@ -1595,15 +1591,14 @@ loses nothing in our argument: both sit above the in-domain $\mmAcc$. Both corpo
 also differ from iSLEEPS in montage, so both transfer figures are lower bounds and not
 clean estimates. ISRUC records each
 subject twice; respiratory-event prevalence is $10.1\%$ on the first night and $2.4\%$ on
-the second, so we report the two separately instead of pooling a difference that has
+the second, so we report the two separately; pooling would merge a difference that has
 nothing to do with the model.
 
 The respiratory read-out transfers. On ISRUC night one the model reaches
 $0.780$ AUC, and it does so handicapped, because ISRUC provides no pulse channel and no
 separate effort trace, leaving two of the seven cardiorespiratory inputs zero-filled. A
 detector that had latched onto one centre's equipment would not survive that; this one does.
-The comparison needs its estimators matched to mean anything, and we state them instead of
-placing the two numbers side by side. The external figure is pooled over all epochs of the
+The comparison requires matched estimators, which we state before giving the two numbers. The external figure is pooled over all epochs of the
 night, because per-recording AUC is unusable on this corpus: event prevalence ranges from
 $0\%$ to $22\%$ across the sixteen recordings, and a night with a handful of positive epochs
 returns an estimate whose sampling variance swamps any difference between models, while a
@@ -1613,7 +1608,7 @@ sits within $0.003$ of the in-domain one on either estimator, and nothing in the
 on which is chosen. Night two falls to $0.723$. Its event prevalence is much lower ($2.4\%$
 against $10.1\%$), which does not by itself depress AUC, since ranking is insensitive to the
 mix; what the scarcity of positives does is widen the uncertainty on that night's estimate,
-so we read the two nights as one imprecise result and not as a trend.
+so we read the two nights as one imprecise result.
 
 Staging moves in opposite directions on the two corpora, for reasons the data
 identify. On Sleep-EDF the model \emph{gains} $0.084$ of $\kappa$ over its in-domain
@@ -1774,7 +1769,7 @@ this.
 
 A prediction of ours that failed. The montage account of N3 transfer described in
 Section~\ref{sec:external} does not survive retesting under the final model, and we report
-it as falsified instead of removing it. Two cautions follow for every other per-class
+it as falsified. Two cautions follow for every other per-class
 figure in that section: each rests on a single external pass with no fold structure, so
 none carries an interval, and ISRUC contributes eight subjects, at which size a per-class
 rate is an estimate with a width we cannot quote. Per-class transfer should be read as
