@@ -272,8 +272,9 @@ quantitative EEG markers such as the brain symmetry index further track hemisphe
 injury~\cite{anastasi2017bsi}. A model that reports on breathing as well as stage is therefore of
 direct clinical value in this population. Sleep staging on ischemic stroke itself is nascent, reported only as baselines on
 the iSLEEPS corpus~\cite{maiti2026isleeps}, and no prior method addresses staging and respiratory
-detection jointly, on a stroke population; we make this comparison
-quantitative in Table~\ref{tab:litreview}.
+detection jointly, on a stroke population. Rather than set published accuracies side by side,
+each measured on its own corpus and protocol, we re-run the architectures that matter on
+these folds (Table~\ref{tab:bench}).
 
 %=====================================================================
 \section{Critical Gaps and Limitations of Prior Work}
@@ -1498,8 +1499,8 @@ the task balance $\lambda=1$ and the positive weight $\pi=n_-/n_+$, which is $5.
 corpus. Equal coefficients do not make equal influence, since the two terms differ in scale
 and curvature, so $\lambda=1$ is a claim about arithmetic and not about balance. We therefore
 swept each with everything else at the published setting, three seeds by ten folds per value,
-and report both heads at every point, because the failure worth finding is not a lower number
-on one head but a trade between them (Table~\ref{tab:losssens}).
+and read both heads at every point, because the failure worth finding is not a lower number
+on one head but a trade between them.
 
 There is no trade, and there is very little effect. Across $\lambda$ from $0.25$ to $4$
 staging accuracy spans $0.003$ and respiratory AUC $0.018$, and across $\pi$ from $1$ to $11$
@@ -1514,35 +1515,6 @@ $\pi=8$ ($0.7846$). Every one of those margins is under a fifth of a fold standa
 so we have not found better settings, only confirmed that the objective is insensitive to
 both constants over the range a reader would ask about. That insensitivity is the result:
 fixing them by fiat costs nothing measurable here.
-
-\begin{table}[t]
-\caption{Sensitivity to the two loss constants, ten-fold patient-independent, three seeds
-per value. Everything else is held at the published configuration; $^{\star}$ marks the
-published value, which is read from the headline run rather than re-trained.}
-\label{tab:losssens}
-\centering
-\small
-\setlength{\tabcolsep}{7pt}
-\begin{tabular}{lcc}
-\toprule
-Value & Staging acc\,$\uparrow$ & Resp.\ AUC\,$\uparrow$ \\
-\midrule
-\multicolumn{3}{@{}l}{\emph{Task balance $\lambda$}}\\[1pt]
-$0.25$ & $0.7370$ & $0.7660$ \\
-$0.5$  & $0.7391$ & $0.7772$ \\
-$1^{\star}$ & $\mmAcc$ & $\mmAuc$ \\
-$2$    & $\mathbf{0.7403}$ & $\mathbf{0.7840}$ \\
-$4$    & $0.7373$ & $0.7795$ \\
-\addlinespace[2pt]\midrule
-\multicolumn{3}{@{}l}{\emph{Respiratory positive weight $\pi$}}\\[1pt]
-$1$    & $0.7399$ & $0.7778$ \\
-$2.5$  & $0.7388$ & $0.7779$ \\
-$5.35^{\star}$ & $\mmAcc$ & $\mmAuc$ \\
-$8$    & $0.7401$ & $\mathbf{0.7846}$ \\
-$11$   & $\mathbf{0.7422}$ & $0.7828$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Calibration and Selective Prediction}
 A clinical reader needs to know not only how often the model is right but whether it knows when
@@ -1817,34 +1789,6 @@ number further. Linking the multimodal representation to stroke severity and rec
 larger opportunity, and one the cardiorespiratory signal is well placed to serve.
 
 %=====================================================================
-\begin{table*}[t]
-\caption{Recent single-channel sleep-staging methods: the headline figure each reports on
-healthy or
-general cohorts, set against its accuracy on the subacute-stroke cohort (iSLEEPS) for the five
-architectures we evaluated on it. Every reported figure is an accuracy except U-Time's, which
-its paper gives as macro-F1 and is labelled accordingly; the two are not interchangeable and
-that row should not be read as a like-for-like difference. A dash marks a value we did not evaluate.}
-\label{tab:litreview}
-\centering
-\small
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l c p{7.2cm} c c @{}}
-\toprule
-Method & Year & Approach & Reported acc (dataset) & On iSLEEPS \\
-\midrule
-DeepSleepNet~\cite{supratak2017deepsleepnet} & 2017 & Two representation-learning CNNs followed by a bidirectional LSTM sequence model, single-channel EEG. & $0.82$ (Sleep-EDF) & $0.615$ \\
-U-Time~\cite{perslev2019utime} & 2019 & Fully convolutional encoder--decoder segmenting a whole night at once, no recurrence over epochs. & $0.79$ macro-F1 (Sleep-EDF) & $0.646$ \\
-TinySleepNet~\cite{supratak2020tinysleepnet} & 2020 & Compact convolutional stack with a single unidirectional LSTM, single-channel EEG. & $0.854$ (Sleep-EDF) & $0.676$ \\
-AttnSleep~\cite{eldele2021attnsleep} & 2021 & Multi-resolution CNN with multi-head self-attention over epochs, single-channel EEG. & $0.844$ (Sleep-EDF) & $0.716$ \\
-SleepTransformer~\cite{sleeptransformer2022} & 2022 & Transformer encoder with epoch-level interpretability and uncertainty estimates. & $0.814$ (Sleep-EDF) & $0.683$ \\
-1D-ResNet-SE-LSTM~\cite{li2023resnetselstm} & 2023 & Residual network with squeeze-and-excitation blocks and an LSTM on raw EEG. & $0.864$ (Sleep-EDF) & $0.708$ \\
-Micro SleepNet~\cite{liu2023microsleepnet} & 2023 & Lightweight convolutional model for real-time mobile staging. & $0.828$ (Sleep-EDF-20) & $0.647$ \\
-AT-BiLSTM~\cite{fu2021atbilstm} & 2021 & Attention-augmented bidirectional LSTM, single-channel EEG. & $0.838$ (Sleep-EDF) & $0.692$ \\
-\midrule
-\textbf{MM-Net (proposed)} & -- & Two feature streams (neural and cardiorespiratory) fused into a BiLSTM that jointly stages sleep and detects respiratory events from the fourteen-channel polysomnogram. & -- & $\mathbf{0.739}$ \\
-\bottomrule
-\end{tabular*}
-\end{table*}
-
 \section{Conclusion}
 We built a model that reads the neural and cardiorespiratory channels of a stroke patient's
 polysomnogram and, from one pass,
