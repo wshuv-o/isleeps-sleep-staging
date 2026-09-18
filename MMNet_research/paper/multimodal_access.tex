@@ -83,26 +83,27 @@ University-Bangladesh, Dhaka 1229, Bangladesh}
 \titlepgskip=-21pt
 
 \begin{abstract}
-Sleep-disordered breathing is common in the weeks after an ischemic stroke and predicts
+Sleep-disordered breathing is common after an ischemic stroke and predicts
 worse recovery, yet automatic sleep analysis reads only the electroencephalogram and
-reports only sleep stages. A clinical polysomnogram records far more, and here the disease
+reports only sleep stages. The polysomnogram records far more, and here the disease
 is visible in its cardiorespiratory channels: the median patient
 has a scored respiratory event in $13\%$ of epochs. We present MM-Net, a two-stream
-multi-task model reading fourteen neural and cardiorespiratory channels, which produces two
-outputs from one
-forward pass, the sleep stage of every 30-second epoch and a per-epoch
-respiratory-event label, with a direct cardiorespiratory path carrying breathing effort to
-the respiratory decision. On iSLEEPS, a stroke-specific
+multi-task model reading fourteen neural and cardiorespiratory channels, which from one
+forward pass gives the sleep stage of every 30-second epoch and a per-epoch
+respiratory-event label, with a direct path carrying breathing effort to
+that decision. On iSLEEPS, a stroke-specific
 polysomnography corpus ($99$ patients, $92{,}560$ epochs), under patient-independent ten-fold cross-validation, MM-Net stages sleep at
 $\mmAcc$ accuracy (Cohen's $\kappa$ $\mmK$) and flags the epochs carrying a
-respiratory event at $\mmAuc$ AUC, an epoch-level read-out and not an event-level one,
-with $2.76$\,M trainable parameters. Against matched single-task models, identical but for
-the loss, the joint objective leads on both tasks, by $0.006$ staging accuracy in nine
-folds of ten and $0.007$ respiratory AUC in seven. We benchmark thirteen deep architectures retrained
+respiratory event at $\mmAuc$ AUC, an epoch-level and not event-level read-out,
+with $2.76$\,M parameters. Against matched single-task models, identical but for
+the loss, it leads on both tasks, and against the closest prior joint
+system it leads in every fold on every metric. We benchmark thirteen architectures retrained
 here and three applied zero-shot from healthy sleep; every retrained baseline lands
 between $0.613$ and $0.720$ accuracy, and the five reimplementations publishing
 an accuracy are recovered to within $0.04$,
-placing the limit in the cohort itself. Cross-validated on healthy sleep
+placing the limit in the cohort itself. Repeating the architecture search inside the
+training data, so no test patient influences the model scoring it, costs $0.006$
+accuracy. On healthy sleep
 the same architecture reaches $0.856$, losing $0.115$ crossing into stroke against $0.140$
 to $0.148$ for those baselines. Code, features and checkpoints are released.
 \end{abstract}
@@ -172,11 +173,14 @@ accuracy in nine folds of ten and $0.007$ respiratory AUC in seven, so the secon
 obtained without spending the first (Section~\ref{sec:joint}). The ablation identifies respiratory effort, not oxygen
 saturation, as the channel the read-out depends on (Section~\ref{sec:ablate}).
 
-\item \label{c:bench}We benchmark the model against sixteen baseline configurations, those we ran ourselves
+\item \label{c:bench}We benchmark the model against seventeen baseline configurations, those we ran ourselves
 on the same patient-independent folds as the proposed model, covering convolutional, recurrent, attentional and fully
 convolutional families, and reimplement six published architectures (U-Time,
 TinySleepNet, SleepTransformer) so that every comparison runs through one pipeline
-(Table~\ref{tab:bench}).
+(Table~\ref{tab:bench}). Among them is the closest prior joint system,
+Huttunen~et~al.~\cite{huttunen2023simultaneous}, ported from its authors' released code, and
+the only baseline that scores both tasks; the proposed model is ahead of it in every fold on
+every metric.
 
 \item \label{c:ceiling}We establish that the accuracy attainable on this cohort is limited by the patients and
 not by our implementations. The five reimplementations whose papers report an accuracy
@@ -235,7 +239,8 @@ pulse oximetry alone up to a full montage~\cite{huttunen2023simultaneous}, and m
 staging-and-apnea models have followed~\cite{multitask2025elderly}. Those studies work in
 suspected-apnea and elderly populations; what is untested is whether the arrangement
 survives a cohort whose neural signal is itself damaged, which is the question this paper
-asks. Foundation models such
+asks and which Section~\ref{sec:results} answers by running their architecture here, on
+these folds, from the code they released. Foundation models such
 as LaBraM, CBraMod, EEGPT, and BIOT learn transferable representations from large unlabeled
 corpora~\cite{labram2024,cbramod2025,eegpt2024,biot2023}. SleepFM extends this idea to several
 PSG modalities~\cite{sleepfm2026}, while cross-scale foundation models and standardized
@@ -604,18 +609,20 @@ $10{,}000$ times, rebuilding the pooled epoch set and recomputing every metric. 
 $0.734$ accuracy with a $95\%$ interval of $[0.717,\ 0.750]$, $\kappa$ $0.628$
 $[0.604,\ 0.651]$, respiratory AUC $0.778$ $[0.752,\ 0.802]$ and average precision $0.419$
 $[0.355,\ 0.480]$. These condition on the fitted procedure: they carry the variation in
-which patients were recorded, and not retraining variability, and nothing in them undoes
-the selection optimism described below. The
+which patients were recorded and not retraining variability, and they say nothing about the
+selection optimism measured below. The
 folds are fixed across all configurations so that comparisons are paired. Fixing them buys
 paired comparisons at a price we should state plainly: the configuration reported here was
 chosen by comparing forty-nine candidates on these same ten folds, so the folds that
 selected the model are the folds that score it, and the in-domain figures are not free of
-selection optimism. Two things bound how much that can matter. The ten best candidates span
-$0.004$ accuracy against a fold-to-fold standard deviation of $0.019$, so the margin
-available to selection is about a fifth of the uncertainty we already report; and the
-external corpora in Section~\ref{sec:external} took no part in selection, so the zero-shot
-figures there are unaffected by it. A nested selection loop would remove the concern rather
-than bound it, and we did not run one. The proposed
+selection optimism. Rather than bound it we measured it, by running the selection again
+inside the training data (Section~\ref{sec:nested}): five outer patient-independent folds,
+all forty-nine candidates compared on three inner folds within each outer training set, and
+the winner scored once on outer patients that took no part in choosing it. That procedure
+reaches $0.734 \pm 0.009$ accuracy against the $\mmAcc$ reported here, so the optimism in
+the headline figure is $0.006$, about a third of the fold-to-fold standard deviation of
+$0.019$. The external corpora in Section~\ref{sec:external} took no part in selection
+either, so the zero-shot figures there were never exposed to it. The proposed
 model, its ablations and the six reimplemented literature models all use the full ten; the
 earlier retrained baselines were run at five, which Table~\ref{tab:bench} states per row. Because a single
 training seed can flatter a result, we retrained the headline configuration under three
@@ -634,6 +641,47 @@ $0.018$. Several effects below sit at that floor and differ in size by more than
 magnitude; the test cannot separate them, and the effect sizes are reported beside every
 $p$ for that reason. The three seed means for respiratory AUC are
 $0.781$, $0.783$ and $0.781$, so $\mmAuc$ is stable to the third decimal under reseeding.
+
+\subsection{Selection Inside the Training Data}
+\label{sec:nested}
+The figures above are produced by a configuration chosen on the folds that score it. To find
+out what that is worth we ran the whole selection again with the test patients quarantined:
+five outer patient-independent folds; inside each outer training set, three inner folds; all
+forty-nine candidates of the original search compared on those inner folds alone; and the
+inner winner retrained on the full outer training set and scored once on the outer patients.
+No outer patient influences the choice of the model that scores them, so the resulting number
+estimates the whole procedure, search included, instead of a configuration that already knew
+its test set.
+
+The procedure reaches $0.7336 \pm 0.0089$ accuracy across the five outer folds against
+$\mmAcc$ for the reported model, so selection is worth $0.006$ accuracy here. That is about a
+third of the fold-to-fold standard deviation and close to the $0.004$ the spread of the top
+ten candidates suggested, which is the more useful statement: the bound we could compute
+without a nested loop turned out to be roughly the right size.
+
+What the inner loop chose is worth reporting, because it is not what the paper reports. Every
+outer fold kept the neural side of the published model, the engineered descriptors with the
+frozen encoder, the BiLSTM, and the same width and regularisation, and every one of them
+replaced the cardiorespiratory encoder. Four selected a randomly initialised time-series
+encoder over the raw signal and the fifth a random projection of the fourteen engineered
+descriptors. The search therefore does not recover the learned convolutional encoder the
+paper adopts, and we should not pretend otherwise.
+
+Two things keep that from undermining the result. Whatever the inner loop picked, the outer
+accuracy lands within $0.006$ of the published figure, so the choice of cardiorespiratory
+encoder is not what the accuracy rests on; and this is the same conclusion
+Section~\ref{sec:repr} reaches from the other direction, where a random expansion of the same
+fourteen numbers recovers most of the gap to the learned encoder. The honest reading is that
+the \emph{representation} of the cardiorespiratory stream matters, which is the claim
+Section~\ref{sec:repr} makes, while the particular encoder that implements it does not
+separate from its random counterparts at this cohort size. A reader should take the headline
+accuracy as a figure that survives selection being done properly, and should not take the
+learned encoder as a component this search can justify.
+
+Two limits. Five outer folds are fewer than the ten used everywhere else, so this estimate is
+noisier than the figures it is compared against; and it uses a single seed, because five
+outer folds by forty-nine candidates by three inner folds is already seven hundred and
+thirty-five trainings.
 
 \subsection{Implementation and Hyperparameters}
 The model is implemented in PyTorch and trained on a single NVIDIA RTX~2060 GPU (6\,GB) under
@@ -712,8 +760,13 @@ AT-BiLSTM~\cite{fu2021atbilstm} & 0.838 & $0.835 \pm 0.046$ & $-0.003$ \\
 \begin{table*}[t]
 \caption{Sleep staging on iSLEEPS, patient-independent, against every architecture we
 evaluated. Cells are mean $\pm$ SD across folds where per-fold values were retained.
-$^{\dagger}$ marks a model we reimplemented (Table~\ref{tab:reimpl}), $^{\ddagger}$ one
-quoted from the corpus paper on its own protocol, ``feat'' engineered features. Bold marks
+$^{\dagger}$ marks a model we reimplemented and checked against its published Sleep-EDF
+figure (Table~\ref{tab:reimpl}), $^{\ddagger}$ one
+quoted from the corpus paper on its own protocol, ``feat'' engineered features.
+$^{\ast}$ marks the one architecture ported from its authors' released code rather than
+reimplemented from a paper; it carries no row in Table~\ref{tab:reimpl} because that paper
+reports no Sleep-EDF figure to check against, and it is the only baseline here that scores
+both tasks. Bold marks
 the best value among rows run under our protocol.}
 \label{tab:bench}
 \centering
@@ -737,6 +790,7 @@ AT-BiLSTM~\cite{fu2021atbilstm}$^{\dagger}$ & 1\,EEG & $0.92$\,M & $0.835 \pm 0.
 CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & --- & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
 Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & --- & $0.623 \pm 0.020$ & 0.582 & 0.488 \\
 Raw multimodal CNN                            & 14\,ch  & 0.95\,M      & --- & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
+Huttunen~et~al.~\cite{huttunen2023simultaneous}$^{\ast}$ & 4\,ch & $3.80$\,M & --- & $0.599 \pm 0.060$ & $0.495 \pm 0.067$ & $0.440 \pm 0.078$ \\
 \addlinespace[2pt]\midrule
 \multicolumn{7}{@{}l}{\emph{Trained on healthy sleep, applied zero-shot}}\\[1pt]
 CNN                                           & 4\,EEG  & $0.49$\,M    & $0.806 \pm 0.001$ & $0.307 \pm 0.016$ & $0.223 \pm 0.013$ & $0.102 \pm 0.010$ \\
@@ -803,7 +857,31 @@ staging learning curve has flattened, which points at the cohort and not at any 
 We therefore do not position the model as a staging leader. What sets it apart is
 a second output. Of the models that stage competitively here it is the only one that also
 detects respiratory events; the raw multimodal CNN produces both outputs but stages at
-$0.654$. A representative held-out night is
+$0.654$.
+
+The comparison that speaks to this directly is against Huttunen~et~al., the closest prior
+system: one network scoring sleep stages and respiratory events at once, which makes it the
+only baseline in Table~\ref{tab:bench} that answers the same two questions this model does.
+We ported the architecture from the authors' released code and not from the paper, so the
+encoder blocks, the squeeze-and-excitation ratios, the atrous pyramid at the bottleneck and
+the shape of the two segment classifiers are theirs. On the same folds it reaches
+$0.599$ accuracy and $0.710$ respiratory AUC against $\mmAcc$ and $\mmAuc$, and the
+proposed model is ahead in all ten folds on every metric (Wilcoxon on fold-means, $p=0.002$,
+the floor at this sample size).
+
+That margin should be read as a statement about this corpus and not about their result.
+Their model was built for, and reported on, $877$ suspected-obstructive-sleep-apnea
+recordings; three things had to change to bring it here. iSLEEPS has no oronasal
+thermocouple, so it reads four of the five signals of their fullest configuration; their
+respiratory output is a three-way decision every second, which this corpus cannot supply and
+which we replaced with the same per-epoch binary label used throughout; and a single EEG
+derivation at their $32$\,Hz is a thin neural input for staging, which is most of why the
+staging gap is wider than the respiratory one. What the row supports is that a joint
+architecture tuned on a general sleep-apnea population does not transfer to a stroke cohort
+of this size, which is the same conclusion the rest of Table~\ref{tab:bench} reaches for
+single-task architectures.
+
+A representative held-out night is
 shown in Figure~\ref{fig:hypno}: the predicted hypnogram follows the reference through the
 night's cycles, and the stage-probability ribbon exposes where the model is confident and where
 it hesitates.
@@ -1412,6 +1490,59 @@ Representation & Variant & Resp.\ AUC\,$\uparrow$ & Staging acc\,$\uparrow$ & $\
 \bottomrule
 \end{tabular*}
 \end{table*}
+
+\subsection{The Two Loss Constants}
+\label{sec:losssens}
+Two constants in Section~\ref{sec:method} were fixed by argument instead of by experiment:
+the task balance $\lambda=1$ and the positive weight $\pi=n_-/n_+$, which is $5.35$ on this
+corpus. Equal coefficients do not make equal influence, since the two terms differ in scale
+and curvature, so $\lambda=1$ is a claim about arithmetic and not about balance. We therefore
+swept each with everything else at the published setting, three seeds by ten folds per value,
+and report both heads at every point, because the failure worth finding is not a lower number
+on one head but a trade between them (Table~\ref{tab:losssens}).
+
+There is no trade, and there is very little effect. Across $\lambda$ from $0.25$ to $4$
+staging accuracy spans $0.003$ and respiratory AUC $0.018$, and across $\pi$ from $1$ to $11$
+they span $0.003$ and $0.007$; the fold-to-fold standard deviations are $0.019$ and $0.038$.
+Both heads also peak at the same $\lambda$, which is the specific thing a compromise would
+have ruled out: if $\lambda=1$ were balancing one task against the other, the two curves
+would peak on opposite sides of it.
+
+Neither published value is quite the best of those tested. Staging is highest at $\lambda=2$
+($0.7403$) and at $\pi=11$ ($0.7422$), and respiratory AUC at $\lambda=2$ ($0.7840$) and
+$\pi=8$ ($0.7846$). Every one of those margins is under a fifth of a fold standard deviation,
+so we have not found better settings, only confirmed that the objective is insensitive to
+both constants over the range a reader would ask about. That insensitivity is the result:
+fixing them by fiat costs nothing measurable here.
+
+\begin{table}[t]
+\caption{Sensitivity to the two loss constants, ten-fold patient-independent, three seeds
+per value. Everything else is held at the published configuration; $^{\star}$ marks the
+published value, which is read from the headline run rather than re-trained.}
+\label{tab:losssens}
+\centering
+\small
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{lcc}
+\toprule
+Value & Staging acc\,$\uparrow$ & Resp.\ AUC\,$\uparrow$ \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Task balance $\lambda$}}\\[1pt]
+$0.25$ & $0.7370$ & $0.7660$ \\
+$0.5$  & $0.7391$ & $0.7772$ \\
+$1^{\star}$ & $\mmAcc$ & $\mmAuc$ \\
+$2$    & $\mathbf{0.7403}$ & $\mathbf{0.7840}$ \\
+$4$    & $0.7373$ & $0.7795$ \\
+\addlinespace[2pt]\midrule
+\multicolumn{3}{@{}l}{\emph{Respiratory positive weight $\pi$}}\\[1pt]
+$1$    & $0.7399$ & $0.7778$ \\
+$2.5$  & $0.7388$ & $0.7779$ \\
+$5.35^{\star}$ & $\mmAcc$ & $\mmAuc$ \\
+$8$    & $0.7401$ & $\mathbf{0.7846}$ \\
+$11$   & $\mathbf{0.7422}$ & $0.7828$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Calibration and Selective Prediction}
 A clinical reader needs to know not only how often the model is right but whether it knows when
