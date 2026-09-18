@@ -495,15 +495,16 @@ The two embeddings are concatenated and projected back to the stream width,
 \begin{equation}
 z_t=\mathrm{GELU}\!\big(W_f\,[\,e_t\ ;\ c_t\,]\big)\in\mathbb{R}^{D},\qquad D=128.
 \end{equation}
-This is deliberately the simplest fusion available, and it is what every number in this paper
-was produced with. We arrived at it by evaluating the obvious alternative first: the two
-embeddings as tokens carrying learned modality-type embeddings, refined by four-head scaled
+This is the simplest fusion available, and it is what every number in this paper
+was produced with. We additionally evaluated an attention-based fusion, in which the two
+embeddings are treated as tokens carrying learned modality-type embeddings, refined by
+four-head scaled
 dot-product attention so each modality can read the other, then projected. On the same ten
 folds, in the feature-only configuration the comparison was run in, attention was
 indistinguishable from concatenation on staging ($+0.005$ accuracy, $p=0.49$) and slightly
-worse on the respiratory head ($-0.014$ AUC, $p=0.06$). Since the elaborate fusion buys
-nothing measurable here, we report and release the simple one, and the gain from the second
-stream should be read as coming from the added modality.
+worse on the respiratory head ($-0.014$ AUC, $p=0.06$). Since the attention-based fusion
+provides no measurable improvement in this setting, we report and release the simpler one,
+and the gain from the second stream is therefore attributable to the added modality.
 
 \subsection{Temporal Decoder and Two Heads}
 Sleep is sequential and respiratory events cluster, so the fused vectors of an $L=20$ epoch
@@ -623,7 +624,7 @@ folds are fixed across all configurations so that comparisons are paired. Fixing
 cost that we quantify below: the reported configuration was chosen by comparing forty-nine
 candidates on these same ten folds, which is the standard route by which an in-domain figure
 acquires selection optimism. We therefore measured how much it acquired, by repeating the
-selection with the test patients quarantined (Section~\ref{sec:nested}): five outer
+selection with the test patients held out from model selection (Section~\ref{sec:nested}): five outer
 patient-independent folds, all forty-nine candidates compared on three inner folds within
 each outer training set, and the winner scored once on outer patients that took no part in
 choosing it. That procedure
@@ -633,16 +634,16 @@ $0.019$ and small enough that it changes no comparison in this paper. The extern
 Section~\ref{sec:external} took no part in selection
 either, so the zero-shot figures there were never exposed to it. The proposed
 model, its ablations and the six reimplemented literature models all use the full ten; the
-earlier retrained baselines were run at five, which Table~\ref{tab:bench} states per row. Because a single
-training seed can flatter a result, we retrained the headline configuration under three
+earlier retrained baselines were run at five, which Table~\ref{tab:bench} states per row. Because performance estimates may vary
+across random seeds, we retrained the headline configuration under three
 seeds on the same folds. Staging accuracy varies by $0.005$ across seeds against
 $0.020$ across folds, and respiratory AUC by $0.001$ against $0.038$: fold-to-fold spread
 is four times the seed spread for staging and thirty times it for respiratory detection.
 The uncertainty in these results is therefore dominated by which patients fall in which
 fold, which is a property of a cohort this size. Every headline figure in this paper is the mean over all thirty fold-values, ten
 folds by three seeds. Paired tests, however, are computed on the ten fold-means: the three
-seeds within a fold train and test on the same patients, so they are three re-rolls of one
-experiment, and treating them as thirty would triple
+seeds within a fold train and test on the same patients, so they constitute repeated training
+runs on one patient partition, and treating them as thirty would triple
 the effective sample and shrink every $p$. One consequence follows directly. With
 ten paired folds the smallest two-sided Wilcoxon $p$ is $2/2^{10}=0.002$, reached when every
 fold moves the same way, so after Holm correction across a family of nine the floor is
@@ -654,24 +655,27 @@ $0.781$, $0.783$ and $0.781$, so $\mmAuc$ is stable to the third decimal under r
 \subsection{Selection Inside the Training Data}
 \label{sec:nested}
 The figures above are produced by a configuration chosen on the folds that score it. To find
-out what that is worth we ran the whole selection again with the test patients quarantined:
+out what that contributes we ran the whole selection again with the test patients held out
+from model selection:
 five outer patient-independent folds; inside each outer training set, three inner folds; all
 forty-nine candidates of the original search compared on those inner folds alone; and the
 inner winner retrained on the full outer training set and scored once on the outer patients.
 No outer patient influences the choice of the model that scores them, so the resulting number
 estimates the whole procedure, search included.
 
-The headline figure survives the quarantine. The nested procedure reaches
+The nested procedure yields a comparable estimate, reaching
 $0.7336 \pm 0.0089$ accuracy across the five outer folds against $\mmAcc$ for the reported
-model, so selection is worth $0.006$ accuracy, about a third of the fold-to-fold standard
-deviation and smaller than any difference this paper rests an argument on. It is also close
+model. The estimated selection optimism is therefore $0.006$ accuracy, about a third of the
+fold-to-fold standard
+deviation and smaller than the performance differences underlying the principal comparisons.
+It is also close
 to the $0.004$ suggested by the spread of the top ten candidates, so the bound available
-without a nested loop was about the right size.
+without a nested loop was of the right order.
 
 The design the inner loop arrived at is informative in its own right. Every outer fold kept
 the neural side of the published model unchanged, the engineered descriptors with the frozen
-encoder, the BiLSTM, and the same width and regularisation, which is a five-fold independent
-vote for the neural half of the architecture. Where the folds differed from the published
+encoder, the BiLSTM, and the same width and regularisation, providing consistent support for
+the neural half of the architecture across all five outer folds. Where the folds differed from the published
 model was the cardiorespiratory encoder: four chose a randomly initialised time-series
 encoder over the raw signal and the fifth a random projection of the fourteen engineered
 descriptors, and none chose the learned convolutional encoder.
@@ -899,21 +903,22 @@ it hesitates.
 The margin over the retrained baselines is tested. The folds are fixed
 across every model in Table~\ref{tab:bench}, so each baseline is scored on exactly the patients
 the proposed model was and the comparison is paired. That matters here: fold-to-fold variation
-is large and it is \emph{shared}, because the difficulty lies in the patients (AttnSleep spans $0.627$ to $0.755$ across folds), so reading two overlapping
-$\pm$SD intervals charges the cohort's own variability against the difference and hides it.
+is large and it is \emph{shared}, because the difficulty lies in the patients (AttnSleep spans $0.627$ to $0.755$ across folds). Since that variability is common to models evaluated on
+identical patient partitions, paired comparisons are more informative than the overlap
+between marginal standard-deviation ranges.
 Paired on the ten fold-means, with Holm correction across the eight baselines we ran
 ourselves, the proposed model is ahead of every one of them on accuracy, by $+0.019$ to
 $+0.093$, and wins between eight and ten of the ten folds in each comparison. The margin is
 statistically separable for five: Micro SleepNet, SleepTransformer, U-Time, AT-BiLSTM and
 TinySleepNet (Holm $p$ from $0.016$ to $0.039$). For the three closest it is not. AttnSleep
 ($+0.023$, Holm $p=0.17$), our reimplementation of the corpus LSTM ($+0.019$, $p=0.17$) and
-1D-ResNet-SE-LSTM ($+0.032$, $p=0.15$) sit inside the noise that ten folds can resolve. We
-report that as it stands, and it is the cohort-ceiling argument arriving by another route:
+1D-ResNet-SE-LSTM ($+0.032$, $p=0.15$) fall within the resolution of ten folds. This is
+consistent with the cohort-difficulty argument made elsewhere:
 three architectures spanning 2021 to 2023 land close enough to the proposed model that this
-cohort cannot tell them apart.
+cohort does not separate them.
 The accuracy margin is the narrowest of the three and the one most exposed to the cohort's
-noise; macro-F1 and $\kappa$, which do not let a model coast on the two majority stages,
-separate the models by two to three times as much.
+noise. Macro-F1 and $\kappa$ show separations two to three times larger, since they reduce
+the influence of performance on the two majority classes.
 
 \begin{figure*}[t]
 \centering
@@ -1124,16 +1129,17 @@ Modality removed & Staging acc\,$\uparrow$ & Holm $p$ & Respiratory AUC\,$\uparr
 
 \subsection{Physiological Validity of the Respiratory Read-out}
 \label{sec:noflow}
-Because the events were scored from airflow, a model that keyed on the airflow channel would
-be right for a trivial reason. Removing the airflow features leaves detection essentially
+Because the events were scored from airflow, predominant reliance on that channel could
+produce a circular association. Removing the airflow features leaves detection essentially
 unchanged, at $\noflowAuc$ AUC (Table~\ref{tab:ablate}), within one fold standard deviation of
-the full $\mmAuc$. The model therefore does not lean on the labeling signal. It reads above all
-the straining of the chest and abdomen (the only channel whose removal costs significantly),
-together with the fall in blood oxygen, the beat-to-beat change in the heart, and the
+the full $\mmAuc$, so the model does not appear to depend primarily on the signal used for
+event annotation. Respiratory effort provides the strongest contribution, being the only
+channel whose removal costs significantly,
+together with oxygen desaturation, beat-to-beat cardiac variability, and the
 cortical arousal that ends the event, none of which is individually indispensable because the
-learned encoder encodes them redundantly. This is the useful regime, because it detects the
-bodily consequences of disordered breathing, not a repeat of a measurement a technician
-has already made. It is also the physiologically expected one: the effort belts register the
+learned encoder represents them redundantly. This indicates that detection is supported by
+physiological correlates of disordered breathing rather than by reproduction of the primary
+scoring signal. It is also the physiologically expected one: the effort belts register the
 paradoxical thoraco-abdominal motion of an obstructive event while it is happening, whereas
 desaturation follows it by several breaths.
 
