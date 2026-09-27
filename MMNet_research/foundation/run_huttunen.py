@@ -73,6 +73,11 @@ SEQ = 20                        # epochs per segment; SEQ*SAMP must divide 768
 EPOCHS, BS, LR = 25, 8, 1e-3
 SEEDS = [42, 1, 7]
 DEV = C.DEV
+# HUTTUNEN_SIGNALS=5 adds nasal pressure ("Pressure Flow", data/pressure_flow, built by
+# preprocessing/build_pressure_cache.py), which iSLEEPS does record: with "Flow Th" as
+# the oronasal thermal sensor that gives all five of their Model 3 signals.
+FIVE = os.environ.get("HUTTUNEN_SIGNALS", "4") == "5"
+PFLOW = os.path.join(REPO, "data", "pressure_flow")
 
 # (kernel, filters, pool, dilation, se_ratio) -- DEFAULT_BLOCK_ARGS, verbatim
 BLOCKS = [(5, 32, 8, 2, 0.25), (5, 48, 6, 2, 0.25), (5, 64, 4, 2, 0.25),
@@ -208,6 +213,9 @@ def load():
         eeg = z["eeg"].astype(np.float32)            # [n, 7, 3000] at 100 Hz
         n = len(card)
         c = card[:, [CARD_SPO2, CARD_FLOW, CARD_EFFORT], :]
+        if FIVE:
+            pf = np.load(os.path.join(PFLOW, "SN%d.npz" % sid))["pflow"].astype(np.float32)
+            c = np.concatenate([c, pf[:, None, :]], axis=1)
         c32 = resample_poly(c, FS, 25, axis=-1).astype(np.float32)
         e32 = resample_poly(eeg[:, [EEG_C4], :], FS, 100, axis=-1).astype(np.float32)
         x = np.concatenate([c32, e32], axis=1)       # [n, 4, 960]
@@ -306,7 +314,7 @@ def run_fold(data, tr, va, te, seed):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "huttunen.json")
+    path = os.path.join(OUT, "huttunen5.json" if FIVE else "huttunen.json")
     res = json.load(open(path)) if os.path.exists(path) else {}
     data = load()
     print("loaded %d patients at %d Hz, %d channels" % (len(data), FS, next(iter(data.values()))[0].shape[1]))
@@ -364,8 +372,11 @@ def main():
 
     res["_summary"] = summary
     res["_note"] = ("architecture ported from github.com/rikuhuttunen/psg-simultscoring-models; "
-                    "four of their Model 3 signals (no thermocouple in iSLEEPS), 32 Hz as "
-                    "specified, respiratory head adapted to this corpus's per-epoch binary label")
+                    + ("all five of their Model 3 signals (SpO2, oronasal thermal flow, nasal "
+                       "pressure, summed effort, C4:M1), " if FIVE else
+                       "four of their Model 3 signals (nasal pressure omitted), ")
+                    + "32 Hz as specified, respiratory head adapted to this corpus's "
+                    "per-epoch binary label")
     json.dump(res, open(path, "w"), indent=1)
     print("\nsaved -> %s  [%.1f min]" % (path, (time.time() - t0) / 60))
 

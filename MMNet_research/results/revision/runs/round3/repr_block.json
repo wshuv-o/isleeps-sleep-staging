@@ -1,0 +1,108 @@
+{
+ "cardiorespiratory (neural = 188 + LaBraM, BiLSTM)": {
+  "14 engineered features": {
+   "acc": 0.7358705122854553,
+   "acc_sd30": 0.014420274475450167,
+   "auc": 0.6977338226803619,
+   "auc_sd30": 0.051253341653305994
+  },
+  "random nonlinear expansion of the 14": {
+   "acc": 0.7369919105360587,
+   "acc_sd30": 0.017458687121209553,
+   "auc": 0.7153033390580762,
+   "auc_sd30": 0.04740807939539108,
+   "delta_auc": 0.01756951637771431,
+   "p": 0.005859375,
+   "holm_p_within_block": 0.01171875
+  },
+  "random linear projection of raw": {
+   "acc": 0.7352099545672386,
+   "acc_sd30": 0.021123717569915462,
+   "auc": 0.7312477107927262,
+   "auc_sd30": 0.04379583242936339,
+   "delta_auc": 0.03351388811236433,
+   "p": 0.009765625,
+   "holm_p_within_block": 0.01171875
+  },
+  "learned CNN (adopted)": {
+   "acc": 0.7401066506265095,
+   "acc_sd30": 0.01884820916380381,
+   "auc": 0.7816194687792845,
+   "auc_sd30": 0.03947376475774197,
+   "delta_auc": 0.08388564609892257,
+   "p": 0.001953125,
+   "holm_p_within_block": 0.01171875
+  },
+  "MOMENT, randomly initialised (not in paper)": {
+   "acc": 0.737204256255693,
+   "acc_sd30": 0.017437567304657963,
+   "auc": 0.7947236170379611,
+   "auc_sd30": 0.04485466585727277,
+   "delta_auc": 0.09698979435759925,
+   "p": 0.001953125,
+   "holm_p_within_block": 0.01171875
+  },
+  "MOMENT, pretrained, concat (not in paper)": {
+   "acc": 0.7344456110936288,
+   "acc_sd30": 0.017983599383936764,
+   "auc": 0.807756294413434,
+   "auc_sd30": 0.042144162750019656,
+   "delta_auc": 0.11002247173307211,
+   "p": 0.001953125,
+   "holm_p_within_block": 0.01171875
+  },
+  "MOMENT, pretrained, replace (not in paper)": {
+   "acc": 0.736014544460865,
+   "acc_sd30": 0.016664746846365566,
+   "auc": 0.8057687792697635,
+   "auc_sd30": 0.04086386077130264,
+   "delta_auc": 0.10803495658940165,
+   "p": 0.001953125,
+   "holm_p_within_block": 0.01171875
+  }
+ },
+ "neural (cardio = 14 features, temporal = none)": {
+  "188 engineered features": {
+   "acc": 0.740577045557757,
+   "acc_sd30": 0.01596780629227206,
+   "auc": 0.6854533993970855,
+   "auc_sd30": 0.04083088191960329
+  },
+  "frozen pretrained encoder alone": {
+   "acc": 0.7121682138180856,
+   "acc_sd30": 0.032460237850557766,
+   "auc": 0.6807533150118774,
+   "auc_sd30": 0.03315960030945706,
+   "delta_acc": -0.02840883173967146,
+   "p": 0.00390625,
+   "holm_p_within_block": 0.0078125
+  },
+  "features + pretrained (adopted)": {
+   "acc": 0.748491438388353,
+   "acc_sd30": 0.018074144431762782,
+   "auc": 0.6895278147107379,
+   "auc_sd30": 0.03656530163075501,
+   "delta_acc": 0.007914392830595918,
+   "p": 0.001953125,
+   "holm_p_within_block": 0.005859375
+  },
+  "features + two pretrained encoders": {
+   "acc": 0.7445352719818421,
+   "acc_sd30": 0.017993644697856255,
+   "auc": 0.6843936889597049,
+   "auc_sd30": 0.043060746889653834,
+   "delta_acc": 0.003958226424085054,
+   "p": 0.232421875,
+   "holm_p_within_block": 0.232421875
+  }
+ },
+ "two_vs_one_encoder_acc": {
+  "delta": -0.003956166406510864,
+  "p": 0.556640625
+ },
+ "final_model_run": {
+  "acc": 0.7393755931748037,
+  "auc": 0.7818125723826285,
+  "note": "final_model.json is a separate training run of the configuration in the 'learned CNN (adopted)' row"
+ }
+}

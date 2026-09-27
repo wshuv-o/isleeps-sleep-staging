@@ -1,0 +1,663 @@
+{
+ "dispersion": {
+  "acc_sd_30_values": 0.020170840520689747,
+  "acc_sd_10_fold_means": 0.018624488693852796,
+  "auc_sd_30_values": 0.037837505894341816,
+  "auc_sd_10_fold_means": 0.03819503220388884,
+  "acc_seed_means": [
+   0.7342776951222596,
+   0.7432579730739477,
+   0.7405911113282038
+  ],
+  "auc_seed_means": [
+   0.7830999866992825,
+   0.7809946214136333,
+   0.7813431090349695
+  ],
+  "acc_sd_across_seed_means": 0.004611882620831508,
+  "auc_sd_across_seed_means": 0.0011284669346509552,
+  "ratio_fold_to_seed_acc_30": 4.373667367330569,
+  "ratio_fold_to_seed_auc_30": 33.53000848540174,
+  "ratio_fold_to_seed_auc_10": 33.84683328422281,
+  "table11_adopted_row_is_separate_run": {
+   "arm": "A+labram",
+   "cardio": "raw_cnn",
+   "mode": "concat",
+   "hidden": 256,
+   "temporal": "lstm",
+   "n_seeds": 3,
+   "n_folds": 30,
+   "acc": 0.7401066506265097,
+   "acc_sd": 0.018848209163803812,
+   "auc": 0.7816194687792845,
+   "auc_sd": 0.039473764757741975,
+   "p_acc": 0.5425279382616282,
+   "p_acc_holm": 1.0,
+   "p_auc": 0.8552717231214046,
+   "p_auc_holm": 0.8552717231214046
+  }
+ },
+ "healthy_to_stroke": [
+  {
+   "model": "U-Time",
+   "healthy": 0.7906730205048027,
+   "stroke": 0.6461965657255411,
+   "drop": 0.14447645477926163,
+   "note": "10-fold, 99"
+  },
+  {
+   "model": "TinySleepNet",
+   "healthy": 0.8239003437509416,
+   "stroke": 0.6757265302145876,
+   "drop": 0.14817381353635395,
+   "note": "10-fold, 99"
+  },
+  {
+   "model": "SleepTransformer",
+   "healthy": 0.823259075066915,
+   "stroke": 0.6834108401226104,
+   "drop": 0.13984823494430454,
+   "note": "10-fold, 99"
+  },
+  {
+   "model": "1D-ResNet-SE-LSTM",
+   "healthy": 0.8315096213816888,
+   "stroke": 0.7078062273022645,
+   "drop": 0.12370339407942432,
+   "note": "10-fold, 99"
+  },
+  {
+   "model": "Micro SleepNet",
+   "healthy": 0.7998506246450876,
+   "stroke": 0.6473156269527317,
+   "drop": 0.1525349976923559,
+   "note": "10-fold, 99"
+  },
+  {
+   "model": "AT-BiLSTM",
+   "healthy": 0.8345497056412146,
+   "stroke": 0.6924334354304558,
+   "drop": 0.1421162702107588,
+   "note": "10-fold, 99"
+  },
+  {
+   "model": "AttnSleep",
+   "healthy": 0.8327758157640688,
+   "stroke": 0.71596140247719,
+   "drop": 0.1168144132868788,
+   "note": "10-fold x 3 seeds, 99"
+  },
+  {
+   "model": "DeepSleepNet",
+   "healthy": 0.8232222555810556,
+   "stroke": 0.6147902626240999,
+   "drop": 0.2084319929569557,
+   "note": "stroke row: 5 folds, 36720 epochs (not the 99-patient folds)"
+  },
+  {
+   "model": "CNN+BiLSTM (4 EEG)",
+   "healthy": 0.8059363631320913,
+   "stroke": 0.6125502172809182,
+   "drop": 0.19338614585117309,
+   "note": "stroke row: 5 folds, 36321 epochs (not the 99-patient folds)"
+  },
+  {
+   "model": "MM-Net (neural only)",
+   "healthy": 0.8562781634786669,
+   "stroke": 0.7409389195435842,
+   "drop": 0.11533924393508277,
+   "note": "10-fold x 3 seeds, 99"
+  }
+ ],
+ "healthy_to_stroke_range_baselines": [
+  0.1168144132868788,
+  0.2084319929569557
+ ],
+ "baselines_accuracy_paired": {
+  "AttnSleep": {
+   "diff": 0.0234141906976136,
+   "t_corrected": 1.3539171861694064,
+   "p_corrected": 0.20878017314434702,
+   "t_naive": 1.9671960641451292,
+   "p_naive_t": 0.08070526899368534,
+   "p_wilcoxon": 0.083984375,
+   "wins": 8,
+   "holm_wilcoxon_9": 0.16796875,
+   "holm_nadeau_bengio_9": 0.41756034628869404
+  },
+  "LSTM reimplementation": {
+   "diff": 0.01916734642561173,
+   "t_corrected": 1.3317308038131022,
+   "p_corrected": 0.21568973945532258,
+   "t_naive": 1.934959997940501,
+   "p_naive_t": 0.08499377435702721,
+   "p_wilcoxon": 0.10546875,
+   "wins": 8,
+   "holm_wilcoxon_9": 0.16796875,
+   "holm_nadeau_bengio_9": 0.41756034628869404
+  },
+  "1D-ResNet-SE-LSTM": {
+   "diff": 0.03156936587253928,
+   "t_corrected": 1.7086151966945677,
+   "p_corrected": 0.12169648020080141,
+   "t_naive": 2.482560325263164,
+   "p_naive_t": 0.03484475816415947,
+   "p_wilcoxon": 0.048828125,
+   "wins": 8,
+   "holm_wilcoxon_9": 0.146484375,
+   "holm_nadeau_bengio_9": 0.3650894406024042
+  },
+  "AT-BiLSTM": {
+   "diff": 0.046942157744347825,
+   "t_corrected": 2.4447436649128944,
+   "p_corrected": 0.03707502295953169,
+   "t_naive": 3.552130192738857,
+   "p_naive_t": 0.006195178880908405,
+   "p_wilcoxon": 0.005859375,
+   "wins": 9,
+   "holm_wilcoxon_9": 0.029296875,
+   "holm_nadeau_bengio_9": 0.14830009183812676
+  },
+  "TinySleepNet": {
+   "diff": 0.06364906296021602,
+   "t_corrected": 2.7818191034719155,
+   "p_corrected": 0.02133722920431418,
+   "t_naive": 4.041889450414999,
+   "p_naive_t": 0.0029202944707785988,
+   "p_wilcoxon": 0.009765625,
+   "wins": 9,
+   "holm_wilcoxon_9": 0.0390625,
+   "holm_nadeau_bengio_9": 0.1066861460215709
+  },
+  "SleepTransformer": {
+   "diff": 0.05596475305219323,
+   "t_corrected": 5.038304100762167,
+   "p_corrected": 0.0007014011159427773,
+   "t_naive": 7.320486140682952,
+   "p_naive_t": 4.4657042440429056e-05,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10,
+   "holm_wilcoxon_9": 0.017578125,
+   "holm_nadeau_bengio_9": 0.005611208927542219
+  },
+  "U-Time": {
+   "diff": 0.09317902744926267,
+   "t_corrected": 3.4469376478129217,
+   "p_corrected": 0.007309972581931131,
+   "t_naive": 5.008284290500773,
+   "p_naive_t": 0.0007306630560435331,
+   "p_wilcoxon": 0.00390625,
+   "wins": 9,
+   "holm_wilcoxon_9": 0.0234375,
+   "holm_nadeau_bengio_9": 0.043859835491586785
+  },
+  "Micro SleepNet": {
+   "diff": 0.092059966222072,
+   "t_corrected": 4.256204412836372,
+   "p_corrected": 0.0021229792314740436,
+   "t_naive": 6.1841216395352046,
+   "p_naive_t": 0.0001619257660283114,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10,
+   "holm_wilcoxon_9": 0.017578125,
+   "holm_nadeau_bengio_9": 0.014860854620318305
+  },
+  "Huttunen et al. (port)": {
+   "diff": 0.14071027199131572,
+   "t_corrected": 6.046259828240798,
+   "p_corrected": 0.00019135765053713243,
+   "t_naive": 8.78501185923041,
+   "p_naive_t": 1.0400788278976131e-05,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10,
+   "holm_wilcoxon_9": 0.017578125,
+   "holm_nadeau_bengio_9": 0.001722218854834192
+  }
+ },
+ "baselines_accuracy_paired_seed42_reference": {
+  "AttnSleep": {
+   "diff": 0.0234141906976136,
+   "t_corrected": 1.3539171861694064,
+   "p_corrected": 0.20878017314434702,
+   "t_naive": 1.9671960641451292,
+   "p_naive_t": 0.08070526899368534,
+   "p_wilcoxon": 0.083984375,
+   "wins": 8,
+   "holm_wilcoxon_9": 0.193359375,
+   "holm_nadeau_bengio_9": 0.6128633400339761
+  },
+  "LSTM reimplementation": {
+   "diff": 0.01916734642561173,
+   "t_corrected": 1.3317308038131022,
+   "p_corrected": 0.21568973945532258,
+   "t_naive": 1.934959997940501,
+   "p_naive_t": 0.08499377435702721,
+   "p_wilcoxon": 0.10546875,
+   "wins": 8,
+   "holm_wilcoxon_9": 0.193359375,
+   "holm_nadeau_bengio_9": 0.6128633400339761
+  },
+  "1D-ResNet-SE-LSTM": {
+   "diff": 0.02647146781999521,
+   "t_corrected": 1.3686788766380709,
+   "p_corrected": 0.2042877800113254,
+   "t_naive": 1.9886443031413745,
+   "p_naive_t": 0.07796668483891409,
+   "p_wilcoxon": 0.064453125,
+   "wins": 8,
+   "holm_wilcoxon_9": 0.193359375,
+   "holm_nadeau_bengio_9": 0.6128633400339761
+  },
+  "AT-BiLSTM": {
+   "diff": 0.041844259691803755,
+   "t_corrected": 2.0364777126495732,
+   "p_corrected": 0.07217490979682936,
+   "t_naive": 2.9589335167374506,
+   "p_naive_t": 0.015987189789812516,
+   "p_wilcoxon": 0.02734375,
+   "wins": 9,
+   "holm_wilcoxon_9": 0.109375,
+   "holm_nadeau_bengio_9": 0.28869963918731745
+  },
+  "TinySleepNet": {
+   "diff": 0.05855116490767196,
+   "t_corrected": 2.3446092818571134,
+   "p_corrected": 0.0436891868820316,
+   "t_naive": 3.4066383072342097,
+   "p_naive_t": 0.007790976392734246,
+   "p_wilcoxon": 0.013671875,
+   "wins": 9,
+   "holm_wilcoxon_9": 0.068359375,
+   "holm_nadeau_bengio_9": 0.218445934410158
+  },
+  "SleepTransformer": {
+   "diff": 0.05086685499964916,
+   "t_corrected": 4.856811452072402,
+   "p_corrected": 0.0008997990334322382,
+   "t_naive": 7.0567834358048795,
+   "p_naive_t": 5.941538722500878e-05,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10,
+   "holm_wilcoxon_9": 0.017578125,
+   "holm_nadeau_bengio_9": 0.007198392267457905
+  },
+  "U-Time": {
+   "diff": 0.0880811293967186,
+   "t_corrected": 2.985319666840194,
+   "p_corrected": 0.015316785285066387,
+   "t_naive": 4.337568913973639,
+   "p_naive_t": 0.0018841441635134674,
+   "p_wilcoxon": 0.005859375,
+   "wins": 9,
+   "holm_wilcoxon_9": 0.03515625,
+   "holm_nadeau_bengio_9": 0.09190071171039832
+  },
+  "Micro SleepNet": {
+   "diff": 0.08696206816952794,
+   "t_corrected": 3.8614633282396014,
+   "p_corrected": 0.0038384773208851534,
+   "t_naive": 5.610576140661551,
+   "p_naive_t": 0.00032978005567687116,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10,
+   "holm_wilcoxon_9": 0.017578125,
+   "holm_nadeau_bengio_9": 0.026869341246196075
+  },
+  "Huttunen et al. (port)": {
+   "diff": 0.14071027199131572,
+   "t_corrected": 6.046259828240798,
+   "p_corrected": 0.00019135765053713243,
+   "t_naive": 8.78501185923041,
+   "p_naive_t": 1.0400788278976131e-05,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10,
+   "holm_wilcoxon_9": 0.017578125,
+   "holm_nadeau_bengio_9": 0.001722218854834192
+  }
+ },
+ "nadeau_bengio_internal": {
+  "neural-only vs full, accuracy": {
+   "diff": 0.0015633263687804821,
+   "t_corrected": 0.3820739168027087,
+   "p_corrected": 0.7112719475222955,
+   "t_naive": 0.5551405307685915,
+   "p_naive_t": 0.592326391684031,
+   "p_wilcoxon": 0.556640625,
+   "wins": 6
+  },
+  "full vs neural-only, respiratory AUC": {
+   "diff": 0.12824255553182734,
+   "t_corrected": 13.222307897897377,
+   "p_corrected": 3.3565264204309785e-07,
+   "t_naive": 19.21156797577146,
+   "p_naive_t": 1.2941804076914024e-08,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10
+  },
+  "full vs -all cardiorespiratory, AUC": {
+   "diff": 0.12824255553182734,
+   "t_corrected": 13.222307897897377,
+   "p_corrected": 3.3565264204309785e-07,
+   "t_naive": 19.21156797577146,
+   "p_naive_t": 1.2941804076914024e-08,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10
+  },
+  "full vs -effort, AUC": {
+   "diff": 0.03789772412178295,
+   "t_corrected": 3.3008018563615313,
+   "p_corrected": 0.009218111982118119,
+   "t_naive": 4.795953908177124,
+   "p_naive_t": 0.0009792281002920422,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10
+  },
+  "full vs -EEG, accuracy": {
+   "diff": 0.05932935272593047,
+   "t_corrected": 7.703230680617963,
+   "p_corrected": 2.9900376193623933e-05,
+   "t_naive": 11.19253469186525,
+   "p_naive_t": 1.390561626883171e-06,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10
+  },
+  "full vs -airflow, AUC": {
+   "diff": 0.004096966783071565,
+   "t_corrected": 0.7050226093889226,
+   "p_corrected": 0.4986343045633248,
+   "t_naive": 1.0243741024125548,
+   "p_naive_t": 0.3324025760575929,
+   "p_wilcoxon": 0.431640625,
+   "wins": 5
+  },
+  "bypass vs zeroed, AUC": {
+   "diff": 0.006265848108679584,
+   "t_corrected": 1.607516654114238,
+   "p_corrected": 0.14240286949021294,
+   "t_naive": 2.3356675484475304,
+   "p_naive_t": 0.04433373976084411,
+   "p_wilcoxon": 0.064453125,
+   "wins": 8
+  },
+  "joint vs staging-only, accuracy": {
+   "diff": 0.006390106088494519,
+   "t_corrected": 1.9243139995911667,
+   "p_corrected": 0.08645686419183123,
+   "t_naive": 2.795963419952822,
+   "p_naive_t": 0.020849683571129294,
+   "p_wilcoxon": 0.013671875,
+   "wins": 9
+  },
+  "joint vs respiratory-only, AUC": {
+   "diff": 0.007275373559149601,
+   "t_corrected": 1.5871613772223392,
+   "p_corrected": 0.14693821807872381,
+   "t_naive": 2.306092016801005,
+   "p_naive_t": 0.04653317485821778,
+   "p_wilcoxon": 0.048828125,
+   "wins": 7
+  },
+  "Huttunen port vs MM-Net, AUC": {
+   "diff": 0.07210485076785221,
+   "t_corrected": 3.5231569355652246,
+   "p_corrected": 0.006483219678999847,
+   "t_naive": 5.119028348121085,
+   "p_naive_t": 0.0006288014093026606,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10
+  },
+  "LaBraM in adopted model (A+labram vs A, both BiLSTM+CNN), accuracy": {
+   "diff": 0.015637601969162907,
+   "t_corrected": 6.227338499856018,
+   "p_corrected": 0.00015374387187594394,
+   "t_naive": 9.048113069364186,
+   "p_naive_t": 8.173488034923136e-06,
+   "p_wilcoxon": 0.001953125,
+   "wins": 10
+  },
+  "LaBraM in adopted model, AUC": {
+   "diff": 0.00816071763903733,
+   "t_corrected": 1.063859799169262,
+   "p_corrected": 0.3151017506990145,
+   "t_naive": 1.5457524515580965,
+   "p_naive_t": 0.15656551329681184,
+   "p_wilcoxon": 0.232421875,
+   "wins": 7
+  },
+  "_means": {
+   "A+labram_raw_cnn_acc": 0.7401066506265096,
+   "A_raw_cnn_acc": 0.7244690486573467,
+   "A+labram_raw_cnn_auc": 0.7816194687792845,
+   "A_raw_cnn_auc": 0.7734587511402472
+  }
+ },
+ "learning_curve": {
+  "points": [
+   {
+    "file": "lc_f025.json",
+    "n_train": 20.0,
+    "acc_mean": 0.7009761726328841,
+    "acc_sd": 0.03204626826201614,
+    "auc_mean": 0.7320400044204272,
+    "auc_sd": 0.07110993150156757
+   },
+   {
+    "file": "lc_f050.json",
+    "n_train": 40.0,
+    "acc_mean": 0.721225264196554,
+    "acc_sd": 0.018736874603072877,
+    "auc_mean": 0.7504465159255462,
+    "auc_sd": 0.04610882307306991
+   },
+   {
+    "file": "lc_f075.json",
+    "n_train": 59.1,
+    "acc_mean": 0.7260200638712719,
+    "acc_sd": 0.026105952987781154,
+    "auc_mean": 0.7518956781783261,
+    "auc_sd": 0.03513031514555618
+   },
+   {
+    "file": "lc_f100.json",
+    "n_train": 79.1,
+    "acc_mean": 0.7345580456834357,
+    "acc_sd": 0.01678295009012003,
+    "auc_mean": 0.7852807149557459,
+    "auc_sd": 0.039539152128868604
+   }
+  ],
+  "paired_steps": [
+   {
+    "step": "20.0->40.0",
+    "acc": {
+     "diff": 0.020249091563669674,
+     "t_corrected": 1.9777262096024364,
+     "p_corrected": 0.07934950019198274,
+     "t_naive": 2.8735695618829205,
+     "p_naive_t": 0.018369510563685968,
+     "p_wilcoxon": 0.005859375,
+     "wins": 9
+    },
+    "auc": {
+     "diff": 0.018406511505119006,
+     "t_corrected": 0.797482774497008,
+     "p_corrected": 0.44570008505149944,
+     "t_naive": 1.1587156077489644,
+     "p_naive_t": 0.27639224584924876,
+     "p_wilcoxon": 0.375,
+     "wins": 7
+    }
+   },
+   {
+    "step": "40.0->59.1",
+    "acc": {
+     "diff": 0.004794799674718098,
+     "t_corrected": 0.589454156790887,
+     "p_corrected": 0.57005564372286,
+     "t_naive": 0.8564570337671519,
+     "p_naive_t": 0.4139665033274829,
+     "p_wilcoxon": 0.4921875,
+     "wins": 6
+    },
+    "auc": {
+     "diff": 0.0014491622527798564,
+     "t_corrected": 0.10295903584982673,
+     "p_corrected": 0.920253123659561,
+     "t_naive": 0.14959601086459204,
+     "p_naive_t": 0.8843820416763197,
+     "p_wilcoxon": 0.6953125,
+     "wins": 3
+    }
+   },
+   {
+    "step": "59.1->79.1",
+    "acc": {
+     "diff": 0.008537981812163798,
+     "t_corrected": 0.7108397900948794,
+     "p_corrected": 0.4951912730630659,
+     "t_naive": 1.0328262700237478,
+     "p_naive_t": 0.32863970218030963,
+     "p_wilcoxon": 0.322265625,
+     "wins": 7
+    },
+    "auc": {
+     "diff": 0.03338503677741981,
+     "t_corrected": 2.7729937945849015,
+     "p_corrected": 0.02164728998509238,
+     "t_naive": 4.029066573886991,
+     "p_naive_t": 0.0029771515858158697,
+     "p_wilcoxon": 0.001953125,
+     "wins": 10
+    }
+   }
+  ],
+  "note": "single seed (42); nested training subsets, same test folds"
+ },
+ "severity": {
+  "n": 99,
+  "band_n": [
+   15,
+   23,
+   23,
+   38
+  ],
+  "band_mean_acc": [
+   0.7685945167931905,
+   0.7471987625753979,
+   0.7218531094826158,
+   0.7192572324033294
+  ],
+  "spearman_acc_vs_ahi": -0.1802866037109998,
+  "p": 0.07414626573237028,
+  "jonckheere_z_decreasing": 1.876973919477466,
+  "jonckheere_p_one_sided": 0.030260834238820557,
+  "rho_wake_vs_ahi": -0.031901142433665076,
+  "rho_wake_vs_acc": 0.07183673469387754,
+  "partial_spearman_acc_ahi_given_wake": -0.17854686310035134,
+  "partial_p": 0.0785759903799345,
+  "moderate_vs_severe_mannwhitney_p": 1.0
+ },
+ "secondary_tests": {
+  "bypass vs zeroed, AUC (Wilcoxon, fold means)": {
+   "p": 0.0488,
+   "bh": 0.09765625,
+   "holm": 0.3904
+  },
+  "bypass vs shuffled, AUC": {
+   "p": 0.2754,
+   "bh": 0.3054545454545455,
+   "holm": 0.8261999999999999
+  },
+  "joint vs staging-only, accuracy": {
+   "p": 0.013671875,
+   "bh": 0.068,
+   "holm": 0.150390625
+  },
+  "joint vs respiratory-only, AUC": {
+   "p": 0.048828125,
+   "bh": 0.09765625,
+   "holm": 0.3904
+  },
+  "attention vs concat, AUC (paper, feature-only model)": {
+   "p": 0.06,
+   "bh": 0.10285714285714286,
+   "holm": 0.3904
+  },
+  "attention vs concat, accuracy (paper)": {
+   "p": 0.49,
+   "bh": 0.49,
+   "holm": 0.8261999999999999
+  },
+  "incomplete montage: full model staging gap (paper)": {
+   "p": 0.017,
+   "bh": 0.068,
+   "holm": 0.17
+  },
+  "incomplete montage: neural-only staging gap (paper)": {
+   "p": 0.04,
+   "bh": 0.09765625,
+   "holm": 0.36
+  },
+  "incomplete montage: full vs neural-only on 12 (paper)": {
+   "p": 0.18,
+   "bh": 0.24000000000000002,
+   "holm": 0.72
+  },
+  "Huttunen port vs MM-Net, accuracy": {
+   "p": 0.001953125,
+   "bh": 0.0234375,
+   "holm": 0.0234375
+  },
+  "N1 F1 gain from cardio stream (fold_level_tests.json)": {
+   "p": 0.10546875,
+   "bh": 0.158203125,
+   "holm": 0.52734375
+  },
+  "transductive vs training-population normalisation, accuracy (paper)": {
+   "p": 0.28,
+   "bh": 0.3054545454545455,
+   "holm": 0.8261999999999999
+  }
+ },
+ "nested": {
+  "acc": {
+   "mean": 0.7336427419003669,
+   "sd": 0.008928663046107187
+  },
+  "mf1": {
+   "mean": 0.6599412886752992,
+   "sd": 0.029586693366010434
+  },
+  "kappa": {
+   "mean": 0.6263054795325911,
+   "sd": 0.011330415375928585
+  },
+  "auc": {
+   "mean": 0.7742888458303646,
+   "sd": 0.0470928902454281
+  },
+  "ap": {
+   "mean": 0.40619530049291824,
+   "sd": 0.07706127237798936
+  },
+  "selected": [
+   "moment_random-concat",
+   "moment_random-concat",
+   "moment_random-concat",
+   "moment_random-concat",
+   "randproj_feat-concat"
+  ],
+  "reported": {
+   "acc": 0.7393755931748036,
+   "auc": 0.7818125723826286
+  }
+ },
+ "fig3_candidates": {
+  "median": [
+   0.7478448275862069,
+   "SN80"
+  ],
+  "sn90": 0.8144104803493449,
+  "mean": 0.733827127682411
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "n_patients": 99,
+ "recording_hours": 771.3333333333334,
+ "sleep_hours": 565.675,
+ "annotation_rows_by_type": {
+  "Hypopnea": 12281,
+  "Obstructive Apnea": 1768,
+  "Central Apnea": 850,
+  "Mixed Apnea": 67,
+  "RERA": 225,
+  "Body event": 6,
+  "Obstructive Hypopnea": 4,
+  "Central Hypopnea": 6
+ },
+ "apnea_hypopnea_events": 14976,
+ "annotated_ah_per_sleep_hour_pooled": 26.47456578424007,
+ "annotated_ah_per_sleep_hour_patient_mean": 27.047062155164834,
+ "clinical_ahi_patient_mean": 25.42929292929293,
+ "rho_annotated_rate_vs_clinical_ahi": 0.6788239026932489,
+ "p": 1.1494246959807609e-14,
+ "threshold_sweep": [
+  {
+   "th": 0.2,
+   "annotated_event_sensitivity": 0.8982371794871795,
+   "false_alarms_per_hour": 3.062229904926534,
+   "predicted_runs_per_sleep_hour_mean": 7.146066846404341,
+   "annotated_per_sleep_hour_mean": 27.047062155164834,
+   "rho_pred_rate_vs_ahi": -0.28510110700496005
+  },
+  {
+   "th": 0.3,
+   "annotated_event_sensitivity": 0.8525641025641025,
+   "false_alarms_per_hour": 3.3033707865168536,
+   "predicted_runs_per_sleep_hour_mean": 7.779794363470598,
+   "annotated_per_sleep_hour_mean": 27.047062155164834,
+   "rho_pred_rate_vs_ahi": -0.260800188860564
+  },
+  {
+   "th": 0.4,
+   "annotated_event_sensitivity": 0.8003472222222222,
+   "false_alarms_per_hour": 3.296888504753673,
+   "predicted_runs_per_sleep_hour_mean": 7.776909199857983,
+   "annotated_per_sleep_hour_mean": 27.047062155164834,
+   "rho_pred_rate_vs_ahi": -0.14735305712721378
+  },
+  {
+   "th": 0.5,
+   "annotated_event_sensitivity": 0.7433894230769231,
+   "false_alarms_per_hour": 2.9105445116681072,
+   "predicted_runs_per_sleep_hour_mean": 7.438877423517739,
+   "annotated_per_sleep_hour_mean": 27.047062155164834,
+   "rho_pred_rate_vs_ahi": -0.009660670523933174
+  },
+  {
+   "th": 0.6,
+   "annotated_event_sensitivity": 0.671073717948718,
+   "false_alarms_per_hour": 2.4127052722558338,
+   "predicted_runs_per_sleep_hour_mean": 6.730656352548702,
+   "annotated_per_sleep_hour_mean": 27.047062155164834,
+   "rho_pred_rate_vs_ahi": 0.17452910468301552
+  },
+  {
+   "th": 0.7,
+   "annotated_event_sensitivity": 0.5726495726495726,
+   "false_alarms_per_hour": 1.8318928262748486,
+   "predicted_runs_per_sleep_hour_mean": 5.769688470748983,
+   "annotated_per_sleep_hour_mean": 27.047062155164834,
+   "rho_pred_rate_vs_ahi": 0.31304928759643114
+  }
+ ],
+ "note": "detection = any overlapped epoch flagged; false alarm = flagged run touching no apnea/hypopnea annotation"
+}

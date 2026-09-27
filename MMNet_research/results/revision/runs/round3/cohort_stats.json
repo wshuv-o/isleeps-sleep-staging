@@ -1,0 +1,650 @@
+{
+ "n_patients": 99,
+ "n_epochs": 92560,
+ "hours": 771.3333333333334,
+ "stage_share_pct": {
+  "W": 26.66,
+  "N1": 10.08,
+  "N2": 42.26,
+  "N3": 8.87,
+  "R": 12.13
+ },
+ "stage_counts": {
+  "W": 24679,
+  "N1": 9327,
+  "N2": 39117,
+  "N3": 8212,
+  "R": 11225
+ },
+ "label_rule": "onset epoch only (preprocessing/build_multimodal.py:read_apnea)",
+ "label_check_vs_mm_features": {
+  "n_checked": 96,
+  "n_identical": 96,
+  "mismatches": {}
+ },
+ "prevalence_pooled": 0.15748703543647363,
+ "burden_pct": {
+  "median": 12.955032119914348,
+  "max": 60.545645330535145,
+  "min": 0.0,
+  "above_5pct": 79,
+  "at_or_below_5pct": 20,
+  "zero": 1
+ },
+ "per_patient_burden_pct": {
+  "SN1": 26.917712691771268,
+  "SN2": 2.3508137432188065,
+  "SN3": 28.008298755186722,
+  "SN4": 28.599801390268127,
+  "SN5": 1.6887816646562124,
+  "SN6": 4.113924050632911,
+  "SN7": 6.441393875395987,
+  "SN8": 21.203703703703702,
+  "SN9": 7.792207792207792,
+  "SN10": 8.36864406779661,
+  "SN11": 10.1956745623069,
+  "SN12": 9.78494623655914,
+  "SN13": 23.022432113341203,
+  "SN14": 0.6369426751592357,
+  "SN15": 3.248259860788863,
+  "SN16": 12.439261418853254,
+  "SN17": 6.604651162790698,
+  "SN18": 7.47800586510264,
+  "SN19": 4.424778761061947,
+  "SN20": 0.32786885245901637,
+  "SN21": 17.920353982300885,
+  "SN22": 17.269076305220885,
+  "SN23": 10.48728813559322,
+  "SN24": 21.254355400696863,
+  "SN25": 9.09970958373669,
+  "SN26": 57.09534368070953,
+  "SN27": 13.93596986817326,
+  "SN29": 22.40663900414938,
+  "SN30": 7.614213197969544,
+  "SN31": 10.794896957801766,
+  "SN32": 13.682092555331993,
+  "SN33": 9.234507897934387,
+  "SN34": 60.545645330535145,
+  "SN35": 19.419642857142858,
+  "SN36": 10.154241645244216,
+  "SN37": 19.868995633187772,
+  "SN38": 2.55863539445629,
+  "SN39": 22.06477732793522,
+  "SN40": 12.21449851042701,
+  "SN41": 0.6802721088435374,
+  "SN42": 7.27470141150923,
+  "SN43": 23.015075376884422,
+  "SN44": 26.270270270270267,
+  "SN45": 2.9865125240847785,
+  "SN46": 27.75229357798165,
+  "SN47": 11.653386454183266,
+  "SN48": 19.715224534501644,
+  "SN49": 16.074600355239788,
+  "SN50": 17.916666666666668,
+  "SN51": 6.906338694418164,
+  "SN52": 6.65024630541872,
+  "SN53": 0.0,
+  "SN54": 41.336353340883356,
+  "SN55": 22.301304863582445,
+  "SN56": 12.5,
+  "SN57": 1.6425120772946862,
+  "SN58": 7.85024154589372,
+  "SN59": 21.26984126984127,
+  "SN60": 5.4822335025380715,
+  "SN61": 4.669603524229075,
+  "SN62": 8.100929614873838,
+  "SN63": 2.19560878243513,
+  "SN64": 16.897233201581027,
+  "SN65": 47.03296703296703,
+  "SN66": 27.783902976846747,
+  "SN67": 27.79700115340254,
+  "SN68": 12.955032119914348,
+  "SN69": 15.92741935483871,
+  "SN70": 24.129651860744296,
+  "SN71": 32.97872340425532,
+  "SN72": 33.7360594795539,
+  "SN73": 12.78928136419001,
+  "SN74": 9.579667644183774,
+  "SN75": 12.987012987012985,
+  "SN76": 25.221238938053098,
+  "SN77": 46.231721034870645,
+  "SN78": 3.177570093457944,
+  "SN79": 7.897793263646922,
+  "SN80": 33.081896551724135,
+  "SN81": 36.20352250489237,
+  "SN82": 3.0456852791878175,
+  "SN83": 2.7027027027027026,
+  "SN84": 12.999071494893222,
+  "SN85": 2.7027027027027026,
+  "SN86": 18.21471652593486,
+  "SN87": 3.6018957345971563,
+  "SN88": 17.67337807606264,
+  "SN89": 0.24183796856106407,
+  "SN90": 23.799126637554586,
+  "SN91": 6.761565836298933,
+  "SN92": 29.028132992327365,
+  "SN93": 32.06627680311891,
+  "SN94": 40.130963517305894,
+  "SN95": 12.84796573875803,
+  "SN96": 15.833333333333332,
+  "SN97": 14.23913043478261,
+  "SN98": 25.883575883575883,
+  "SN99": 5.0228310502283104,
+  "SN100": 14.485387547649301
+ },
+ "scored_events": {
+  "total": 15207,
+  "by_type": {
+   "Hypopnea": 12281,
+   "Obstructive Apnea": 1768,
+   "Central Apnea": 850,
+   "Mixed Apnea": 67,
+   "RERA": 225,
+   "Body event": 6,
+   "Obstructive Hypopnea": 4,
+   "Central Hypopnea": 6
+  },
+  "per_hour_mean_over_patients": 19.889739547180792,
+  "per_hour_pooled": 19.715211754537595,
+  "patients_with_any_event": 98
+ },
+ "per_patient_events": {
+  "SN1": {
+   "events": 197,
+   "per_hour": 32.970711297071134,
+   "positive_epochs": 193
+  },
+  "SN2": {
+   "events": 27,
+   "per_hour": 2.9294755877034357,
+   "positive_epochs": 26
+  },
+  "SN3": {
+   "events": 283,
+   "per_hour": 35.22821576763486,
+   "positive_epochs": 270
+  },
+  "SN4": {
+   "events": 297,
+   "per_hour": 35.3922542204568,
+   "positive_epochs": 288
+  },
+  "SN5": {
+   "events": 14,
+   "per_hour": 2.0265379975874547,
+   "positive_epochs": 14
+  },
+  "SN6": {
+   "events": 39,
+   "per_hour": 4.936708860759493,
+   "positive_epochs": 39
+  },
+  "SN7": {
+   "events": 61,
+   "per_hour": 7.729672650475185,
+   "positive_epochs": 61
+  },
+  "SN8": {
+   "events": 235,
+   "per_hour": 26.11111111111111,
+   "positive_epochs": 229
+  },
+  "SN9": {
+   "events": 67,
+   "per_hour": 9.49232585596222,
+   "positive_epochs": 66
+  },
+  "SN10": {
+   "events": 79,
+   "per_hour": 10.042372881355933,
+   "positive_epochs": 79
+  },
+  "SN11": {
+   "events": 103,
+   "per_hour": 12.729145211122553,
+   "positive_epochs": 99
+  },
+  "SN12": {
+   "events": 92,
+   "per_hour": 11.870967741935484,
+   "positive_epochs": 91
+  },
+  "SN13": {
+   "events": 202,
+   "per_hour": 28.618654073199526,
+   "positive_epochs": 195
+  },
+  "SN14": {
+   "events": 7,
+   "per_hour": 0.7643312101910829,
+   "positive_epochs": 7
+  },
+  "SN15": {
+   "events": 28,
+   "per_hour": 3.897911832946636,
+   "positive_epochs": 28
+  },
+  "SN16": {
+   "events": 129,
+   "per_hour": 15.043731778425657,
+   "positive_epochs": 128
+  },
+  "SN17": {
+   "events": 71,
+   "per_hour": 7.9255813953488365,
+   "positive_epochs": 71
+  },
+  "SN18": {
+   "events": 53,
+   "per_hour": 9.325513196480937,
+   "positive_epochs": 51
+  },
+  "SN19": {
+   "events": 48,
+   "per_hour": 5.663716814159292,
+   "positive_epochs": 45
+  },
+  "SN20": {
+   "events": 3,
+   "per_hour": 0.39344262295081966,
+   "positive_epochs": 3
+  },
+  "SN21": {
+   "events": 173,
+   "per_hour": 22.964601769911503,
+   "positive_epochs": 162
+  },
+  "SN22": {
+   "events": 177,
+   "per_hour": 21.325301204819276,
+   "positive_epochs": 172
+  },
+  "SN23": {
+   "events": 101,
+   "per_hour": 12.838983050847459,
+   "positive_epochs": 99
+  },
+  "SN24": {
+   "events": 196,
+   "per_hour": 27.317073170731707,
+   "positive_epochs": 183
+  },
+  "SN25": {
+   "events": 94,
+   "per_hour": 10.919651500484028,
+   "positive_epochs": 94
+  },
+  "SN26": {
+   "events": 533,
+   "per_hour": 70.9090909090909,
+   "positive_epochs": 515
+  },
+  "SN27": {
+   "events": 153,
+   "per_hour": 17.28813559322034,
+   "positive_epochs": 148
+  },
+  "SN29": {
+   "events": 223,
+   "per_hour": 27.759336099585063,
+   "positive_epochs": 216
+  },
+  "SN30": {
+   "events": 78,
+   "per_hour": 9.50253807106599,
+   "positive_epochs": 75
+  },
+  "SN31": {
+   "events": 116,
+   "per_hour": 13.660451422963689,
+   "positive_epochs": 110
+  },
+  "SN32": {
+   "events": 140,
+   "per_hour": 16.901408450704224,
+   "positive_epochs": 136
+  },
+  "SN33": {
+   "events": 77,
+   "per_hour": 11.227217496962332,
+   "positive_epochs": 76
+  },
+  "SN34": {
+   "events": 631,
+   "per_hour": 79.45435466946485,
+   "positive_epochs": 577
+  },
+  "SN35": {
+   "events": 184,
+   "per_hour": 24.642857142857142,
+   "positive_epochs": 174
+  },
+  "SN36": {
+   "events": 85,
+   "per_hour": 13.110539845758355,
+   "positive_epochs": 79
+  },
+  "SN37": {
+   "events": 93,
+   "per_hour": 24.366812227074234,
+   "positive_epochs": 91
+  },
+  "SN38": {
+   "events": 26,
+   "per_hour": 3.326226012793177,
+   "positive_epochs": 24
+  },
+  "SN39": {
+   "events": 233,
+   "per_hour": 28.299595141700408,
+   "positive_epochs": 218
+  },
+  "SN40": {
+   "events": 127,
+   "per_hour": 15.13406156901688,
+   "positive_epochs": 123
+  },
+  "SN41": {
+   "events": 6,
+   "per_hour": 0.8163265306122449,
+   "positive_epochs": 6
+  },
+  "SN42": {
+   "events": 69,
+   "per_hour": 8.990228013029316,
+   "positive_epochs": 67
+  },
+  "SN43": {
+   "events": 234,
+   "per_hour": 28.221105527638194,
+   "positive_epochs": 229
+  },
+  "SN44": {
+   "events": 261,
+   "per_hour": 33.85945945945946,
+   "positive_epochs": 243
+  },
+  "SN45": {
+   "events": 31,
+   "per_hour": 3.583815028901734,
+   "positive_epochs": 31
+  },
+  "SN46": {
+   "events": 258,
+   "per_hour": 35.5045871559633,
+   "positive_epochs": 242
+  },
+  "SN47": {
+   "events": 121,
+   "per_hour": 14.46215139442231,
+   "positive_epochs": 117
+  },
+  "SN48": {
+   "events": 184,
+   "per_hour": 24.184008762322016,
+   "positive_epochs": 180
+  },
+  "SN49": {
+   "events": 185,
+   "per_hour": 19.7158081705151,
+   "positive_epochs": 181
+  },
+  "SN50": {
+   "events": 175,
+   "per_hour": 21.875,
+   "positive_epochs": 172
+  },
+  "SN51": {
+   "events": 75,
+   "per_hour": 8.514664143803216,
+   "positive_epochs": 73
+  },
+  "SN52": {
+   "events": 54,
+   "per_hour": 7.9802955665024635,
+   "positive_epochs": 54
+  },
+  "SN53": {
+   "events": 0,
+   "per_hour": 0.0,
+   "positive_epochs": 0
+  },
+  "SN54": {
+   "events": 404,
+   "per_hour": 54.903737259343146,
+   "positive_epochs": 365
+  },
+  "SN55": {
+   "events": 192,
+   "per_hour": 27.330960854092524,
+   "positive_epochs": 188
+  },
+  "SN56": {
+   "events": 127,
+   "per_hour": 16.008403361344538,
+   "positive_epochs": 119
+  },
+  "SN57": {
+   "events": 17,
+   "per_hour": 1.9710144927536233,
+   "positive_epochs": 17
+  },
+  "SN58": {
+   "events": 67,
+   "per_hour": 9.71014492753623,
+   "positive_epochs": 65
+  },
+  "SN59": {
+   "events": 206,
+   "per_hour": 26.158730158730158,
+   "positive_epochs": 201
+  },
+  "SN60": {
+   "events": 56,
+   "per_hour": 6.82233502538071,
+   "positive_epochs": 54
+  },
+  "SN61": {
+   "events": 55,
+   "per_hour": 5.814977973568282,
+   "positive_epochs": 53
+  },
+  "SN62": {
+   "events": 62,
+   "per_hour": 9.880478087649402,
+   "positive_epochs": 61
+  },
+  "SN63": {
+   "events": 22,
+   "per_hour": 2.6347305389221556,
+   "positive_epochs": 22
+  },
+  "SN64": {
+   "events": 176,
+   "per_hour": 20.869565217391305,
+   "positive_epochs": 171
+  },
+  "SN65": {
+   "events": 463,
+   "per_hour": 61.05494505494506,
+   "positive_epochs": 428
+  },
+  "SN66": {
+   "events": 267,
+   "per_hour": 35.32524807056229,
+   "positive_epochs": 252
+  },
+  "SN67": {
+   "events": 246,
+   "per_hour": 34.048442906574394,
+   "positive_epochs": 241
+  },
+  "SN68": {
+   "events": 125,
+   "per_hour": 16.059957173447536,
+   "positive_epochs": 121
+  },
+  "SN69": {
+   "events": 165,
+   "per_hour": 19.959677419354836,
+   "positive_epochs": 158
+  },
+  "SN70": {
+   "events": 204,
+   "per_hour": 29.387755102040817,
+   "positive_epochs": 201
+  },
+  "SN71": {
+   "events": 312,
+   "per_hour": 39.829787234042556,
+   "positive_epochs": 310
+  },
+  "SN72": {
+   "events": 392,
+   "per_hour": 43.71747211895911,
+   "positive_epochs": 363
+  },
+  "SN73": {
+   "events": 105,
+   "per_hour": 15.347137637028014,
+   "positive_epochs": 105
+  },
+  "SN74": {
+   "events": 98,
+   "per_hour": 11.495601173020527,
+   "positive_epochs": 98
+  },
+  "SN75": {
+   "events": 155,
+   "per_hour": 16.103896103896105,
+   "positive_epochs": 150
+  },
+  "SN76": {
+   "events": 180,
+   "per_hour": 31.858407079646014,
+   "positive_epochs": 171
+  },
+  "SN77": {
+   "events": 428,
+   "per_hour": 57.772778402699664,
+   "positive_epochs": 411
+  },
+  "SN78": {
+   "events": 34,
+   "per_hour": 3.813084112149533,
+   "positive_epochs": 34
+  },
+  "SN79": {
+   "events": 70,
+   "per_hour": 9.75609756097561,
+   "positive_epochs": 68
+  },
+  "SN80": {
+   "events": 321,
+   "per_hour": 41.508620689655174,
+   "positive_epochs": 307
+  },
+  "SN81": {
+   "events": 378,
+   "per_hour": 44.38356164383561,
+   "positive_epochs": 370
+  },
+  "SN82": {
+   "events": 32,
+   "per_hour": 3.898477157360406,
+   "positive_epochs": 30
+  },
+  "SN83": {
+   "events": 30,
+   "per_hour": 3.2432432432432434,
+   "positive_epochs": 30
+  },
+  "SN84": {
+   "events": 148,
+   "per_hour": 16.49025069637883,
+   "positive_epochs": 140
+  },
+  "SN85": {
+   "events": 24,
+   "per_hour": 3.3842538190364277,
+   "positive_epochs": 23
+  },
+  "SN86": {
+   "events": 153,
+   "per_hour": 22.147165259348615,
+   "positive_epochs": 151
+  },
+  "SN87": {
+   "events": 38,
+   "per_hour": 4.322274881516588,
+   "positive_epochs": 38
+  },
+  "SN88": {
+   "events": 170,
+   "per_hour": 22.818791946308725,
+   "positive_epochs": 158
+  },
+  "SN89": {
+   "events": 2,
+   "per_hour": 0.29020556227327693,
+   "positive_epochs": 2
+  },
+  "SN90": {
+   "events": 222,
+   "per_hour": 29.08296943231441,
+   "positive_epochs": 218
+  },
+  "SN91": {
+   "events": 58,
+   "per_hour": 8.256227758007118,
+   "positive_epochs": 57
+  },
+  "SN92": {
+   "events": 243,
+   "per_hour": 37.289002557544755,
+   "positive_epochs": 227
+  },
+  "SN93": {
+   "events": 342,
+   "per_hour": 40.0,
+   "positive_epochs": 329
+  },
+  "SN94": {
+   "events": 466,
+   "per_hour": 52.31057062675398,
+   "positive_epochs": 429
+  },
+  "SN95": {
+   "events": 123,
+   "per_hour": 15.802997858672377,
+   "positive_epochs": 120
+  },
+  "SN96": {
+   "events": 133,
+   "per_hour": 19.0,
+   "positive_epochs": 133
+  },
+  "SN97": {
+   "events": 137,
+   "per_hour": 17.869565217391305,
+   "positive_epochs": 131
+  },
+  "SN98": {
+   "events": 268,
+   "per_hour": 33.43035343035343,
+   "positive_epochs": 249
+  },
+  "SN99": {
+   "events": 44,
+   "per_hour": 6.027397260273973,
+   "positive_epochs": 44
+  },
+  "SN100": {
+   "events": 119,
+   "per_hour": 18.144853875476493,
+   "positive_epochs": 114
+  }
+ },
+ "length_check_stage_vs_probs": {},
+ "_note": "Table 8's '8,400 scored events' are maximal runs of positive epochs (run_event_level.py), not annotation rows."
+}

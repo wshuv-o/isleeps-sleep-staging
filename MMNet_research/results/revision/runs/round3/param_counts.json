@@ -1,0 +1,9 @@
+{
+ "full_model (published, 388-d neural + CardioCNN)": 2764774,
+ "cardio_cnn": 155232,
+ "neural_only as run (full model, cardio input zeroed)": 2764774,
+ "healthy Sleep-EDF row as run (same network, cardio zeroed)": 2764774,
+ "hypothetical: fusion over neural only, CNN removed": 2601350,
+ "hypothetical: concat kept, CNN removed": 2609542,
+ "earlier feature-only model (14-d cardio MLP, same widths)": 2614918
+}
