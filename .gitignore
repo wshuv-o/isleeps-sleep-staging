@@ -89,3 +89,8 @@ experiment_results.json
 !MMNet_research/results/models/headline_concat_fold0.pt
 !MMNet_research/results/models/supp_headline_fold0.pt
 !HAGNet_research/model/pretrained_sedf.pt
+
+# ---- vendored third-party reference code: cloned locally, not redistributed ----
+# external/bose2026 is the authors' own repo (has its own .git); the reproduction
+# lives in foundation/run_bose_seresnet.py, which is what belongs here.
+external/
