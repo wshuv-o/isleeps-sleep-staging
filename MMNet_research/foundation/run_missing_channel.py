@@ -113,6 +113,91 @@ def patch(arm):
     cardio_cnn.N_T = N_T + 1
 
 
+class LazyWindows:
+    """Window tensor [N, L, d] materialised only for the rows a batch indexes."""
+
+    def __init__(self, items, L, d):
+        self.items, self.L, self.d = items, L, d
+        self.shape = (len(items), L, d)
+
+    def __getitem__(self, ic):
+        idx = ic.tolist() if torch.is_tensor(ic) else list(ic)
+        out = np.zeros((len(idx), self.L, self.d), np.float32)
+        for j, i in enumerate(idx):
+            x, st, n = self.items[i]
+            k = min(self.L, n - st)
+            out[j, :k] = x[st:st + k]
+        return torch.from_numpy(out)
+
+
+def lean_windows(Cm):
+    """mmnet_core.windows, filling preallocated arrays instead of stacking a list.
+
+    With the raw cardio table the stacked list and its np.asarray copy are ~2.9 GB each,
+    which does not fit beside the data on a 24 GB machine. The values, order and dtypes
+    are identical to the original, so training is unchanged.
+    """
+    L = Cm.L
+
+    def windows(subs, stride, eeg_drop, card_drop):
+        items = []
+        for s in subs:
+            fe, fc, y, a = Cm.DATA[s]
+            fe, fc = Cm.apply_drop(fe, fc, eeg_drop, card_drop)
+            n = len(y)
+            items += [(fe, fc, y, a, st, n) for st in range(0, max(1, n - L + 1), stride)]
+        N, de, dc = len(items), items[0][0].shape[1], items[0][1].shape[1]
+        Fe = np.zeros((N, L, de), np.float32)
+        Y = np.zeros((N, L), np.int64); A = np.zeros((N, L), np.float32)
+        Mk = np.zeros((N, L), np.float32)
+        for i, (fe, fc, y, a, st, n) in enumerate(items):
+            k = min(L, n - st)
+            Fe[i, :k] = fe[st:st + k]
+            Y[i, :k] = y[st:st + k]; A[i, :k] = a[st:st + k]; Mk[i, :k] = 1
+        # the raw cardio windows overlap by half and would double a ~3 GB array, so they
+        # are cut per batch from the per-patient arrays instead (same values)
+        Fc = LazyWindows([(fc, st, n) for (fe, fc, y, a, st, n) in items], L, dc)
+        # kept in host memory; train_fold_host moves each batch to the device
+        return (torch.from_numpy(Fe), Fc, torch.from_numpy(Y),
+                torch.from_numpy(A), torch.from_numpy(Mk))
+    return windows
+
+
+def train_fold_host(Cm, cfg):
+    """mmnet_core.train_fold with the window tensors in host memory.
+
+    The raw cardio windows (~3 GB) plus training state exceed the 6 GB card, and
+    Windows then spills device memory into shared system memory, slowing training
+    several-fold. This rebuilds train_fold exactly as sweep.config does (original source,
+    lr and weight decay substituted, compiled into the config's namespace) with one more
+    change: each batch is gathered on the host with the same device-side permutation and
+    then copied to the device. Batch order and contents are identical.
+    """
+    import inspect
+    import re
+    import textwrap
+    src = textwrap.dedent(inspect.getsource(cfg._train))
+    for name, (pat, expected) in sweep._TRAIN_LITERALS.items():
+        repl = {"lr": "lr=%g" % cfg.hp["lr"], "wd": "weight_decay=%g" % cfg.hp["wd"]}[name]
+        src, n = re.subn(pat, repl, src)
+        assert n == expected, (name, n)
+    old = ("idx = perm[i:i+bs]; s_o, a_o = model(Fe[idx], Fc[idx]); "
+           "m = Mk[idx].reshape(-1)")
+    new = ("idx = perm[i:i+bs]; ic = idx.cpu(); "
+           "s_o, a_o = model(Fe[ic].to(DEV), Fc[ic].to(DEV)); m = Mk[ic].to(DEV).reshape(-1)")
+    assert src.count(old) == 1, "mmnet_core.train_fold changed; re-check the host patch"
+    src = src.replace(old, new)
+    for t in ("Y", "A"):
+        o = "%s[idx].reshape(-1)" % t
+        assert src.count(o) == 1, o
+        src = src.replace(o, "%s[ic].to(DEV).reshape(-1)" % t)
+    ns = dict(Cm.train_fold.__globals__)       # the namespace sweep.config compiled into
+    ns["windows"] = lean_windows(Cm)
+    exec(compile(src, "<train_fold_host:lr=%g,wd=%g>" % (cfg.hp["lr"], cfg.hp["wd"]),
+                 "exec"), ns)
+    return ns["train_fold"]
+
+
 def subgroup(per_subject, subs):
     ys, ps = [], []
     for s in subs:
@@ -135,7 +220,16 @@ def main(arms, seeds=SEEDS):
             t0 = time.time()
             with sweep.config(C, FINAL["arm"], hidden=FINAL["hidden"], drop=FINAL["drop"],
                               lr=FINAL["lr"], wd=FINAL["wd"], cardio=FINAL["cardio"],
-                              cardio_mode=FINAL["cardio_mode"]):
+                              cardio_mode=FINAL["cardio_mode"]) as cfg:
+                # run_10fold looks train_fold up in mmnet_core's namespace; the config
+                # context restores it on exit
+                orig_tf = C.train_fold
+                tf = train_fold_host(C, cfg)
+
+                def train_fold_fresh(*args, **kw):
+                    torch.cuda.empty_cache()      # release the previous fold's cache
+                    return tf(*args, **kw)
+                C.__dict__["train_fold"] = train_fold_fresh
                 keep = (arm == "published" and seed == 42)
                 r = C.run_10fold(fusion="concat", temporal=FINAL["temporal"], seed=seed,
                                  keep=keep)
@@ -153,6 +247,7 @@ def main(arms, seeds=SEEDS):
                 partial = [s for s in C.DATA if not CVALID[s].all()]
                 sg = dict(complete=subgroup(r["per_subject"], complete),
                           incomplete=subgroup(r["per_subject"], partial))
+                C.__dict__["train_fold"] = orig_tf
             patch("published")
             res[key] = dict(arm=arm, seed=seed,
                             acc=[f["acc"] for f in r["per_fold"]],
