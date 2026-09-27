@@ -51,8 +51,9 @@ KMP_DUPLICATE_LIB_OK=TRUE python -u run_pflow_suite.py --seeds 1 7 --res pflow_s
 - 13 conditions per seed (the full model at seeds 1 and 7 is already done and is picked
   up automatically): 26 runs, about 50 min each on an RTX 2060, faster on a newer card.
 - It resumes where it stopped; re-run the same command after any interruption.
-- With at least 12 GB of GPU memory and 48 GB of RAM, run the two seeds as two processes,
-  each with its own results file:
+- Each run uses about 2 GB of GPU memory (the training windows live in system RAM) and
+  about 6 GB of RAM, so an 8 GB card holds two runs; RAM decides. With 32 GB of RAM or
+  more, run the two seeds as two processes, each with its own results file:
 
 ```bash
 KMP_DUPLICATE_LIB_OK=TRUE python -u run_pflow_suite.py --seeds 1 --res pflow_suite_B1.json
