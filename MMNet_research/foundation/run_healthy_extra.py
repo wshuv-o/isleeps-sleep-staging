@@ -56,6 +56,8 @@ MODELS = {
                   "Fpz-Cz + Pz-Oz (4 EEG on stroke)"),
     "cnn": ("CNN, the 4-channel CNN+BiLSTM row (HAGNet_research/train.py, cnn4ch)",
             "Fpz-Cz + Pz-Oz (4 EEG on stroke)"),
+    "bose": ("SE-ResNet-18 + BiLSTM (Bose et al., released code; run_bose_seresnet.py)",
+             "Fpz-Cz, 9-epoch window, decoded as released"),
 }
 
 
@@ -78,6 +80,8 @@ def load(which):
             x = zscore(x[:, [FPZ, EOG]], -1)
         elif which == "attnsleep":     # per epoch
             x = zscore(x[:, FPZ], -1)
+        elif which == "bose":          # per recording, as in run_bose_seresnet.load
+            x = zscore(x[:, FPZ], None)
         else:                          # per recording, per channel
             x = zscore(x[:, [FPZ, PZ]], (0, 2))
         data[os.path.basename(f)[:-4]] = (np.ascontiguousarray(x), y)
@@ -237,6 +241,13 @@ def fold_fn(which):
     if which == "attnsleep":
         import run_attnsleep_seeded as M
         return M.run_fold
+    if which == "bose":
+        import run_bose_seresnet as M
+
+        def bose_fold(data, tr, va, te, seed):
+            yt, raw, _ = M.run_fold(data, tr, va, te, seed)   # raw decode, as on stroke
+            return yt, raw
+        return bose_fold
     return deepsleep_fold if which == "deepsleep" else cnn_fold
 
 
