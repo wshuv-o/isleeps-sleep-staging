@@ -45,10 +45,10 @@ def process_subject(edf, ann, channels):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--raw", action="append", default=None, help="raw dir(s); repeatable")
-    ap.add_argument("--out", default=os.path.join(HERE, "..", "data", "processed7"))
+    ap.add_argument("--out", default=os.path.join(HERE, "..", "..", "data", "processed7"))
     args = ap.parse_args()
-    raws = args.raw or [os.path.join(HERE, "..", "data", "zenodo"),
-                        os.path.join(HERE, "..", "data", "full100")]
+    raws = args.raw or [os.path.join(HERE, "..", "..", "data", "zenodo"),
+                        os.path.join(HERE, "..", "..", "data", "Dataset")]
     os.makedirs(args.out, exist_ok=True)
     edfs = {}
     for rd in raws:

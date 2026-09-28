@@ -16,12 +16,11 @@ import os, sys, glob
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "processing"))
-sys.path.insert(0, os.path.join(ROOT, "extra"))
+sys.path.insert(0, os.path.join(ROOT, "preprocessing"))
 from features_v2 import extract_features_v2  # noqa
 from cardio_features import cardio_feats      # noqa
-MM = os.path.join(ROOT, "data", "multimodal")
-OUT = os.path.join(ROOT, "data", "mm_features")
+MM = os.path.join(os.path.dirname(ROOT), "data", "multimodal")
+OUT = os.path.join(os.path.dirname(ROOT), "data", "mm_features")
 
 
 def main():

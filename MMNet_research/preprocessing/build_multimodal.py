@@ -20,8 +20,8 @@ import os, sys, glob, re, argparse, warnings
 import numpy as np
 warnings.filterwarnings("ignore")
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DS = os.path.join(ROOT, "data", "Dataset")
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DS =os.path.join(ROOT, "data", "Dataset")
 P7 = os.path.join(ROOT, "data", "processed7")
 OUT = os.path.join(ROOT, "data", "multimodal")
 EPOCH_S, FS_CARD = 30, 25
