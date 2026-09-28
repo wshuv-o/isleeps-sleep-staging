@@ -62,7 +62,7 @@
 \titlepgskip=-21pt
 
 \begin{abstract}
-Sleep-disordered breathing is common after ischemic stroke, yet automated analysis of polysomnography in this field has mainly focused on sleep staging. This study investigates whether neural and cardiorespiratory signals can be analyzed jointly to support both sleep staging and respiratory events. To address this problem, we propose MM-Net, a two-stream multi-task model that combines neural and cardiorespiratory representations and produces a sleep-stage prediction together with a respiratory-event score for each 30-s epoch. It also preserves a direct cardiorespiratory pathway for the respiratory task. The model is evaluated on the iSLEEPS dataset, a polysomnography dataset of 99 patients with subacute ischemic stroke, using patient-independent ten-fold cross-validation. MM-Net achieves a sleep-staging accuracy of 0.739 with a Cohen's $\kappa$ of 0.634 and a respiratory-event AUC of 0.782 with an average precision of 0.419. Under the same evaluation pipeline, the retrained sleep-staging baselines achieve accuracies of 0.613--0.720, and it exceeds the closest prior joint model on both tasks. Further ablation analysis shows that the cardiorespiratory stream provides negligible benefit for sleep staging but is important for respiratory-event detection. Removing this stream reduces respiratory AUC by 0.128. Among the individual cardiorespiratory signals, respiratory effort shows the strongest contribution. Respiratory AUC remains 0.778 after removal of the airflow channel used for event scoring. These findings demonstrate that neural and cardiorespiratory signals provide complementary information in stroke polysomnography. Their joint modeling enables sleep staging and respiratory-event detection within a single framework while preserving the modality-specific physiological contributions to each task.
+Sleep-disordered breathing is common after ischemic stroke, yet automated analysis of polysomnography in this field has mainly focused on sleep staging. This study investigates whether neural and cardiorespiratory signals can be analyzed jointly to support both sleep staging and respiratory events. To address this problem, we propose MM-Net, a two-stream multi-task model that combines neural and cardiorespiratory representations and produces a sleep-stage prediction together with a respiratory-event score for each 30-s epoch. It also preserves a direct cardiorespiratory pathway for the respiratory task. The model is evaluated on the iSLEEPS dataset, a polysomnography dataset of 99 patients with subacute ischemic stroke, using patient-independent ten-fold cross-validation. MM-Net achieves a sleep-staging accuracy of 0.739 with a Cohen's $\kappa$ of 0.634 and a respiratory-event AUC of 0.782 with an average precision of 0.419. Under the same evaluation pipeline, the retrained sleep-staging baselines achieve accuracies of 0.623--0.720, and it exceeds the closest prior joint model on both tasks. Further ablation analysis shows that the cardiorespiratory stream provides negligible benefit for sleep staging but is important for respiratory-event detection. Removing this stream reduces respiratory AUC by 0.128. Among the individual cardiorespiratory signals, respiratory effort shows the strongest contribution. Respiratory AUC remains 0.778 after removal of the airflow channel used for event scoring. These findings demonstrate that neural and cardiorespiratory signals provide complementary information in stroke polysomnography. Their joint modeling enables sleep staging and respiratory-event detection within a single framework while preserving the modality-specific physiological contributions to each task.
 \end{abstract}
 
 \begin{keywords}
@@ -750,8 +750,8 @@ $0.006$, about a third of the fold-to-fold standard deviation of
 $0.019$ and small enough that it changes no comparison in this paper. The external corpora in
 Section~\ref{sec:external} took no part in selection
 either, so the zero-shot figures there were never exposed to it. The proposed
-model, its ablations and the six reimplemented literature models all use the full ten; the
-earlier retrained baselines were run at five, as stated in the discussion of Table~\ref{tab:bench}. Because performance estimates may vary
+model, its ablations and the retrained baselines all use the full ten; only the Sleep-EDF
+transfer row was run at five, as stated in the discussion of Table~\ref{tab:bench}. Because performance estimates may vary
 across random seeds, we retrained the headline configuration under three
 seeds on the same folds. Staging accuracy varies by $0.005$ across seeds against
 $0.020$ across folds, and respiratory AUC by $0.001$ against $0.038$: fold-to-fold spread
@@ -877,7 +877,7 @@ SleepTransformer, a purely attentional one; and 1D-ResNet-SE-LSTM, Micro SleepNe
 AT-BiLSTM), the released SE-ResNet-18 model of~\cite{bose2026gap}, a
 network transferred from Sleep-EDF, and a raw-signal convolutional network on all $14$ channels,
 alongside the published single-channel baselines for the corpus~\cite{maiti2026isleeps}. All numbers are
-patient-independent, ten-fold except for the earlier retrained baselines at five, at the hidden-Markov operating point where a model provides one.
+patient-independent, ten-fold except for the Sleep-EDF transfer row at five, at the hidden-Markov operating point where a model provides one.
 
 \begin{table}[t]
 \caption{Reimplementation check for the models marked $^{\dagger}$ in
@@ -929,7 +929,7 @@ Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparr
 LSTM, our reimplementation$^{\dagger}$ & 1\,EEG\,$+$\,EOG & $1.16$\,M & --- & $0.720 \pm 0.032$ & $0.626 \pm 0.028$ & $0.599 \pm 0.043$ \\
 CNN-ResNet18~\cite{bose2026gap}$^{\ddagger}$ & 1\,EEG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
 SE-ResNet-18\,+\,BiLSTM~\cite{bose2026gap}$^{\ast}$ & 1\,EEG & $11.32$\,M & --- & $0.696 \pm 0.038$ & $0.606 \pm 0.032$ & $0.572 \pm 0.046$ \\
-DeepSleepNet~\cite{supratak2017deepsleepnet}  & 4\,EEG  & $3.72$\,M  & $0.823 \pm 0.050$ & $0.615 \pm 0.026$ & $0.567 \pm 0.031$ & $0.483 \pm 0.038$ \\
+DeepSleepNet~\cite{supratak2017deepsleepnet}  & 4\,EEG  & $3.72$\,M  & $0.823 \pm 0.050$ & $0.669 \pm 0.031$ & $0.624 \pm 0.026$ & $0.558 \pm 0.035$ \\
 U-Time~\cite{perslev2019utime}$^{\dagger}$ & 1\,EEG & $1.07$\,M & $0.791 \pm 0.062$ & $0.646 \pm 0.064$ & $0.524 \pm 0.057$ & $0.506 \pm 0.082$ \\
 AttnSleep~\cite{eldele2021attnsleep}          & 1\,EEG  & $\sim$0.5\,M & $0.833 \pm 0.042$ & $0.716 \pm 0.042$ & $0.600 \pm 0.043$ & $0.593 \pm 0.058$ \\
 TinySleepNet~\cite{supratak2020tinysleepnet}$^{\dagger}$ & 1\,EEG & $1.45$\,M & $0.824 \pm 0.045$ & $0.676 \pm 0.050$ & $0.587 \pm 0.034$ & $0.548 \pm 0.062$ \\
@@ -937,9 +937,9 @@ SleepTransformer~\cite{sleeptransformer2022}$^{\dagger}$ & 1\,EEG & $2.79$\,M & 
 1D-ResNet-SE-LSTM~\cite{li2023resnetselstm}$^{\dagger}$ & 1\,EEG & $0.65$\,M & $0.832 \pm 0.036$ & $0.708 \pm 0.038$ & $0.631 \pm 0.033$ & $0.592 \pm 0.050$ \\
 Micro SleepNet~\cite{liu2023microsleepnet}$^{\dagger}$ & 1\,EEG & $0.03$\,M & $0.800 \pm 0.041$ & $0.647 \pm 0.049$ & $0.558 \pm 0.028$ & $0.510 \pm 0.055$ \\
 AT-BiLSTM~\cite{fu2021atbilstm}$^{\dagger}$ & 1\,EEG & $0.92$\,M & $0.835 \pm 0.046$ & $0.692 \pm 0.040$ & $0.612 \pm 0.030$ & $0.570 \pm 0.051$ \\
-CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & $0.806 \pm 0.041$ & $0.613 \pm 0.040$ & $0.565 \pm 0.034$ & $0.485 \pm 0.048$ \\
+CNN\,+\,BiLSTM                                & 4\,EEG  & $\sim$0.6\,M & $0.806 \pm 0.041$ & $0.670 \pm 0.052$ & $0.618 \pm 0.044$ & $0.553 \pm 0.062$ \\
 Sleep-EDF transfer                            & 4\,EEG  & $\sim$0.6\,M & --- & $0.623 \pm 0.020$ & 0.582 & 0.488 \\
-Raw multimodal CNN                            & 14\,ch  & 0.95\,M      & --- & $0.654 \pm 0.033$ & $0.610 \pm 0.022$ & $0.544 \pm 0.037$ \\
+Raw multimodal CNN                            & 14\,ch  & 0.95\,M      & --- & $0.677 \pm 0.035$ & $0.633 \pm 0.025$ & $0.563 \pm 0.041$ \\
 Huttunen~et~al.~\cite{huttunen2023simultaneous}$^{\ast}$ & 4\,ch & $3.80$\,M & --- & $0.599 \pm 0.060$ & $0.495 \pm 0.067$ & $0.440 \pm 0.078$ \\
 \addlinespace[2pt]\midrule
 \multicolumn{7}{@{}l}{\emph{Trained on healthy sleep, applied zero-shot}}\\[1pt]
@@ -979,10 +979,11 @@ cohort, architectures trained on healthy sleep and applied to it zero-shot, and 
 proposed model, with a final row cross-validating the proposed architecture on healthy
 sleep as a control on the cohort argument; its macro-F1 and $\kappa$ are healthy-sleep
 figures and so are left out of the stroke columns, and quoted in the text instead.
-Dispersion is reported wherever it is defined: five folds for the earlier retrained
-baselines; thirty fold-values, ten folds by three seeds, for AttnSleep, the three
-reimplemented literature models and the proposed rows. CNN-ResNet18 is quoted from the
-corpus paper and was not re-run here, so its protocol is that paper's and it
+Dispersion is reported wherever it is defined: five folds for the Sleep-EDF transfer row;
+ten fold-values (seed $42$) for DeepSleepNet, the CNN\,+\,BiLSTM, the raw multimodal CNN and
+the SE-ResNet-18 model; thirty fold-values, ten folds by three seeds, for AttnSleep, the
+reimplemented literature models and the proposed rows. CNN-ResNet18 is quoted
+from~\cite{bose2026gap} and was not re-run here, so its protocol is that paper's and it
 carries no interval. That paper's LSTM appears only as our reimplementation of it on the
 folds used throughout, because its published figure was never measured on these folds. In the zero-shot block the interval is across
 pretraining seeds and not folds, because that evaluation is a single pass of a finished
@@ -1009,7 +1010,7 @@ observation, in that the staging learning curve has flattened.
 We therefore do not position the model as a staging leader. Its principal distinction is
 the additional respiratory output. Of the models that stage competitively here it is the only one that also
 detects respiratory events; the raw multimodal CNN produces both outputs but stages at
-$0.654$.
+$0.677$ with a respiratory AUC of $0.735$.
 
 The comparison that speaks to this directly is against Huttunen~et~al., the closest prior
 system: one network scoring sleep stages and respiratory events at once, which makes it the
@@ -1615,7 +1616,7 @@ genuine domain gap produce identical numbers. Run through our pipeline on held-o
 recordings, the strongest checkpoint holds at $0.8682$ ($0.8667 \pm 0.0415$ per recording), so
 the pipeline is correct and the collapse belongs to the cohort.
 
-These results should be interpreted together with the difference in EEG montage between the two datasets. Sleep-EDF uses Fpz-Cz and Pz-Oz, whereas iSLEEPS uses C4 and O2. The zero-shot performance gap may therefore reflect both the change in cohort and the change in montage. Deep models trained \emph{on} iSLEEPS with the matched montage reach $0.60$--$0.72$ (upper block), and the same architectures lose $0.12$ to $0.21$
+These results should be interpreted together with the difference in EEG montage between the two datasets. Sleep-EDF uses Fpz-Cz and Pz-Oz, whereas iSLEEPS uses C4 and O2. The zero-shot performance gap may therefore reflect both the change in cohort and the change in montage. Deep models trained \emph{on} iSLEEPS with the matched montage reach $0.60$--$0.72$ (upper block), and the same architectures lose $0.12$ to $0.15$
 accuracy between healthy sleep and stroke under a common protocol; healthy-trained and
 zero-shot, with the montage shift included, the cost is $0.56$. The claim is bounded by those two figures together.
 
@@ -1634,8 +1635,8 @@ The cohort does not cost every architecture equally. Nine retrained baselines ca
 healthy-sleep score produced by the same code under the same protocol, so the table shows how
 much each model loses in the crossing. AttnSleep falls $0.117$ ($0.833 \to 0.716$),
 1D-ResNet-SE-LSTM $0.124$, SleepTransformer $0.140$, AT-BiLSTM $0.143$, U-Time $0.145$,
-TinySleepNet $0.148$ and Micro SleepNet $0.153$; DeepSleepNet ($0.208$) and the CNN\,+\,BiLSTM
-($0.193$) read two EEG derivations on Sleep-EDF and four on iSLEEPS. The proposed model falls
+TinySleepNet $0.148$ and Micro SleepNet $0.153$; DeepSleepNet ($0.154$) and the CNN\,+\,BiLSTM
+($0.136$) read two EEG derivations on Sleep-EDF and four on iSLEEPS. The proposed model falls
 $0.115$ ($0.856 \to 0.741$), the smallest loss in the table, with AttnSleep closest. We report
 this as an observation. These differences do not support a significance test, and the
 comparison is between systems rather than a controlled ablation, since the proposed rows read
@@ -1896,7 +1897,7 @@ the staging-only models, at any size, can supply the second output.
 \begin{table}[t]
 \caption{Model size and clinical capability. The proposed model is mid-sized and is the only
 one that produces both a stage and a respiratory-event label at competitive staging accuracy;
-the raw multimodal CNN produces both but stages at $0.654$.}
+the raw multimodal CNN produces both but stages at $0.677$.}
 \label{tab:cost}
 \centering
 \setlength{\tabcolsep}{4pt}
@@ -2012,7 +2013,7 @@ representations rather than by fusion complexity.
 
 The staging experiments also reveal the importance of evaluating sleep models
 within the population in which they will be used. Deep architectures retrained
-on iSLEEPS reach approximately $0.615$--$0.720$ accuracy, while MM-Net reaches
+on iSLEEPS reach approximately $0.62$--$0.72$ accuracy, while MM-Net reaches
 $0.739$ with a macro-F1 of $0.670$. The healthy-to-stroke transfer experiment
 shows an even larger shift: models achieving approximately $0.81$--$0.86$
 accuracy on Sleep-EDF reach only about $0.31$ when applied directly to iSLEEPS
