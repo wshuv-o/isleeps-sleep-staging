@@ -1,94 +1,77 @@
-# Machine B status: eight-channel (nasal pressure) suite
+# Machine B: eight-channel suite, record of work
 
-Written 2026-09-28 by Machine B (RTX 3060 Ti, 23.8 GB RAM) for Machine A (RTX 2060).
-Machine A was off, so Machine B took over its seed-42 share as well.
+Machine B: RTX 3060 Ti (8 GB), 23.8 GB RAM, Windows 11, Python 3.11, torch 2.7.0+cu126.
+Dates: 2026-09-27 to 2026-09-28.
 
-## Read this first, Machine A
+## Runs completed
 
-- **Do not run the eight-channel suite for seed 42.** All 14 conditions are done and
-  pushed, in `pflow_suite_B42.json`, not `pflow_suite.json`.
-- **Seed 1 is running on Machine B now** (started 14:05, about 17:50 expected) and
-  writes to `pflow_suite_B.json`. It is pushed when it finishes. Do not start it.
-- **Before `git pull`:** if you saved any seed-42 suite results locally before the
-  shutdown (`pflow_suite.json` entries with `|42`, `per_subject_8ch_seed42.json`,
-  `predictions_8ch_seed42.npz`), move them aside first. The pull brings a complete
-  `per_subject_8ch_seed42.json` and stops on an untracked file with the same name.
-  `merge_pflow_suite.py` keeps the first copy of a key and reads `pflow_suite.json`
-  first, so leftover local `|42` entries would override the complete set.
+`run_pflow_suite.py`, all 14 conditions, seeds 42, 7 and 1. Files in
+`MMNet_research/results/revision/runs/final/`:
 
-## Results
+| File | Contents |
+|---|---|
+| `pflow_suite_B42.json` | seed 42, 14 conditions |
+| `pflow_suite_B.json` | seeds 7 and 1, 14 conditions each |
+| `per_subject_8ch_seed42.json` | per-patient results, seed-42 `full` |
 
-All in `MMNet_research/results/revision/runs/final/`.
+`full|1` and `full|7` in `pflow_suite_B.json` were carried over by the script from
+`mmnet_pflow.json`. `predictions_8ch_seed42.npz` was written on Machine B and is not in
+git (`*.npz` is ignored).
 
-| File | Contents | Commit |
-|---|---|---|
-| `pflow_suite_B42.json` | seed 42, all 14 conditions (incl. `full`) | `8ccb9e6` |
-| `per_subject_8ch_seed42.json` | per-patient results, seed-42 `full` | `8ccb9e6` |
-| `pflow_suite_B.json` | seed 7, all 14 conditions; seed 1 being added | `2fa707d` |
+Runs were started one condition per process
+(`run_pflow_suite.py --seeds S --only=<condition> --res ../results/revision/runs/final/<file>`).
 
-`full|1` and `full|7` come from the committed `mmnet_pflow.json` and are carried
-over by the script, as the README describes. `predictions_8ch_seed42.npz` exists on
-Machine B only, because `*.npz` is git-ignored.
+## Results (accuracy / respiratory AUC, mean over the ten folds)
 
-To merge once seed 1 is pushed:
+| Condition | Seed 42 | Seed 7 | Seed 1 |
+|---|---|---|---|
+| full | 0.7328 / 0.8128 | 0.7382 / 0.8028 | 0.7365 / 0.8140 |
+| -EEG | 0.6806 / 0.8064 | 0.6826 / 0.8035 | 0.6902 / 0.8061 |
+| -EOG | 0.7216 / 0.8064 | 0.7339 / 0.8030 | 0.7377 / 0.8023 |
+| -EMG | 0.7319 / 0.8060 | 0.7285 / 0.8039 | 0.7345 / 0.8083 |
+| -SpO2 | 0.7343 / 0.8085 | 0.7358 / 0.8070 | 0.7378 / 0.8052 |
+| -pulse/HRV | 0.7347 / 0.8122 | 0.7384 / 0.8098 | 0.7418 / 0.8059 |
+| -ECG | 0.7402 / 0.8131 | 0.7347 / 0.8022 | 0.7351 / 0.8101 |
+| -airflow | 0.7381 / 0.7787 | 0.7388 / 0.7707 | 0.7348 / 0.7803 |
+| -nasal pressure | 0.7332 / 0.7826 | 0.7361 / 0.7725 | 0.7431 / 0.7827 |
+| -effort | 0.7370 / 0.8016 | 0.7336 / 0.8023 | 0.7359 / 0.8075 |
+| -all cardio | 0.7363 / 0.6574 | 0.7384 / 0.6590 | 0.7422 / 0.6602 |
+| stage-only | 0.7338 / 0.4606 | 0.7314 / 0.5742 | 0.7355 / 0.5046 |
+| resp-only | 0.2092 / 0.8075 | 0.2123 / 0.8069 | 0.1709 / 0.8076 |
+| no-bypass | 0.7307 / 0.7974 | 0.7345 / 0.7911 | 0.7403 / 0.8045 |
 
-```bash
-cd MMNet_research/foundation
-python merge_pflow_suite.py pflow_suite_B.json pflow_suite_B42.json
-```
+## Data
 
-### Nasal pressure, headline (seeds 42 / 7)
+The data folders were built on Machine B from the public release: Figshare 29253068
+(97 EDF recordings, annotation workbooks, `subject_description.xlsx`) and Zenodo
+14873844 (SN2, SN13, SN17). All files were MD5-checked against the published
+manifests. Build order: `build_npz_full.py` → `data/processed7`,
+`build_multimodal.py` and `rebuild_missing_subjects.py multimodal` → `data/multimodal`,
+`extract_mm_features.py` → `data/mm_features`,
+`build_labram_cache.py --variant labram` → `data/cbramod_emb/labram`,
+`build_pressure_cache.py` → `data/pressure_flow`. Each folder holds 100 files.
 
-| Condition | Accuracy | Respiratory AUC |
-|---|---|---|
-| eight-channel `full` | 0.733 / 0.738 | 0.813 / 0.803 |
-| `-nasal pressure` | 0.733 / 0.736 | 0.783 / 0.773 |
-| `-airflow` (both sensors) | 0.738 / 0.739 | 0.779 / 0.771 |
-| `-all cardio` | 0.736 / 0.738 | 0.657 / 0.659 |
+Path changes in `build_npz_full.py`, `build_multimodal.py` and
+`extract_mm_features.py` (commit `f27e7d9`): data resolved under `data/` at the
+repository root instead of `MMNet_research/data`, `data/Dataset` instead of
+`data/full100`, and imports from `preprocessing/` instead of `processing/` and `extra/`.
 
-Nasal pressure adds about 0.03 respiratory AUC and leaves staging unchanged.
+Checks on the built data:
 
-## How the data was obtained on Machine B
-
-The data folders could not be copied from Machine A, so they were rebuilt from the
-public release: Figshare 29253068 (97 recordings, workbooks,
-`subject_description.xlsx`) plus Zenodo 14873844 for SN2, SN13 and SN17. Every file
-was MD5-checked against the manifest. Build order: `processed7`, `multimodal`
-(plus `rebuild_missing_subjects.py` for the three Zenodo recordings), `mm_features`,
-`cbramod_emb/labram`, `pressure_flow`.
-
-Three preprocessing scripts still used paths from before the folder rename
-(`MMNet_research/data` instead of `data/`). Their paths are fixed in this commit and
-nothing else changed: `build_npz_full.py` (also reads `data/Dataset` instead of
-`data/full100`), `build_multimodal.py` and `extract_mm_features.py` (also imports
-from `preprocessing/` instead of the removed `processing/` and `extra/`).
-
-Evidence that the rebuild matches the paper's data:
-
-- Epoch counts match `per_subject_seed42.json` for all 99 patients in all five
-  caches (92,560 epochs). SN15 and SN28 are bit-identical, as documented.
+- Epoch counts equal the lengths in `per_subject_seed42.json` for all 99 patients in
+  all five folders (92,560 epochs). SN15 and SN28 are bit-identical.
 - `mmnet_core` loads 99 patients.
-- The published seven-channel model, seed 42, retrained on the rebuilt data
-  (`run_missing_channel.py published --seeds 42`, with the committed result file
-  moved aside so it actually trained): acc 0.7358, AUC 0.7871, against the paper's
-  0.7343 / 0.7831. The committed `missing_channel.json` was restored unchanged.
-- Eight-channel `full`, seed 42: acc 0.7328, AUC 0.8128, against the committed
-  `mmnet_pflow.json` 0.7344 / 0.8146.
+- `run_missing_channel.py published --seeds 42`, run with the committed
+  `missing_channel.json` moved aside and then restored: acc 0.7358, AUC 0.7871
+  (`final_model.json` `final|42`: 0.7343 / 0.7831).
+- Eight-channel `full`, seed 42: acc 0.7328, AUC 0.8128 (`mmnet_pflow.json`
+  `pflow|42`: 0.7344 / 0.8146).
 
-## Two traps for whoever runs next
+## Commits
 
-- `run_pflow_suite.py --res NAME` resolves `NAME` against the current directory, so
-  the README's `--res pflow_suite_B.json` run from `foundation/` writes into
-  `foundation/`. Pass `--res ../results/revision/runs/final/NAME`.
-- One long `run_pflow_suite.py` process ran out of host RAM after 11 runs (memory
-  builds up across runs). Machine B ran one condition per process instead:
-  `--only=<condition>` (the `=` is needed for names starting with `-`), and the
-  script's resume logic skips finished ones.
-
-## Not done, and not needed for the nasal-pressure change
-
-The baselines in the README's section 4 (DeepSleepNet, raw 14-channel CNN, 4-EEG CNN,
-Bose SE-ResNet, healthy LSTM, respiratory raw-signal, missing-channel seeds 1/7) do
-not use nasal pressure and were not re-run. The README lists permutation importance,
-the learning curve and external validation as not yet adapted to eight channels;
-those are open only if the paper reports them for the eight-channel model.
+| Commit | Contents |
+|---|---|
+| `2fa707d` | `pflow_suite_B.json`, seed 7 |
+| `8ccb9e6` | `pflow_suite_B42.json`, `per_subject_8ch_seed42.json` |
+| `f27e7d9` | preprocessing path changes |
+| this commit | `pflow_suite_B.json` with seed 1 added; this record |
