@@ -926,7 +926,7 @@ the best value among rows run under our protocol.}
 Model & Input & Params\,$\downarrow$ & Acc & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ \\
 \midrule
 \multicolumn{7}{@{}l}{\emph{Deep networks, retrained on iSLEEPS}}\\[1pt]
-LSTM, our reimplementation$^{\dagger}$ & 1\,EEG\,$+$\,EOG & $1.16$\,M & --- & $0.720 \pm 0.032$ & $0.626 \pm 0.028$ & $0.599 \pm 0.043$ \\
+LSTM, our reimplementation$^{\dagger}$ & 1\,EEG\,$+$\,EOG & $1.16$\,M & $0.820 \pm 0.062$ & $0.720 \pm 0.032$ & $0.626 \pm 0.028$ & $0.599 \pm 0.043$ \\
 CNN-ResNet18~\cite{bose2026gap}$^{\ddagger}$ & 1\,EEG & $\sim$11\,M & --- & 0.617 & 0.544 & 0.480 \\
 SE-ResNet-18\,+\,BiLSTM~\cite{bose2026gap}$^{\ast}$ & 1\,EEG & $11.32$\,M & $0.829 \pm 0.056$ & $0.696 \pm 0.038$ & $0.606 \pm 0.032$ & $0.572 \pm 0.046$ \\
 DeepSleepNet~\cite{supratak2017deepsleepnet}  & 4\,EEG  & $3.72$\,M  & $0.823 \pm 0.050$ & $0.669 \pm 0.031$ & $0.624 \pm 0.026$ & $0.558 \pm 0.035$ \\
@@ -1633,19 +1633,17 @@ against $0.741$ for the identical architecture on stroke. The $0.115$ difference
 the cohort costs a model that is demonstrably capable of more, which is a stronger
 statement than any comparison against other people's architectures can make.
 
-The cohort does not cost every architecture equally. Ten retrained baselines carry a
+The cohort does not cost every architecture equally. Eleven retrained baselines carry a
 healthy-sleep score produced by the same code under the same protocol, so the table shows how
 much each model loses in the crossing. AttnSleep falls $0.117$ ($0.833 \to 0.716$),
 1D-ResNet-SE-LSTM $0.124$, SE-ResNet-18\,+\,BiLSTM $0.133$, SleepTransformer $0.140$, AT-BiLSTM $0.143$, U-Time $0.145$,
 TinySleepNet $0.148$ and Micro SleepNet $0.153$; DeepSleepNet ($0.154$) and the CNN\,+\,BiLSTM
 ($0.136$) read two EEG derivations on Sleep-EDF and four on iSLEEPS. The proposed model falls
-$0.115$ ($0.856 \to 0.741$), the smallest loss in the table, with AttnSleep closest. We report
-this as an observation. These differences do not support a significance test, and the
+$0.115$ ($0.856 \to 0.741$) and our reimplementation of the corpus LSTM (one EEG derivation
+with EOG) $0.100$ ($0.820 \to 0.720$); these are the two smallest losses in the table, and every
+single-EEG model loses more. We report this as an observation. These differences do not support a significance test, and the
 comparison is between systems rather than a controlled ablation, since the proposed rows read
-engineered features and a frozen embedding while most baselines read a single raw channel. The
-direction is nonetheless the one the rest of the paper predicts: a representation that
-encodes sleep physiology explicitly survives a disordered cortex better than one a network
-must discover for itself from fewer than a hundred patients.
+engineered features and a frozen embedding while most baselines read a single raw channel.
 
 % Folds are split by subject, not by recording, because Sleep-EDF Cassette records
 % each subject on two nights; splitting on filenames would place the same person on both
