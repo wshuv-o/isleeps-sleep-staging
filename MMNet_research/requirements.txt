@@ -11,6 +11,8 @@ openpyxl>=3.1        # read annotation / subject_description .xlsx
 joblib>=1.3          # imported by official staging_preprocess.py
 tqdm>=4.6
 scipy>=1.11
+pyedflib             # cardiorespiratory channels (build_multimodal.py)
+braindecode          # frozen LaBraM embedding (build_labram_cache.py)
 
 # modelling / evaluation (Phase 1+)
 scikit-learn>=1.4    # metrics, subject-independent CV splitters

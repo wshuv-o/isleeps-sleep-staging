@@ -16,7 +16,9 @@ Outputs, under results/revision/runs/lesion/:
     python foundation/run_lesion_aware.py
 
 Needs, under data/ (not in git): mm_features/, multimodal/ and cbramod_emb/labram/,
-about 4.2 GB. subject_description.xlsx is fetched from Figshare on first use.
+about 4.2 GB. On a fresh machine, preprocessing/rebuild_data.py downloads the
+public release and builds all three. subject_description.xlsx is fetched from
+Figshare on first use.
 The raw cardio windows take about 3 GB of GPU memory and, on Windows, the same again
 in committed system memory, so leave roughly 8 GB of headroom. Results resume:
 finished config x seed pairs are skipped on a re-run.
