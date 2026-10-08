@@ -1,0 +1,19 @@
+config            acc      mf1    kappa      auc       ap   dim
+base           0.7369   0.6689   0.6311   0.7801   0.4154   388
+mirror         0.7384   0.6694   0.6333   0.7784   0.4136   388
+mirror+asym    0.7380   0.6685   0.6326   0.7824   0.4277   402
+lesion         0.7355   0.6672   0.6291   0.7791   0.4147   406
+
+paired Wilcoxon on ten fold-means (seed-averaged), vs base
+mirror       acc +0.0016 (p=0.625, 6/10 up); mf1 +0.0004 (p=0.695, 6/10 up); kappa +0.0022 (p=0.492, 6/10 up); auc -0.0017 (p=0.084, 2/10 up); ap -0.0018 (p=0.492, 4/10 up)
+mirror+asym  acc +0.0012 (p=1.000, 5/10 up); mf1 -0.0005 (p=0.770, 5/10 up); kappa +0.0014 (p=1.000, 4/10 up); auc +0.0024 (p=0.492, 6/10 up); ap +0.0123 (p=0.049, 7/10 up)
+lesion       acc -0.0013 (p=0.695, 5/10 up); mf1 -0.0018 (p=0.492, 3/10 up); kappa -0.0021 (p=0.625, 5/10 up); auc -0.0010 (p=1.000, 5/10 up); ap -0.0007 (p=1.000, 4/10 up)
+
+per-patient staging accuracy by lesion group (seed-averaged)
+base         lateralised 0.7261 (n=68); bilateral 0.7242 (n=11); unknown 0.7776 (n=20)
+mirror       lateralised 0.7269 (n=68); bilateral 0.7303 (n=11); unknown 0.7776 (n=20)
+mirror+asym  lateralised 0.7264 (n=68); bilateral 0.7236 (n=11); unknown 0.7834 (n=20)
+lesion       lateralised 0.7227 (n=68); bilateral 0.7141 (n=11); unknown 0.7848 (n=20)
+lateralised, mirror vs base: +0.0008, Wilcoxon p=0.8116, 33/68 patients up
+lateralised, mirror+asym vs base: +0.0003, Wilcoxon p=0.2662, 28/68 patients up
+lateralised, lesion vs base: -0.0033, Wilcoxon p=0.0172, 25/68 patients up
