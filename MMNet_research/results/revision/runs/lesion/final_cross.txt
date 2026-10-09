@@ -1,0 +1,11 @@
+MM-Net ['base', 'base-nocw', 'base-nocw-cross'] + boosters ['boost', 'boost_ctx6']; ranked by VALIDATION accuracy (test only scored).
+                                     VALIDATION acc/mf1/k           TEST acc/mf1/k
+w=0.60 hmm1 beta=0.0 alpha=10.00    0.7783  0.6990  0.6813    0.7657  0.6840  0.6644
+w=0.60 hmm1 beta=0.0 alpha=6.00     0.7783  0.6976  0.6809    0.7658  0.6830  0.6640
+w=0.75 hmm1 beta=0.0 alpha=20.00    0.7782  0.7021  0.6823    0.7647  0.6873  0.6647
+w=0.75 hmm1 beta=0.0 alpha=10.00    0.7781  0.7012  0.6819    0.7650  0.6866  0.6649
+w=0.60 hmm1 beta=0.0 alpha=20.00    0.7776  0.6987  0.6806    0.7662  0.6859  0.6653
+w=0.75 hmm1 beta=0.0 alpha=6.00     0.7776  0.6992  0.6809    0.7652  0.6857  0.6647
+w=0.50 hmm1 beta=0.0 alpha=10.00    0.7759  0.6935  0.6772    0.7659  0.6827  0.6637
+w=0.50 hmm1 beta=0.0 alpha=20.00    0.7758  0.6942  0.6772    0.7658  0.6838  0.6639
+w=0.50 hmm1 beta=0.0 alpha=6.00     0.7757  0.6920  0.6766    0.7661  0.6819  0.6636

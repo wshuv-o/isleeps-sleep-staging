@@ -1,0 +1,15 @@
+MM-Net (base, 3-seed ensemble) blended with boosting; w = MM-Net weight.
+Validation patients choose; test folds are only scored.
+                 VALIDATION acc/mf1/kappa         TEST acc/mf1/kappa
+w=0.00            0.7511  0.6463  0.6359     0.7420  0.6390  0.6227
+w=0.00 cwcorr     0.7479  0.6176  0.6244     0.7322  0.6069  0.6007
+w=0.25            0.7621  0.6643  0.6532     0.7555  0.6576  0.6440
+w=0.25 cwcorr     0.7536  0.6245  0.6334     0.7408  0.6156  0.6142
+w=0.50            0.7696  0.6816  0.6666     0.7610  0.6712  0.6547
+w=0.50 cwcorr     0.7595  0.6362  0.6435     0.7491  0.6296  0.6283
+w=0.75            0.7689  0.6905  0.6687     0.7584  0.6789  0.6554
+w=0.75 cwcorr     0.7639  0.6509  0.6522     0.7532  0.6421  0.6374
+w=1.00            0.7634  0.6928  0.6645     0.7493  0.6785  0.6467
+w=1.00 cwcorr     0.7650  0.6697  0.6576     0.7515  0.6535  0.6396
+
+chosen on validation: w=0.50 -> TEST acc 0.7610 (vs MM-Net ensemble alone +0.0116, Wilcoxon p=0.037, 8/10 folds up)
