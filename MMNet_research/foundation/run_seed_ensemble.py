@@ -87,6 +87,13 @@ def run_config(cfg, seeds):
            "ftlo": "labramprob_f%d", "ftla": "labramfta_f%d", "ftlap": "labramftap_f%d",
            "ftlae": "labramfta_eog_f%d", "ftlape": "labramftap_eog_f%d"}
     ftl = any(p in FTL for p in parts[1:])
+    # -p8: eight cardiorespiratory channels (the seven + nasal pressure), as run_pflow_suite.py
+    p8 = "p8" in parts[1:]
+    import cardio_cnn
+    orig_table, orig_nch = cardio_cnn.raw_cardio_table, cardio_cnn.N_CH
+    if p8:
+        import run_mmnet_pflow as P
+        cardio_cnn.raw_cardio_table, cardio_cnn.N_CH = P.table_with_pressure, 8
     emb_dir = FTL.get(next((p for p in parts[1:] if p in FTL), "ftl"))
     undo = lesion.install(arms, C, steps) if steps else (lambda: None)
 
@@ -115,7 +122,9 @@ def run_config(cfg, seeds):
             model = C.train_fold(tr, va, fusion, [], [], seed=seed,
                                  temporal=FINAL["temporal"])
             for s in list(te) + list(va):
-                probs["SN%d|%d" % (s, seed)] = C.subj_infer(model, s, [], [])[0]
+                sp, ap = C.subj_infer(model, s, [], [])
+                probs["SN%d|%d" % (s, seed)] = sp
+                probs["A:SN%d|%d" % (s, seed)] = ap.astype(np.float32)   # respiratory-event probability
             del model
             torch.cuda.empty_cache()
         cw = orig_cw(tr).cpu().numpy()    # the weights the published loss uses
@@ -140,6 +149,7 @@ def run_config(cfg, seeds):
     finally:
         undo()
         C.sqrt_cw, C.L = orig_cw, orig_L
+        cardio_cnn.raw_cardio_table, cardio_cnn.N_CH = orig_table, orig_nch
 
 
 def _metrics(yt, yp):
