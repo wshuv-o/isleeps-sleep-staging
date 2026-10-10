@@ -1,0 +1,11 @@
+Validation patients (va) drive every choice; test folds (te) are only scored.
+                               VALIDATION acc/mf1/kappa       TEST acc/mf1/kappa
+== base-nocw-cross-ftlae-p8-alahi
+base-nocw-cross-ftlae-p8-alahi|42  0.7694  0.6751  0.6649    0.7528  0.6588  0.6428
+base-nocw-cross-ftlae-p8-alahi|1  0.7715  0.6792  0.6699    0.7536  0.6627  0.6456
+base-nocw-cross-ftlae-p8-alahi|7  0.7705  0.6763  0.6683    0.7575  0.6612  0.6485
+ensemble                        0.7765  0.6801  0.6757    0.7616  0.6653  0.6548
+cwcorr                          0.7664  0.6392  0.6539    0.7538  0.6301  0.6353
+  TEST ensemble  vs mean single seed: acc +0.0070, Wilcoxon p=0.004, 9/10 folds up
+  TEST cwcorr    vs mean single seed: acc -0.0008, Wilcoxon p=0.557, 3/10 folds up
+  chosen on validation: ensemble -> TEST acc 0.7616
