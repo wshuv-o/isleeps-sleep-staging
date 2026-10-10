@@ -53,7 +53,7 @@ import numpy as np
 
 DATA = os.path.join(REPO, "data")
 RES = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "lesion", "external")
-RAW = "H:/data"
+RAW = os.environ.get("ISRUC_RAW", "H:/data")
 EXT = "H:/isleeps_ext"
 STAGE = {"W": 0, "N1": 1, "N2": 2, "N3": 3, "R": 4}
 RESP = re.compile(r"\b(OA|CA|MA|OH|CH|MH)\b")
@@ -115,17 +115,23 @@ def heart_rate(ecg, fs, n_out, fs_out=25):
     return np.interp(t_out, t, hr).astype(np.float32)
 
 
-def build(grp):
+def build(grp, shard=0, shards=1):
     import build_isruc_external as B
     from features_v2 import extract_features_v2
     od = os.path.join(EXT, "isruc", grp)
     os.makedirs(od, exist_ok=True)
-    for tag, rec, xlsx in recordings(grp):
+    for tag, rec, xlsx in recordings(grp)[shard::shards]:
         dst = os.path.join(od, tag + ".npz")
         if os.path.exists(dst):
             print("[skip]", tag); continue
         lab, trd, rates, sigs = B.read_edf(rec)
         idx = B.pick_channels(lab, trd)
+        if "c0" not in idx and {"C4", "C3", "O2", "O1", "A1", "A2", "LOC", "ROC"} <= set(lab):
+            # monopolar file (subject I-40): form the derivations against the contralateral mastoid
+            L = {l: i for i, l in enumerate(lab)}
+            for key, a, r in (("c0", "C4", "A1"), ("c1", "C3", "A2"), ("c2", "O2", "A1"), ("c3", "O1", "A2"),
+                              ("c4", "LOC", "A2"), ("c5", "ROC", "A1")):
+                sigs.append(sigs[L[a]] - sigs[L[r]]); rates = np.append(rates, rates[L[a]]); idx[key] = len(sigs) - 1
         fl2 = [i for i, t in enumerate(trd) if t.upper().startswith("FLOW2")]
         missing = [k for k in ("c0", "c1", "c2", "c3", "c4", "c5", "c6") if k not in idx]
         if missing:
@@ -194,6 +200,18 @@ def labram(part, groups, passes=3.0, bs=64, lr=3e-5, seed=42):
     import torch
     import torch.nn as nn
     import finetune_labram as FL
+    if part == "embed":                          # ISRUC through the saved all-patient encoder
+        FL.CH, FL.NCH = FL.CH + ["F7", "F8"], 6
+        model = FL.Stager().to(FL.DEV)
+        model.load_state_dict(torch.load(os.path.join(EXT, "labram_ft_eog_all.pt")))
+        recs = ext_recs(groups)
+        XE = {t: np.load(f)["x"][:, :6].astype(np.float16) for t, f in recs.items()}
+        PE, EE = FL.predict(model, XE, list(recs))
+        od = os.path.join(EXT, "emb", "fta_eog"); os.makedirs(od, exist_ok=True)
+        for t in recs:
+            np.savez_compressed(os.path.join(od, t + ".npz"), emb=EE[t].astype(np.float16), prob=PE[t].astype(np.float32))
+        print("embedded %d recordings with the saved encoder" % len(recs), flush=True)
+        return
     if part == "frozen":
         import build_labram_cache as BLC
         m = BLC.encoder(pretrained=True)
@@ -362,7 +380,8 @@ def mmnet(config, groups):
     A_log, pi_log = np.log(Am / Am.sum(1, keepdims=True)), np.log(pi / pi.sum())
     k = ahi_scale()
     os.makedirs(RES, exist_ok=True)
-    np.savez_compressed(os.path.join(RES, "isruc_%s_probs.npz" % config), A_log=A_log, pi_log=pi_log,
+    fname = "isruc_%s" % config if list(groups) == ["II", "III"] else "isruc_%s_%s" % ("".join(groups), config)
+    np.savez_compressed(os.path.join(RES, fname + "_probs.npz"), A_log=A_log, pi_log=pi_log,
                         **{"%s|%d" % (t, sd): probs[t][i] for t in ext for i, sd in enumerate(S)},
                         **{"A:%s|%d" % (t, sd): aprobs[t][i] for t in ext for i, sd in enumerate(S)})
     out = {"config": config, "ahi_scale_k": k}
@@ -393,8 +412,8 @@ def mmnet(config, groups):
                      % (g, len(ts), single, row["3-seed"]["acc"], row["3-seed"]["mf1"], row["3-seed"]["kappa"],
                         "%.3f" % auc if auc else "n/a", "%.3f" % apv if apv else "n/a",
                         ("rho %.3f MAE %.1f sev acc %.2f kappa %.2f" % (am["rho"], am["mae"], am["sev_acc"], am["sev_kappa"])) if am else "n/a"))
-    json.dump(out, open(os.path.join(RES, "isruc_%s.json" % config), "w"), indent=1)
-    open(os.path.join(RES, "isruc_%s.txt" % config), "w").write("\n".join(lines) + "\n")
+    json.dump(out, open(os.path.join(RES, fname + ".json"), "w"), indent=1)
+    open(os.path.join(RES, fname + ".txt"), "w").write("\n".join(lines) + "\n")
     print("\n".join(lines))
 
 
@@ -404,10 +423,12 @@ if __name__ == "__main__":
     ap.add_argument("--group", default="III")
     ap.add_argument("--groups", nargs="+", default=["II", "III"])
     ap.add_argument("--part", default="full")
+    ap.add_argument("--shard", type=int, default=0)
+    ap.add_argument("--shards", type=int, default=1)
     ap.add_argument("--config", default="final", choices=["final", "final7", "frozen"])
     a = ap.parse_args()
     if a.stage == "build":
-        build(a.group)
+        build(a.group, a.shard, a.shards)
     elif a.stage == "labram":
         labram(a.part, a.groups)
     elif a.stage == "align":
