@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 
 import mmnet_core as C
-from event_postproc import count_events
+from event_postproc import candidates, count_events
 from run_event_ahi import metrics, split
 
 DATA = os.path.join(REPO, "data")
@@ -65,14 +65,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mmnet", default="base-nocw-cross-ftlae-p8-al")
     ap.add_argument("--det-seed", type=int, default=42)
+    ap.add_argument("--det-seeds", type=int, nargs="+", default=None,
+                    help="average these detector seeds; counting rule chosen per fold on validation")
     ap.add_argument("--name", default="ahi_rescore")
     a = ap.parse_args()
     ann = {s: float(np.load(os.path.join(DATA, "aligned", "resp_events", "SN%d.npz" % s))["ahi_ann"]) for s in C.SUBS}
     rows = {s: np.load(os.path.join(DATA, "aligned", "rows", "SN%d.npy" % s)) for s in C.SUBS}
     col = pd.to_numeric(pd.read_excel(os.path.join(DATA, "full100", "subject_description.xlsx"))["AHI_1_B"], errors="coerce")
     clin = {i + 1: float(v) for i, v in enumerate(col) if not pd.isna(v)}
-    chosen = {c["fold"]: (c["rule"], c["thr"], c["par"]) for c in
-              json.load(open(os.path.join(RUNS, "event_ahi_post_s%d.json" % a.det_seed)))["chosen"]}
+    if a.det_seeds is None:
+        chosen = {c["fold"]: (c["rule"], c["thr"], c["par"]) for c in
+                  json.load(open(os.path.join(RUNS, "event_ahi_post_s%d.json" % a.det_seed)))["chosen"]}
+    if a.det_seeds is not None:
+        chosen = {}
     est = {"mmnet": {}, "detector": {}}
     for fi, (tr_all, te) in enumerate(C.FOLDS):
         tr, va = split(fi, tr_all)
@@ -83,14 +88,19 @@ def main():
             sl = st != 0
             raw[s] = ap_[sl].sum() / max(sl.sum() * 30 / 3600, 0.5)
         k = np.median([ann[s] / max(raw[s], 1e-3) for s in va])
-        P = np.load(os.path.join(RUNS, "event_ahi", "fold%d_s%d_prob.npz" % (fi, a.det_seed)))
+        Ps = [np.load(os.path.join(RUNS, "event_ahi", "fold%d_s%d_prob.npz" % (fi, sd))) for sd in (a.det_seeds or [a.det_seed])]
+        P = {s: np.mean([p["SN%d" % s].astype(np.float32) for p in Ps], 0) for s in list(te) + list(va)}
+        if a.det_seeds is not None:
+            errs = {c: np.median([abs(ahi_from_events(count_events(P[s], *c), C.DATA[s][2], rows[s]) - ann[s]) for s in va])
+                    for c in candidates()}
+            chosen[fi] = min(errs, key=errs.get)
         for s in te:
             est["mmnet"][s] = raw[s] * k
-            ev = count_events(P["SN%d" % s].astype(np.float32), *chosen[fi])
+            ev = count_events(P[s], *chosen[fi])
             est["detector"][s] = ahi_from_events(ev, sr[s][0], rows[s])
     subs = sorted(est["mmnet"])
     est["average"] = {s: (est["mmnet"][s] + est["detector"][s]) / 2 for s in subs}
-    lines = ["AHI after the alignment fix (MM-Net %s, detector seed %d), %d test patients" % (a.mmnet, a.det_seed, len(subs)),
+    lines = ["AHI after the alignment fix (MM-Net %s, detector seed(s) %s), %d test patients" % (a.mmnet, a.det_seeds or a.det_seed, len(subs)),
              "%-10s %-48s   %s" % ("", "vs annotation AHI (clock grid)", "vs clinical AHI_1_B")]
     for name, P_ in est.items():
         m1 = metrics([P_[s] for s in subs], [ann[s] for s in subs])

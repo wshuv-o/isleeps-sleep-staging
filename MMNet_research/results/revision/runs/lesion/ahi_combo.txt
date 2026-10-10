@@ -1,0 +1,11 @@
+AHI combinations (MM-Net base-nocw-cross-ftlae-p8-al, detector v1 seeds [42, 1, 7], v2 seeds [42]), 99 test patients
+per-fold choice: f0 v2 (val 4.1); f1 v2 (val 3.2); f2 v2 (val 3.4); f3 v2 (val 3.1); f4 v1 (val 4.1); f5 v2 (val 2.1); f6 v1 (val 4.1); f7 v2 (val 4.9); f8 mmnet+v1 (val 5.2); f9 mmnet (val 4.1)
+                      vs annotation AHI                                    vs clinical AHI_1_B
+mmnet                 rho 0.765 MAE  10.4 sev acc 0.54 kappa 0.45   rho 0.633 MAE  11.9 sev acc 0.49 kappa 0.38
+v1                    rho 0.671 MAE  11.2 sev acc 0.46 kappa 0.44   rho 0.583 MAE  12.1 sev acc 0.52 kappa 0.43
+v2                    rho 0.652 MAE  11.5 sev acc 0.46 kappa 0.41   rho 0.544 MAE  13.2 sev acc 0.45 kappa 0.36
+mmnet+v1              rho 0.742 MAE   9.7 sev acc 0.49 kappa 0.46   rho 0.635 MAE  10.8 sev acc 0.54 kappa 0.46
+mmnet+v2              rho 0.745 MAE   9.7 sev acc 0.51 kappa 0.44   rho 0.625 MAE  11.4 sev acc 0.48 kappa 0.40
+v1+v2                 rho 0.712 MAE  10.5 sev acc 0.43 kappa 0.42   rho 0.606 MAE  11.8 sev acc 0.46 kappa 0.40
+mmnet+v1+v2           rho 0.744 MAE   9.5 sev acc 0.48 kappa 0.46   rho 0.629 MAE  10.9 sev acc 0.49 kappa 0.43
+chosen on validation  rho 0.666 MAE  11.0 sev acc 0.45 kappa 0.40   rho 0.566 MAE  12.8 sev acc 0.44 kappa 0.36

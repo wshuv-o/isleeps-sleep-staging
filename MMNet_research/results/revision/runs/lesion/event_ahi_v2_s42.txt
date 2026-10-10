@@ -1,0 +1,5 @@
+Event-level detector v2 (aligned, EEG), seed 42, 10 test folds, 99 patients
+per-second AUC (mean over patients) 0.809 | event F1 0.248 (precision 0.354, recall 0.191)
+
+AHI, predicted stages (end to end)   vs annotation AHI: rho 0.332 MAE 17.2 severity acc 0.18 kappa 0.10 | vs clinical: rho 0.382 MAE 16.7 acc 0.23 kappa 0.12
+AHI, true stages (oracle)            vs annotation AHI: rho 0.372 MAE 17.0 severity acc 0.23 kappa 0.14 | vs clinical: rho 0.418 MAE 16.5 acc 0.28 kappa 0.16

@@ -1,0 +1,6 @@
+Final AHI (aligned timeline), detector v2 seeds [42] averaged, MM-Net base-nocw-cross-ftlae-p8-al, 99 test patients
+counting rules chosen on validation: f0 peaks t=0.50 p=35; f1 split t=0.60 p=20; f2 peaks t=0.40 p=35; f3 split t=0.70 p=45; f4 peaks t=0.35 p=35; f5 split t=0.60 p=30; f6 split t=0.30 p=45; f7 peaks t=0.20 p=35; f8 runs t=0.50 p=0; f9 peaks t=0.30 p=35
+             vs annotation AHI                                    vs clinical AHI_1_B
+detector v2  rho 0.652 MAE  11.5 sev acc 0.46 kappa 0.41   rho 0.544 MAE  13.2 sev acc 0.45 kappa 0.36
+mmnet        rho 0.765 MAE  10.4 sev acc 0.54 kappa 0.45   rho 0.633 MAE  11.9 sev acc 0.49 kappa 0.38
+average      rho 0.745 MAE   9.7 sev acc 0.51 kappa 0.44   rho 0.625 MAE  11.4 sev acc 0.48 kappa 0.40

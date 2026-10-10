@@ -95,3 +95,26 @@ AHI association (Spearman, per-patient mean event probability vs AHI_1_B, n=99):
 
 Against the reimplemented baselines (single model): +0.037 to +0.158, 9-10/10 folds, Holm p=0.016
 for each.
+
+## AHI: detector seeds, detector v2, combinations (ahi_rescore.py --det-seeds, ahi_final.py, ahi_combo.py)
+
+Target: annotation AHI (data/aligned/resp_events), 99 test patients, stages predicted by
+base-nocw-cross-ftlae-p8-al (3-seed, train-fold HMM). Detector counting rules (runs / split / peaks)
+chosen per fold on validation patients. Detector v2 = run_event_ahi.py --aligned --eeg --tag v2
+(seed 42; seeds 1 and 7 not run). MM-Net respiratory head on apnea/hypopnea onsets only
+(-alahi): rho 0.745 vs 0.765 for the standard head.
+
+| Estimator | rho | MAE | Severity acc | kappa | rho vs AHI_1_B |
+|---|---|---|---|---|---|
+| MM-Net (expected count, validation scale) | 0.765 | 10.4 | 0.54 | 0.45 | 0.633 |
+| detector v1, seed 42 | 0.635 | 14.0 | 0.46 | 0.45 | 0.535 |
+| detector v1, seeds 42+1 | 0.657 | 12.4 | 0.49 | 0.49 | 0.539 |
+| detector v1, seeds 42+1+7 | 0.671 | 11.2 | 0.46 | 0.44 | 0.583 |
+| detector v2, seed 42 | 0.652 | 11.5 | 0.46 | 0.41 | 0.544 |
+| mean(MM-Net, v1 3 seeds) | 0.742 | 9.7 | 0.49 | 0.46 | 0.635 |
+| mean(MM-Net, v2) | 0.745 | 9.7 | 0.51 | 0.44 | 0.625 |
+| mean(MM-Net, v1 3 seeds, v2) | 0.744 | 9.5 | 0.48 | 0.46 | 0.629 |
+| subset mean chosen per fold on validation | 0.666 | 11.0 | 0.45 | 0.40 | 0.566 |
+| mean(MM-Net, v1 seed 42), rules from event_ahi_post_s42.json (ahi_rescore.txt) | 0.742 | 9.7 | 0.55 | 0.51 | 0.625 |
+
+Detector v2 seed 42 alone: per-second AUC 0.809 (v1 0.789), event F1 0.248 (v1 0.253).
