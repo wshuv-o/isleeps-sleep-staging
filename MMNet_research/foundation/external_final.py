@@ -314,8 +314,8 @@ def mmnet(config, groups):
     from run_event_ahi import metrics as ahi_metrics
     from sklearn.metrics import accuracy_score, average_precision_score, cohen_kappa_score, f1_score, roc_auc_score
     C, sweep, FINAL = RL.C, RL.sweep, RL.FINAL
-    final = config == "final"
-    n_ch = 8 if final else 7
+    final = config.startswith("final")          # final7: the final architecture without nasal pressure
+    n_ch = 8 if config == "final" else 7
     emb = "fta_eog" if final else "labram"
     arm = FINAL["arm"].replace("labram", "labramfta_eog_all") if final else FINAL["arm"]
     fusion = "cross" if final else "concat"
@@ -323,7 +323,8 @@ def mmnet(config, groups):
     if final:
         import run_mmnet_pflow as P
         C.sqrt_cw = lambda tr: torch.ones(5, dtype=torch.float32, device=C.DEV)
-        cardio_cnn.raw_cardio_table, cardio_cnn.N_CH = P.table_with_pressure, 8
+        if n_ch == 8:
+            cardio_cnn.raw_cardio_table, cardio_cnn.N_CH = P.table_with_pressure, 8
     recs = ext_recs(groups)
     ext = {}
     for t, f in recs.items():
@@ -403,7 +404,7 @@ if __name__ == "__main__":
     ap.add_argument("--group", default="III")
     ap.add_argument("--groups", nargs="+", default=["II", "III"])
     ap.add_argument("--part", default="full")
-    ap.add_argument("--config", default="final", choices=["final", "frozen"])
+    ap.add_argument("--config", default="final", choices=["final", "final7", "frozen"])
     a = ap.parse_args()
     if a.stage == "build":
         build(a.group)

@@ -118,3 +118,23 @@ chosen per fold on validation patients. Detector v2 = run_event_ahi.py --aligned
 | mean(MM-Net, v1 seed 42), rules from event_ahi_post_s42.json (ahi_rescore.txt) | 0.742 | 9.7 | 0.55 | 0.51 | 0.625 |
 
 Detector v2 seed 42 alone: per-second AUC 0.809 (v1 0.789), event F1 0.248 (v1 0.253).
+
+## ISRUC-Sleep, trained on all 99 iSLEEPS patients, applied unchanged (external_final.py; external/)
+
+Data: subgroup II (8 subjects x 2 nights) and III (10 healthy subjects), rater-1 annotations.
+EDF headers of all subgroup III files and of II_S1_1, II_S5_1 declare EEG/EOG at +-25 uV; their N3
+peak-to-peak (9-23 uV) is ~10x below the other files (98-283 uV), so these channels are multiplied
+by 10. Effort = Thorax + Abdomen; Pulse = heart rate from ECG R-peaks; nasal pressure = Flow2 (DC3).
+Encoders fine-tuned on all 99 patients (11 validation), cross-fitted in 3 parts and aligned.
+HMM from the training patients; 3 seeds. AHI reference: apneas + hypopneas in scored sleep per hour
+of scored sleep. AHI estimate: expected count x k (k 0.459, iSLEEPS validation); "thr" = epochs with
+p > 0.45 x 0.469 (both chosen on iSLEEPS validation, isruc_ahi_threshold.py).
+
+| Config | Staging II+III (3-seed) | III | II | Resp AUC | AHI rho (expected) | AHI rho (thr) | AHI MAE (thr) |
+|---|---|---|---|---|---|---|---|
+| frozen (published config: cw, concat, frozen LaBraM, 7 ch) | 0.7015 | 0.7156 | 0.6927 | 0.777 | 0.472 | 0.497 | 8.4 |
+| final (nocw, cross, fine-tuned EEG+EOG aligned, 8 ch) | 0.6925 | 0.7128 | 0.6797 | 0.784 | 0.125 | 0.100 | 9.8 |
+| final7 (as final, 7 ch, no nasal pressure) | 0.6921 | 0.7092 | 0.6814 | 0.786 | 0.445 | 0.458 | 13.0 |
+
+Encoder alone (one epoch, no HMM): II 0.629, III 0.701. Previous ISRUC II run of the published model
+(external_isruc.json, no amplitude correction): 0.612.
