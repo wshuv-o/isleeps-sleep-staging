@@ -64,8 +64,34 @@ Blends of MM-Net probabilities, HistGradientBoosting stagers on the same feature
 | + fine-tuned LaBraM (seed 42), wx 0.35 | 0.7864 | 0.7788 |
 | sys_final3: 6 MM-Net configs incl. ftla/ftlap/ftlo + 2 boosters + LaBraM (s42, s1) | 0.7901 | 0.7831 |
 
-## In progress at the time of this record
+## Encoder with EOG (finetune_labram.py --eog: E1/E2 fed to LaBraM as F7/F8)
 
-Encoder fine-tuned with E1/E2 as F7/F8 (finetune_labram.py --eog), folds 0-3 test:
-0.6785, 0.6993, 0.7067, 0.7598 (without EOG: 0.6812, 0.6747, 0.6730, 0.7662).
-Pipeline: logs/eog_pipeline.sh on Machine B (outside the repository).
+Encoder alone (one epoch, no HMM), 10 folds: 0.7319 with EOG vs 0.7087 without (8/10 folds up).
+Inside MM-Net (base-nocw-cross), cross-fitted and aligned:
+
+| Config | Single model | 3-seed average | Validation |
+|---|---|---|---|
+| ftlae (aligned, encoder with EOG) | 0.7573 | 0.7628 | 0.7792 |
+| ftlape (aligned + probabilities, encoder with EOG) | 0.7584 | 0.7643 | 0.7769 |
+
+Ensemble with the EOG encoder added (sys_eog): validation 0.7927, test 0.7834.
+
+## Final architecture (final_eval.py; final_architecture.txt)
+
+Encoder variant chosen by validation accuracy among ftla, ftlap, ftlae, ftlape (ftlae, 0.7792),
+trained with the eight cardiorespiratory channels (seven + nasal pressure): base-nocw-cross-ftlae-p8.
+
+| | Staging acc | macro-F1 | kappa | Resp AUC | Resp AP |
+|---|---|---|---|---|---|
+| final, 3-seed average | 0.7601 | 0.6640 | 0.6529 | 0.8198 | 0.4729 |
+| final, single model (seed mean) | 0.7569 | | | 0.8087 | |
+| eight-channel MM-Net, frozen LaBraM (seed mean) | 0.7358 | 0.6683 | 0.6293 | 0.8099 | 0.4516 |
+
+vs eight-channel frozen: staging +0.0211 single (9/10, p=0.006), +0.0243 3-seed (9/10, p=0.004);
+respiratory AUC -0.0012 single (p=0.63), +0.0100 3-seed (9/10, p=0.006).
+
+AHI association (Spearman, per-patient mean event probability vs AHI_1_B, n=99): final 3-seed
+0.608, final seed 42 0.642, eight-channel frozen seed 42 0.642, published seven-channel seed 42 0.491.
+
+Against the reimplemented baselines (single model): +0.037 to +0.158, 9-10/10 folds, Holm p=0.016
+for each.
