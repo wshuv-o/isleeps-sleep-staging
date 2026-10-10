@@ -43,7 +43,7 @@ print("cwd:", os.getcwd(), "| device:", DEV,
 # ------------------------------------------------------------------
 
 
-FE = os.path.join(REPO, "data", "mm_features")
+FE = os.path.join(REPO, "data", os.environ.get("MMNET_FEATURES", "mm_features"))   # aligned/mm_features: see build_aligned_caches.py
 DUP = {28}
 def load_data():
     data = {}

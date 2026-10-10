@@ -81,7 +81,7 @@ def finetune(k, cf_part=None, passes=3.0, bs=64, lr=3e-5, seed=42):
     X, Y = {}, {}
     for r in recs:
         d = np.load(os.path.join(PROC, r + ".npz"))
-        X[r] = d["x"][:, IDX].astype(np.float16); Y[r] = d["y"].astype(np.int64)
+        X[r] = np.ascontiguousarray(d["x"][:, IDX], dtype=np.float16); Y[r] = d["y"].astype(np.int64)   # Sleep-EDF arrays are column-major
     idx = np.array([(r, i) for r in tr for i in range(len(Y[r]))], dtype=object)
     model = FL.Stager().to(FL.DEV)
     opt = torch.optim.AdamW([{"params": model.enc.parameters(), "lr": lr},

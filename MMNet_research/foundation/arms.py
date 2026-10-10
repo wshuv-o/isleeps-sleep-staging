@@ -208,7 +208,7 @@ class arm:
             # is untouched, so the encoder is the only variable, exactly as on
             # the EEG side.
             import cardio_cnn
-            table = cardio_cnn.raw_cardio_table(C, os.path.join(REPO, "data", "multimodal"))
+            table = cardio_cnn.raw_cardio_table(C, os.path.join(REPO, "data", os.environ.get("MMNET_MULTIMODAL", "multimodal")))
             wide = {}
             for sid, (fe, fc, y, a) in data.items():
                 if sid not in table:

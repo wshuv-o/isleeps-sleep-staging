@@ -46,7 +46,7 @@ import sweep                    # noqa: E402
 import cardio_cnn               # noqa: E402
 from sklearn.metrics import average_precision_score, roc_auc_score  # noqa: E402
 
-MM = os.path.join(REPO, "data", "multimodal")
+MM = os.path.join(REPO, "data", os.environ.get("MMNET_MULTIMODAL", "multimodal"))
 OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final",
                    "missing_channel.json")
 FINAL = dict(arm="A+labram", cardio="raw_cnn", cardio_mode="concat",

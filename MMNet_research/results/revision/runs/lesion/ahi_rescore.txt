@@ -1,0 +1,5 @@
+AHI after the alignment fix (MM-Net base-nocw-cross-ftlae-p8-al, detector seed 42), 99 test patients
+           vs annotation AHI (clock grid)                     vs clinical AHI_1_B
+mmnet      rho 0.765 MAE  10.4 sev acc 0.54 kappa 0.45   rho 0.633 MAE  11.9 sev acc 0.49 kappa 0.38
+detector   rho 0.669 MAE  11.7 sev acc 0.45 kappa 0.44   rho 0.569 MAE  13.5 sev acc 0.47 kappa 0.41
+average    rho 0.742 MAE   9.7 sev acc 0.55 kappa 0.51   rho 0.625 MAE  11.4 sev acc 0.55 kappa 0.47

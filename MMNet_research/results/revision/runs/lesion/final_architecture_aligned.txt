@@ -1,0 +1,16 @@
+Final MM-Net configuration: base-nocw-cross-ftlae-p8-al (seeds 42, 1, 7; 10 test folds)
+
+                                        acc      mf1    kappa resp AUC  resp AP
+base-nocw-cross-ftlae-p8-al, 3-seed average   0.7625   0.6638   0.6558   0.8248   0.4872
+base-nocw-cross-ftlae-p8-al, single model (seed mean)   0.7557                     0.8154
+8-channel MM-Net, frozen LaBraM (seed mean)   0.7358   0.6683   0.6293   0.8099   0.4516
+
+staging single model vs 8-channel frozen: +0.0198, 9/10 folds up, Wilcoxon p=0.006
+staging 3-seed       vs 8-channel frozen: +0.0267, 10/10 folds up, Wilcoxon p=0.002
+resp AUC single model vs 8-channel frozen: +0.0056, 7/10 folds up, Wilcoxon p=0.375
+resp AUC 3-seed      vs 8-channel frozen: +0.0149, 8/10 folds up, Wilcoxon p=0.020
+
+AHI association, final, 3-seed burden           Spearman rho 0.599 (p=5.8e-11, n=99)
+AHI association, final, seed 42 burden          Spearman rho 0.605 (p=3.3e-11, n=99)
+AHI association, 8-channel frozen, seed 42      Spearman rho 0.642 (p=7.6e-13, n=99)
+AHI association, published 7-channel, seed 42   Spearman rho 0.491 (p=2.5e-07, n=99)

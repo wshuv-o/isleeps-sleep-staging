@@ -56,18 +56,28 @@ def split(fi, tr_all):
     return tr_all[nv:], tr_all[:nv]
 
 
+ALIGNED, USE_EEG = False, False      # --aligned: data/aligned (EEG grid); --eeg: + processed7 EEG/EOG/EMG at 100 Hz
+
+
 def load_patient(s):
-    d = np.load(os.path.join(DATA, "multimodal", "SN%d.npz" % s))
+    base = os.path.join(DATA, "aligned") if ALIGNED else DATA
+    d = np.load(os.path.join(base, "multimodal", "SN%d.npz" % s))
     card = d["card"].astype(np.float32)                       # [n, 7, 750]
     n = card.shape[0]
-    p = np.load(os.path.join(DATA, "pressure_flow", "SN%d.npz" % s))
+    p = np.load(os.path.join(base, "pressure_flow", "SN%d.npz" % s))
     pf = p["pflow"].astype(np.float32)[:n][:, None, :]         # [n, 1, 750]
     if not bool(p["valid"]):
         pf[:] = 0
     x = np.concatenate([card, pf], 1).transpose(1, 0, 2).reshape(8, n * 750)
     m, sd = x.mean(1, keepdims=True), x.std(1, keepdims=True)
     x = np.where(sd > 1e-6, (x - m) / (sd + 1e-6), 0.0).astype(np.float16)
-    y = np.load(os.path.join(DATA, "resp_events", "SN%d.npz" % s))["mask"][: n * 30].astype(np.float32)
+    y = np.load(os.path.join(base, "resp_events", "SN%d.npz" % s))["mask"][: n * 30].astype(np.float32)
+    if USE_EEG:
+        e = np.load(os.path.join(DATA, "processed7", "SN%d.npz" % s))["x"][:n].astype(np.float32)   # [n, 7, 3000] @100 Hz
+        e = e.transpose(1, 0, 2).reshape(7, n * 3000)
+        m2, sd2 = e.mean(1, keepdims=True), e.std(1, keepdims=True)
+        e = np.where(sd2 > 1e-6, (e - m2) / (sd2 + 1e-6), 0.0).astype(np.float16)
+        return (x, e), y
     return x, y
 
 
@@ -84,15 +94,18 @@ class Block(nn.Module):
 class EventNet(nn.Module):
     """[b, 8, 25*T] -> [b, T] logits (one per second)."""
 
-    def __init__(self, w=64):
+    def __init__(self, w=64, eeg=False):
         super().__init__()
-        self.front = nn.Sequential(Block(8, 32, 11), nn.MaxPool1d(5), Block(32, w, 7), nn.MaxPool1d(5))
+        self.eeg = nn.Sequential(Block(7, 16, 15), nn.MaxPool1d(4)) if eeg else None     # 100 -> 25 Hz
+        self.front = nn.Sequential(Block(8 + (16 if eeg else 0), 32, 11), nn.MaxPool1d(5), Block(32, w, 7), nn.MaxPool1d(5))
         self.d1, self.d2, self.d3 = Block(w, w, 5), Block(w, 2 * w, 5), Block(2 * w, 2 * w, 5)
         self.gru = nn.GRU(2 * w, w, batch_first=True, bidirectional=True)
         self.u3, self.u2, self.u1 = Block(4 * w, 2 * w, 5), Block(4 * w, w, 5), Block(2 * w, w, 5)
         self.head = nn.Conv1d(w, 1, 1)
 
-    def forward(self, x):
+    def forward(self, x, e=None):
+        if self.eeg is not None:
+            x = torch.cat([x, self.eeg(e)[..., :x.shape[-1]]], 1)
         f = self.front(x)                          # 1 Hz
         a = self.d1(f)                             # T
         b = self.d2(F.max_pool1d(a, 2))            # T/2
@@ -109,6 +122,7 @@ class EventNet(nn.Module):
 def predict(model, x):
     """Overlapping 10-minute windows (stride 5 min), averaged -> per-second probability."""
     model.eval()
+    x, e = x if isinstance(x, tuple) else (x, None)
     T = x.shape[1] // FS
     out, cnt = np.zeros(T, np.float32), np.zeros(T, np.float32)
     starts = list(range(0, max(1, T - WIN_S + 1), WIN_S // 2))
@@ -119,14 +133,20 @@ def predict(model, x):
         L = seg.shape[1] // FS
         if L < WIN_S:
             seg = np.pad(seg, ((0, 0), (0, (WIN_S - L) * FS)))
-        p = torch.sigmoid(model(torch.from_numpy(seg[None].astype(np.float32)).to(DEV)))[0, :L]
+        eb = None
+        if e is not None:
+            eseg = e[:, st * 100:(st + WIN_S) * 100]
+            if eseg.shape[1] < WIN_S * 100:
+                eseg = np.pad(eseg, ((0, 0), (0, WIN_S * 100 - eseg.shape[1])))
+            eb = torch.from_numpy(eseg[None].astype(np.float32)).to(DEV)
+        p = torch.sigmoid(model(torch.from_numpy(seg[None].astype(np.float32)).to(DEV), eb))[0, :L]
         out[st:st + L] += p.float().cpu().numpy(); cnt[st:st + L] += 1
     return out / np.maximum(cnt, 1)
 
 
 def train(X, Y, tr, va, seed, epochs=25, bs=24, patience=5):
     torch.manual_seed(seed); np.random.seed(seed)
-    model = EventNet().to(DEV)
+    model = EventNet(eeg=USE_EEG).to(DEV)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     pos = np.mean(np.concatenate([Y[s] for s in tr]))
     lossf = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(np.sqrt((1 - pos) / max(pos, 1e-4)), device=DEV))
@@ -136,15 +156,19 @@ def train(X, Y, tr, va, seed, epochs=25, bs=24, patience=5):
         model.train()
         order = np.random.permutation(len(starts))
         for i in range(0, len(order) - bs + 1, bs):
-            xb, yb = [], []
+            xb, eb, yb = [], [], []
             for j in order[i:i + bs]:
                 s, st = starts[j]
                 st = min(st + np.random.randint(0, WIN_S // 4), max(0, len(Y[s]) - WIN_S))
-                xb.append(X[s][:, st * FS:(st + WIN_S) * FS]); yb.append(Y[s][st:st + WIN_S])
+                xs, es = X[s] if USE_EEG else (X[s], None)
+                xb.append(xs[:, st * FS:(st + WIN_S) * FS]); yb.append(Y[s][st:st + WIN_S])
+                if es is not None:
+                    eb.append(es[:, st * 100:(st + WIN_S) * 100])
             xb = torch.from_numpy(np.stack(xb).astype(np.float32)).to(DEV)
+            eb = torch.from_numpy(np.stack(eb).astype(np.float32)).to(DEV) if USE_EEG else None
             yb = torch.from_numpy(np.stack(yb)).to(DEV)
             with torch.autocast("cuda", dtype=torch.float16):
-                lo = model(xb)
+                lo = model(xb, eb)
             loss = lossf(lo.float(), yb)
             opt.zero_grad(); loss.backward(); nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step()
         yv = np.concatenate([Y[s] for s in va]); pv = np.concatenate([predict(model, X[s]) for s in va])
@@ -208,15 +232,26 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--stages", default="base-nocw-cross-ftlae-p8")
+    ap.add_argument("--aligned", action="store_true")
+    ap.add_argument("--eeg", action="store_true")
+    ap.add_argument("--tag", default="")
     a = ap.parse_args()
+    global ALIGNED, USE_EEG, OUT
+    ALIGNED, USE_EEG = a.aligned, a.eeg
+    if a.tag:
+        OUT = os.path.join(RUNS, "event_ahi_" + a.tag)
     os.makedirs(OUT, exist_ok=True)
     t0 = time.time()
     X, Y = {}, {}
     for s in C.SUBS:
         X[s], Y[s] = load_patient(s)
-    true_ev = {s: [(e[0], e[1]) for e in np.load(os.path.join(DATA, "resp_events", "SN%d.npz" % s))["events"]
-                   if 1 <= e[2] <= 4] for s in C.SUBS}
-    ann_ahi = {s: float(np.load(os.path.join(DATA, "resp_events", "SN%d.npz" % s))["ahi_ann"]) for s in C.SUBS}
+    if ALIGNED:      # events as runs of the EEG-grid mask, so events and stages share one timeline
+        true_ev = {s: [(a_, b_) for a_, b_ in segments(Y[s] > 0)] for s in C.SUBS}
+        ann_ahi = {s: float(np.load(os.path.join(DATA, "aligned", "resp_events", "SN%d.npz" % s))["ahi_ann"]) for s in C.SUBS}
+    else:
+        true_ev = {s: [(e[0], e[1]) for e in np.load(os.path.join(DATA, "resp_events", "SN%d.npz" % s))["events"]
+                       if 1 <= e[2] <= 4] for s in C.SUBS}
+        ann_ahi = {s: float(np.load(os.path.join(DATA, "resp_events", "SN%d.npz" % s))["ahi_ann"]) for s in C.SUBS}
     col = pd.to_numeric(pd.read_excel(os.path.join(DATA, "full100", "subject_description.xlsx"))["AHI_1_B"], errors="coerce")
     clin = {i + 1: float(v) for i, v in enumerate(col) if not pd.isna(v)}
     print("loaded %d patients in %.1f min" % (len(X), (time.time() - t0) / 60), flush=True)

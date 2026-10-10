@@ -26,7 +26,7 @@ import run_missing_channel as R
 
 C, sweep, cardio_cnn = R.C, R.sweep, R.cardio_cnn
 REPO = R.REPO
-PFLOW = os.path.join(REPO, "data", "pressure_flow")
+PFLOW = os.path.join(REPO, "data", os.environ.get("MMNET_PFLOW", "pressure_flow"))
 OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final",
                    "mmnet_pflow.json")
 FINAL = R.FINAL
