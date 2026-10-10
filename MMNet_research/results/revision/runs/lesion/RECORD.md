@@ -138,3 +138,17 @@ p > 0.45 x 0.469 (both chosen on iSLEEPS validation, isruc_ahi_threshold.py).
 
 Encoder alone (one epoch, no HMM): II 0.629, III 0.701. Previous ISRUC II run of the published model
 (external_isruc.json, no amplitude correction): 0.612.
+
+## ISRUC II+III, trained and tested on ISRUC (isruc_cv.py; external/isruc_cv_IIIII_*.txt)
+
+6 subject-independent folds (18 subjects, 26 recordings; 2 training subjects per fold for validation),
+3 seeds, HMM from training recordings. final: encoder fine-tuned per fold on ISRUC training recordings,
+cross-fitted (3 parts by subject) and aligned, 8 channels, no class weights, cross fusion.
+AHI scale k from the 2 validation subjects per fold.
+
+| Config | Staging II+III | III | II | mF1 | kappa | Resp AUC | AHI rho | AHI MAE |
+|---|---|---|---|---|---|---|---|---|
+| frozen (published config) | 0.7156 | 0.7642 | 0.6852 | 0.6891 | 0.6317 | 0.757 | 0.061 | 8.0 |
+| final | 0.7245 | 0.7787 | 0.6905 | 0.6921 | 0.6408 | 0.794 | 0.138 | 7.3 |
+
+Per fold (3-seed acc), frozen / final: 0.671/0.658, 0.715/0.709, 0.760/0.775, 0.696/0.704, 0.750/0.778, 0.706/0.729.

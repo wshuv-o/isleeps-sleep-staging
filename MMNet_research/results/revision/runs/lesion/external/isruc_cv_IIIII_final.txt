@@ -1,0 +1,4 @@
+ISRUC II+III, MM-Net final trained and tested on ISRUC (6 subject-independent folds)
+II       16 rec  staging single 0.6847 | 3-seed acc 0.6905 mf1 0.6565 kappa 0.5939 | resp AUC 0.752 AP 0.188 | AHI rho 0.165 MAE 9.4 sev acc 0.44 kappa 0.17
+III      10 rec  staging single 0.7771 | 3-seed acc 0.7787 mf1 0.7469 kappa 0.7137 | resp AUC 0.867 AP 0.260 | AHI rho 0.079 MAE 3.9 sev acc 0.60 kappa 0.20
+II+III   26 rec  staging single 0.7204 | 3-seed acc 0.7245 mf1 0.6921 kappa 0.6408 | resp AUC 0.794 AP 0.197 | AHI rho 0.138 MAE 7.3 sev acc 0.50 kappa 0.19
