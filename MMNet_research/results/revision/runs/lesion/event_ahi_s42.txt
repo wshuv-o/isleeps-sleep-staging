@@ -1,0 +1,5 @@
+Event-level detector, seed 42, 10 test folds, 99 patients
+per-second AUC (mean over patients) 0.789 | event F1 0.253 (precision 0.342, recall 0.200)
+
+AHI, predicted stages (end to end)   vs annotation AHI: rho 0.439 MAE 15.4 severity acc 0.24 kappa 0.18 | vs clinical: rho 0.436 MAE 16.4 acc 0.24 kappa 0.20
+AHI, true stages (oracle)            vs annotation AHI: rho 0.457 MAE 15.1 severity acc 0.26 kappa 0.17 | vs clinical: rho 0.451 MAE 16.2 acc 0.26 kappa 0.19

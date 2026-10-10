@@ -1,0 +1,5 @@
+Event detector seed 42, post-processing chosen per fold on validation patients
+chosen: f0 peaks t=0.20 p=20; f1 peaks t=0.70 p=20; f2 peaks t=0.30 p=35; f3 runs t=0.40 p=0; f4 peaks t=0.45 p=25; f5 runs t=0.80 p=0; f6 split t=0.35 p=30; f7 peaks t=0.15 p=35; f8 peaks t=0.30 p=35; f9 split t=0.30 p=45
+
+end to end (predicted stages)  vs annotation AHI: rho 0.675 MAE 11.2 severity acc 0.48 kappa 0.47 | vs clinical: rho 0.577 MAE 13.5 acc 0.47 kappa 0.42
+oracle stages                  vs annotation AHI: rho 0.679 MAE 10.9 severity acc 0.51 kappa 0.48 | vs clinical: rho 0.576 MAE 13.3 acc 0.47 kappa 0.43
