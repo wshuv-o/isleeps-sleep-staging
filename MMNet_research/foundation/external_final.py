@@ -175,6 +175,64 @@ def build(grp, shard=0, shards=1):
               % (tag, len(y), (~keep).sum(), nev.sum(), ahi, gain, "".join("1" if v else "0" for v in valid)), flush=True)
 
 
+UCD = os.environ.get("UCD_RAW", "D:/isleeps_data/ucddb")
+UCD_STAGE = {0: 0, 1: 4, 2: 1, 3: 2, 4: 3, 5: 3}          # PhysioNet UCDDB: W, REM, S1, S2, S3, S4
+UCD_EVENTS = ("APNEA-C", "APNEA-M", "APNEA-O", "HYP-C", "HYP-M", "HYP-O")
+P7_STD = np.array([34.49, 32.32, 36.9, 33.68, 34.93, 33.23, 5.52])   # iSLEEPS median whole-night std (uV)
+
+
+def build_ucd():
+    """St Vincent's / UCD sleep-apnoea database (PhysioNet ucddb) -> EXT/isruc/UCD/UCD_S<id>.npz.
+
+    Only C3-A2 and C4-A1 are recorded: they also fill the O1/O2 inputs (as for Sleep-EDF). The EDF
+    headers declare every channel 0..1 with no unit, so EEG/EOG/EMG are scaled per recording to the
+    iSLEEPS median whole-night standard deviation (no labels used). No nasal pressure (channel 8 = 0).
+    Events: apnoeas and hypopnoeas from <rec>_respevt.txt, clock time relative to the EDF start time.
+    """
+    import build_isruc_external as B
+    from features_v2 import extract_features_v2
+    od = os.path.join(EXT, "isruc", "UCD"); os.makedirs(od, exist_ok=True)
+    for rec in sorted(glob.glob(os.path.join(UCD, "ucddb*.rec"))):
+        rid = os.path.basename(rec)[5:8]; tag = "UCD_S" + rid
+        dst = os.path.join(od, tag + ".npz")
+        if os.path.exists(dst):
+            print("[skip]", tag); continue
+        lab, trd, rates, sigs = B.read_edf(rec)
+        L = {l: i for i, l in enumerate(lab)}
+        raw_st = np.loadtxt(rec[:-4] + "_stage.txt", dtype=int)
+        n = min(len(raw_st), int(len(sigs[L["C4A1"]]) / rates[L["C4A1"]] / 30))
+        raw_st = raw_st[:n]
+        with open(rec, "rb") as f:
+            h = f.read(256)
+        hh, mm, ss = (int(v) for v in h[176:184].decode().split("."))
+        t0 = hh * 3600 + mm * 60 + ss
+        nev = np.zeros(n, np.int64)
+        for line in open(rec[:-4] + "_respevt.txt", errors="ignore"):
+            p = line.split()
+            if len(p) >= 2 and p[1] in UCD_EVENTS and re.match(r"\d\d:\d\d:\d\d$", p[0]):
+                a, b, c = (int(v) for v in p[0].split(":"))
+                off = (a * 3600 + b * 60 + c - t0) % 86400
+                if off // 30 < n:
+                    nev[off // 30] += 1
+        order = ["C4A1", "C3A2", "C4A1", "C3A2", "Lefteye", "RightEye", "EMG"]
+        neural = np.stack([B.epoch(B.to_rate(sigs[L[c]], rates[L[c]], 100), 100, n) for c in order], 1).astype(np.float32)
+        for k in range(7):
+            neural[:, k] *= P7_STD[k] / (neural[:, k].std() + 1e-9)
+        card = np.zeros((n, 8, 750), np.float32); valid = np.zeros(8, bool)
+        for j, c in enumerate(("ECG", "Flow", "ribcage", "abdo", "Sum", "SpO2", "Pulse")):
+            if c in L:
+                card[:, j] = B.epoch(B.to_rate(sigs[L[c]], rates[L[c]], 25), 25, n); valid[j] = True
+        stage = np.array([UCD_STAGE.get(int(v), -1) for v in raw_st])
+        keep = stage >= 0
+        neural, card, y, nev = neural[keep], card[keep], stage[keep], nev[keep]
+        Feeg, _ = extract_features_v2(neural)
+        np.savez_compressed(dst, x=neural.astype(np.float16), Feeg=np.nan_to_num(Feeg).astype(np.float32), card=card,
+                            cvalid=valid, y=y, apnea=(nev > 0).astype(np.int64), n_events=nev, dropped=int((~keep).sum()))
+        sl = y != 0
+        print("[ok] %-9s %4d epochs (%d dropped)  events %3d  AHI %5.1f" % (tag, len(y), (~keep).sum(), nev.sum(),
+              nev[sl].sum() / max(sl.sum() * 30 / 3600, 1e-6)), flush=True)
+
+
 # =========================================================================== LaBraM
 def all_split():
     import mmnet_core as C
@@ -427,7 +485,9 @@ if __name__ == "__main__":
     ap.add_argument("--shards", type=int, default=1)
     ap.add_argument("--config", default="final", choices=["final", "final7", "frozen"])
     a = ap.parse_args()
-    if a.stage == "build":
+    if a.stage == "build" and a.group == "UCD":
+        build_ucd()
+    elif a.stage == "build":
         build(a.group, a.shard, a.shards)
     elif a.stage == "labram":
         labram(a.part, a.groups)

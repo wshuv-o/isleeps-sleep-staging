@@ -60,8 +60,9 @@ def folds(groups, n):
         te_s = order[k::n]
         tr_s = [s for s in order if s not in te_s]
         rs = np.random.RandomState(100 + k); tr_s = list(tr_s); rs.shuffle(tr_s)
-        va_s = tr_s[:max(2, len(tr_s) // 9)]
-        out.append(([t for t in R if subject(t) in tr_s[2:]], [t for t in R if subject(t) in va_s],
+        nv = max(2, len(tr_s) // 9)
+        va_s = tr_s[:nv]
+        out.append(([t for t in R if subject(t) in tr_s[nv:]], [t for t in R if subject(t) in va_s],
                     [t for t in R if subject(t) in te_s]))
     return out
 
