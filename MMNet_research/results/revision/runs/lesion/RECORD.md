@@ -152,3 +152,16 @@ AHI scale k from the 2 validation subjects per fold.
 | final | 0.7245 | 0.7787 | 0.6905 | 0.6921 | 0.6408 | 0.794 | 0.138 | 7.3 |
 
 Per fold (3-seed acc), frozen / final: 0.671/0.658, 0.715/0.709, 0.760/0.775, 0.696/0.704, 0.750/0.778, 0.706/0.729.
+
+## UCD sleep-apnoea database (PhysioNet ucddb), trained on all 99 iSLEEPS patients, applied unchanged
+
+25 adults referred for suspected sleep-disordered breathing; annotated AHI 1.2-81.2. Recorded EEG is
+C3-A2 and C4-A1 only (also fed as O1/O2); EDF headers declare 0..1 with no unit, so EEG/EOG/EMG are
+scaled per recording to the iSLEEPS median whole-night standard deviation (no labels used). No nasal
+pressure: 7-channel models. Stages: 0 W, 1 REM, 2 S1, 3 S2, 4-5 S3/S4 (N3). Events: APNEA-C/M/O,
+HYP-C/M/O from <rec>_respevt.txt, onset in a scored sleep epoch per hour of scored sleep.
+
+| Config | Staging (3-seed) | mF1 | kappa | Resp AUC | AP | AHI rho | MAE | Sev acc | Sev kappa |
+|---|---|---|---|---|---|---|---|---|---|
+| frozen encoder (initial configuration, 7 ch) | 0.6063 | 0.5261 | 0.4607 | 0.863 | 0.550 | 0.725 | 8.2 | 0.48 | 0.40 |
+| fine-tuned encoder, no class weights, cross fusion, 7 ch (final7) | 0.6068 | 0.4949 | 0.4631 | 0.841 | 0.517 | 0.653 | 9.4 | 0.60 | 0.51 |
