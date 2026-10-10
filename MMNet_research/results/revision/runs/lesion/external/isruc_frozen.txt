@@ -1,0 +1,4 @@
+ISRUC, MM-Net frozen trained on all 99 iSLEEPS patients, applied unchanged (AHI scale k 0.459 from iSLEEPS)
+II       16 rec  staging single 0.6845 | 3-seed acc 0.6927 mf1 0.6572 kappa 0.5881 | resp AUC 0.775 AP 0.274 | AHI rho 0.517 MAE 10.3 sev acc 0.31 kappa 0.21
+III      10 rec  staging single 0.7104 | 3-seed acc 0.7156 mf1 0.6835 kappa 0.6323 | resp AUC 0.771 AP 0.100 | AHI rho 0.212 MAE 10.2 sev acc 0.20 kappa 0.00
+II+III   26 rec  staging single 0.6945 | 3-seed acc 0.7015 mf1 0.6673 kappa 0.6061 | resp AUC 0.777 AP 0.235 | AHI rho 0.472 MAE 10.3 sev acc 0.27 kappa 0.17
