@@ -2,7 +2,7 @@
 
 Recordings: external_final.py build output (EXT/isruc/<grp>/<tag>.npz), groups given by --groups.
 Folds: subjects (both nights of a subgroup II subject together) shuffled with RandomState(42) and
-dealt into --folds folds; in each fold two training subjects (RandomState(100+k)) are validation.
+dealt into --folds folds; in each fold max(2, n_train // 9) training subjects (RandomState(100+k)) are validation.
 
   finetune   LaBraM with E1/E2 as F7/F8 fine-tuned on the fold's training recordings (early stopping on
              validation) -> EXT/isruc_cv/ft/fold<k>; --part p: cross-fitted part p of 3 (split by subject)
@@ -10,7 +10,7 @@ dealt into --folds folds; in each fold two training subjects (RandomState(100+k)
   align      ridge map (lambda 0.01) of each cross-fitted part into the full encoder's space
              -> EXT/isruc_cv/fta/fold<k>
   mmnet      --config final: no class weights, cross fusion, aligned fine-tuned encoder, 8 channels
-             --config frozen: published configuration (class weights, concat, frozen LaBraM, 7 channels)
+             --config frozen: MM-Net with the frozen encoder (class weights, concat, frozen LaBraM, 7 channels)
              seeds 42/1/7, HMM fitted on the training recordings. AHI: expected event onsets per hour of
              predicted sleep x k, k = median ratio on the fold's validation recordings.
 
@@ -38,6 +38,10 @@ RES = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "lesio
 S = (42, 1, 7)
 
 
+def cvdir(groups):
+    return os.path.join(EXT, "isruc_cv" if list(groups) == ["II", "III"] else "isruc_cv_" + "".join(groups))
+
+
 def recs(groups):
     return {os.path.basename(f)[:-4]: f for g in groups for f in sorted(glob.glob(os.path.join(EXT, "isruc", g, "*.npz")))}
 
@@ -56,7 +60,7 @@ def folds(groups, n):
         te_s = order[k::n]
         tr_s = [s for s in order if s not in te_s]
         rs = np.random.RandomState(100 + k); tr_s = list(tr_s); rs.shuffle(tr_s)
-        va_s = tr_s[:2]
+        va_s = tr_s[:max(2, len(tr_s) // 9)]
         out.append(([t for t in R if subject(t) in tr_s[2:]], [t for t in R if subject(t) in va_s],
                     [t for t in R if subject(t) in te_s]))
     return out
@@ -111,9 +115,9 @@ def finetune(k, groups, n, part=None, passes=3.0, bs=64, lr=3e-5, seed=42):
                 best, best_state = acc, {kk: v.detach().clone() for kk, v in model.state_dict().items()}
     model.load_state_dict(best_state)
     if part is not None:
-        P, E = FL.predict(model, X, held); od = os.path.join(CV, "cf", "fold%d" % k)
+        P, E = FL.predict(model, X, held); od = os.path.join(cvdir(groups), "cf", "fold%d" % k)
     else:
-        P, E = FL.predict(model, X, list(R)); od = os.path.join(CV, "ft", "fold%d" % k)
+        P, E = FL.predict(model, X, list(R)); od = os.path.join(cvdir(groups), "ft", "fold%d" % k)
     os.makedirs(od, exist_ok=True)
     for t in P:
         np.savez_compressed(os.path.join(od, t + ".npz"), emb=E[t].astype(np.float16), prob=P[t].astype(np.float32))
@@ -127,14 +131,14 @@ def align(groups, n, lam=0.01):
     R = recs(groups)
     for k, (tr, va, te) in enumerate(folds(groups, n)):
         part = cf_parts(k, tr)
-        ld = lambda sub, t: np.load(os.path.join(CV, sub, "fold%d" % k, t + ".npz"))["emb"].astype(np.float64)
+        ld = lambda sub, t: np.load(os.path.join(cvdir(groups), sub, "fold%d" % k, t + ".npz"))["emb"].astype(np.float64)
         maps = {}
         for p in range(3):
             rs = [t for t in tr if part[t] == p]
             Xc = np.concatenate([ld("cf", t) for t in rs]); Yc = np.concatenate([ld("ft", t) for t in rs])
             mx, my = Xc.mean(0), Yc.mean(0)
             maps[p] = (mx, my, np.linalg.solve((Xc - mx).T @ (Xc - mx) + lam * len(Xc) * np.eye(Xc.shape[1]), (Xc - mx).T @ (Yc - my)))
-        od = os.path.join(CV, "fta", "fold%d" % k); os.makedirs(od, exist_ok=True)
+        od = os.path.join(cvdir(groups), "fta", "fold%d" % k); os.makedirs(od, exist_ok=True)
         for t in R:
             if t in part:
                 mx, my, W = maps[part[t]]; e = (ld("cf", t) - mx) @ W + my
@@ -166,7 +170,7 @@ def mmnet(config, groups, n):
         out = {}
         for t, d in raw.items():
             fe = d["Feeg"].astype(np.float32); fe = (fe - fe.mean(0)) / (fe.std(0) + 1e-6)
-            ep = os.path.join(CV, "fta", "fold%d" % k, t + ".npz") if final else os.path.join(EXT, "emb", "labram", t + ".npz")
+            ep = os.path.join(cvdir(groups), "fta", "fold%d" % k, t + ".npz") if final else os.path.join(EXT, "emb", "labram", t + ".npz")
             e = np.load(ep)["emb"].astype(np.float32); e = (e - e.mean(0)) / (e.std(0) + 1e-6)
             c = d["card"][:, :n_ch].astype(np.float32)
             c = (c - c.mean(axis=(0, 2), keepdims=True)) / (c.std(axis=(0, 2), keepdims=True) + 1e-6)

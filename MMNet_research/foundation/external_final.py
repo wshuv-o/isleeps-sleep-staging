@@ -21,7 +21,7 @@ Stages (outputs under EXT = H:/isleeps_ext unless --ext is given):
   mmnet    MM-Net trained on all 99 (same 11 validation patients), seeds 42/1/7, HMM fitted on the
            training patients; ISRUC scored with no adaptation. Configurations:
              final   base-nocw-cross-ftlae-p8-al  (fine-tuned aligned encoder, 8 channels)
-             frozen  published MM-Net: class weights, concat fusion, frozen LaBraM, 7 channels
+             frozen  MM-Net with the frozen encoder (initial configuration): class weights, concat fusion, frozen LaBraM, 7 channels
            AHI: MM-Net expected event onsets per hour of predicted sleep x k, where k is the median
            over the ten iSLEEPS folds of the validation-patient scale factor (ahi_combo.py's k);
            nothing is fitted on ISRUC. Reference AHI = scored apneas + hypopneas in scored sleep

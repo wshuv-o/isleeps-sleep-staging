@@ -23,7 +23,7 @@ Per fold, seeds 42, 1, 7; probabilities in seed_ensemble/ (not in git, *.npz).
 
 | Config | Single model (seed mean) | 3-seed average |
 |---|---|---|
-| base (published configuration) | 0.7380 | 0.7493 |
+| base (initial configuration: class weights, concat fusion, frozen LaBraM) | 0.7380 | 0.7493 |
 | base-nocw (uniform class weights) | 0.7442 | 0.7535 |
 | base-nocw-cross (+ cross-attention fusion) | 0.7465 | 0.7552 |
 | base-nocw-L40 (40-epoch window) | 0.7453 | 0.7516 |
@@ -91,7 +91,7 @@ vs eight-channel frozen: staging +0.0211 single (9/10, p=0.006), +0.0243 3-seed 
 respiratory AUC -0.0012 single (p=0.63), +0.0100 3-seed (9/10, p=0.006).
 
 AHI association (Spearman, per-patient mean event probability vs AHI_1_B, n=99): final 3-seed
-0.608, final seed 42 0.642, eight-channel frozen seed 42 0.642, published seven-channel seed 42 0.491.
+0.608, final seed 42 0.642, eight-channel frozen seed 42 0.642, initial seven-channel configuration seed 42 0.491.
 
 Against the reimplemented baselines (single model): +0.037 to +0.158, 9-10/10 folds, Holm p=0.016
 for each.
@@ -132,11 +132,11 @@ p > 0.45 x 0.469 (both chosen on iSLEEPS validation, isruc_ahi_threshold.py).
 
 | Config | Staging II+III (3-seed) | III | II | Resp AUC | AHI rho (expected) | AHI rho (thr) | AHI MAE (thr) |
 |---|---|---|---|---|---|---|---|
-| frozen (published config: cw, concat, frozen LaBraM, 7 ch) | 0.7015 | 0.7156 | 0.6927 | 0.777 | 0.472 | 0.497 | 8.4 |
+| frozen (initial configuration: cw, concat, frozen LaBraM, 7 ch) | 0.7015 | 0.7156 | 0.6927 | 0.777 | 0.472 | 0.497 | 8.4 |
 | final (nocw, cross, fine-tuned EEG+EOG aligned, 8 ch) | 0.6925 | 0.7128 | 0.6797 | 0.784 | 0.125 | 0.100 | 9.8 |
 | final7 (as final, 7 ch, no nasal pressure) | 0.6921 | 0.7092 | 0.6814 | 0.786 | 0.445 | 0.458 | 13.0 |
 
-Encoder alone (one epoch, no HMM): II 0.629, III 0.701. Previous ISRUC II run of the published model
+Encoder alone (one epoch, no HMM): II 0.629, III 0.701. Previous ISRUC II run of the initial configuration
 (external_isruc.json, no amplitude correction): 0.612.
 
 ## ISRUC II+III, trained and tested on ISRUC (isruc_cv.py; external/isruc_cv_IIIII_*.txt)
@@ -148,7 +148,7 @@ AHI scale k from the 2 validation subjects per fold.
 
 | Config | Staging II+III | III | II | mF1 | kappa | Resp AUC | AHI rho | AHI MAE |
 |---|---|---|---|---|---|---|---|---|
-| frozen (published config) | 0.7156 | 0.7642 | 0.6852 | 0.6891 | 0.6317 | 0.757 | 0.061 | 8.0 |
+| frozen (initial configuration) | 0.7156 | 0.7642 | 0.6852 | 0.6891 | 0.6317 | 0.757 | 0.061 | 8.0 |
 | final | 0.7245 | 0.7787 | 0.6905 | 0.6921 | 0.6408 | 0.794 | 0.138 | 7.3 |
 
 Per fold (3-seed acc), frozen / final: 0.671/0.658, 0.715/0.709, 0.760/0.775, 0.696/0.704, 0.750/0.778, 0.706/0.729.
