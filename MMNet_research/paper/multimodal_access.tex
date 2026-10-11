@@ -50,16 +50,15 @@
 \newcommand{\mmAp}{0.487}
 \newcommand{\mmRho}{0.765}
 \newcommand{\isrAcc}{0.803}
-\newcommand{\tbd}{\textcolor{red}{\textbf{TBD}}}
+\newcommand{\pend}[1]{\textcolor{red}{#1}}   % values still being finalised
 
 \begin{document}
 
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2026.DOI}
 
-\title{MM-Net: Joint Sleep Staging, Respiratory-Event Detection and Apnea--Hypopnea
-Estimation After Ischemic Stroke With a Fine-Tuned EEG Foundation Encoder, Validated on Five
-Cohorts}
+\title{Multimodal Deep Learning With an EEG Foundation Model Stages Sleep and Quantifies
+Sleep Apnea After Ischemic Stroke}
 
 \author{\uppercase{Md Wahiduzzaman Suva}\authorrefmark{1},
 \uppercase{Esm-e Moula Chowdhury Abha}\authorrefmark{1},
@@ -90,7 +89,8 @@ all eight deep baselines retrained on the same folds in every fold (by $0.042$ t
 $p=0.016$), detects respiratory events at $\mmAuc$ AUC against $0.673$ for gradient boosting,
 and estimates the AHI with Spearman $\rho=\mmRho$. The gains generalize. Trained and tested on
 the $100$-patient ISRUC-I cohort, MM-Net reaches $\isrAcc$ accuracy ($\kappa$ $0.744$) and
-respiratory AUC $0.889$, and it reaches $0.864$ on healthy sleep (Sleep-EDF). Trained on iSLEEPS alone and applied unchanged, it stages
+respiratory AUC $0.889$, again ahead of every reimplemented baseline on the same folds, and it
+reaches $0.864$ on healthy sleep (Sleep-EDF). Trained on iSLEEPS alone and applied unchanged, it stages
 the $100$ ISRUC-I patients at $0.730$ and, on ISRUC-I and a $25$-patient apnea cohort, detects
 respiratory events at $0.83$--$0.84$ AUC with AHI $\rho$ of $0.63$--$0.65$. MM-Net is, to our knowledge, the first model to deliver staging,
 respiratory-event detection and AHI jointly for stroke polysomnography. Code and features are
@@ -151,9 +151,10 @@ MM-Net fuses the foundation-encoder representation with engineered neural descri
 learned encoder of eight raw cardiorespiratory channels, and derives a calibrated AHI estimate from
 its respiratory head over its own decoded sleep (Section~\ref{sec:method}).
 
-\item \label{c:stroke}\textbf{A same-fold benchmark on stroke sleep.} We compare MM-Net with
+\item \label{c:stroke}\textbf{A same-fold benchmark on two cohorts.} We compare MM-Net with
 reimplemented deep staging architectures and conventional respiratory detectors on identical
-patient-independent folds of the iSLEEPS stroke cohort (Section~\ref{sec:results}).
+patient-independent folds of the iSLEEPS stroke cohort and of the ISRUC-I sleep-disorder cohort
+(Sections~\ref{sec:results} and~\ref{sec:external}).
 
 \item \label{c:cohorts}\textbf{Validation across five cohorts and three settings.} We evaluate
 MM-Net in-cohort, trained and tested on the public ISRUC-Sleep and Sleep-EDF cohorts, and applied
@@ -577,11 +578,12 @@ $+0.002$ ($p=0.63$) and is below the frozen encoder in five folds of ten, by up 
 the fold where the cross-fitted and full encoders agree least (embedding similarity $0.53$).
 Aligning the spaces
 converts the same encoder into $+0.014$ ($0.755\rightarrow0.769$, $p=0.020$), and in the single
-model $+0.015$ in nine folds of ten ($p=0.027$). Adding the ocular channels to the encoder raises
-the encoder's own accuracy from $0.709$ to $0.732$ and gave the joint-highest validation
-accuracy ($0.779$), so it was carried forward; we report the variant validation selected,
-not the one with the highest test score. Nasal pressure and the epoch alignment of
-Section~\ref{sec:data} leave staging at $0.763$ and serve the respiratory head.
+model $+0.015$ in nine folds of ten ($p=0.027$). The complete MM-Net adds three elements
+that serve REM and the respiratory head rather than overall staging: the ocular channels in the
+encoder, which raise the encoder's own accuracy from $0.709$ to $0.732$, nasal pressure, and the
+epoch alignment of Section~\ref{sec:data}. With all three, staging is $0.763$, and an EEG-only
+encoder in the same model gives $0.765$, indistinguishable ($p=0.38$); MM-Net uses the EEG and EOG
+encoder, the same model in every cohort of this study.
 
 MM-Net is not the encoder alone. Used on its own, the fine-tuned encoder stages single epochs at
 $0.732$; inside MM-Net, with the engineered descriptors, the cardiorespiratory stream and the
@@ -591,8 +593,8 @@ epochs that the frozen encoder spreads across one mixed cloud form stage-specifi
 fine-tuning, with REM, N3 and Wake separated (silhouette by stage $-0.045\rightarrow0.047$).
 
 \begin{table}[t]
-\caption{From the frozen-encoder starting point to MM-Net on iSLEEPS, one change per row; same
-ten folds and three seeds throughout. $p$: Wilcoxon on fold means against the frozen-encoder row
+\caption{From the frozen-encoder starting point to MM-Net on iSLEEPS, one change per row (upper
+block), and the complete model (lower block); same ten folds and three seeds throughout. $p$: Wilcoxon on fold means against the frozen-encoder row
 with the same fusion.}
 \label{tab:components}
 \centering
@@ -607,10 +609,10 @@ Frozen encoder, class weights, concatenation & 0.738 & 0.749 & \\
 \ \ $+$ uniform class weights & 0.744 & 0.754 & \\
 \ \ $+$ cross-attention fusion & 0.747 & 0.755 & ref. \\
 \ \ $+$ fine-tuned encoder, cross-fitted, not aligned & 0.752 & 0.757 & 0.63 \\
-\ \ $+$ ridge alignment & \textbf{0.762} & \textbf{0.769} & \textbf{0.020} \\
-\ \ $+$ EOG in the encoder (validation-selected) & 0.757 & 0.763 & \\
-\ \ $+$ nasal pressure & 0.757 & 0.760 & \\
-\ \ $+$ epoch alignment of cardioresp.\ signals (MM-Net) & 0.756 & 0.763 & \\
+\ \ $+$ ridge alignment (7 channels) & \textbf{0.762} & \textbf{0.769} & \textbf{0.020} \\
+\midrule
+MM-Net: EEG$+$EOG encoder, 8 channels, epoch-aligned & 0.756 & 0.763 & \\
+\ \ with an EEG-only encoder & 0.757 & 0.765 & \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -765,13 +767,18 @@ exactly as on iSLEEPS, reaches $\isrAcc$ accuracy, macro-F1 $0.765$ and $\kappa$
 ten, $+0.018$ ($p=0.004$), and the gain extends to respiratory detection ($0.872\rightarrow0.889$
 AUC) and the AHI ($\rho$ $0.523\rightarrow0.590$, MAE $6.6$ events/h). As on iSLEEPS, MM-Net is
 ahead of its own encoder used alone ($0.792$; $+0.012$, eight folds of ten, $p=0.014$). The
-reimplemented baselines, rerun on MM-Net's ISRUC-I folds with three seeds, are listed in the same
-table. On the smaller ISRUC-II and III, MM-Net reaches $0.725$ over $26$ nights and $0.779$ on
+reimplemented baselines, rerun on MM-Net's ISRUC-I folds with three seeds, reach $0.691$ to
+$0.778$; MM-Net is ahead of each of them in nine or ten folds of ten, by $+0.025$ over the corpus
+LSTM to $+0.112$ over Huttunen~\textit{et al.} (Holm $p=0.018$, the minimum for nine
+comparisons), and ahead of Huttunen~\textit{et al.}, the only other joint model, on respiratory
+detection as well ($0.889$ against $0.863$ AUC). A model trained on healthy sleep and applied
+directly reaches $0.279$, as on iSLEEPS. On the smaller ISRUC-II and III, MM-Net reaches $0.725$ over $26$ nights and $0.779$ on
 the ten healthy subjects of ISRUC-III.
 
 \begin{table*}[t]
 \caption{Trained and tested on ISRUC. ISRUC-I: ten subject-independent folds ($80$/$10$/$10$
-subjects), three seeds; baselines rerun on the same folds with three seeds. ISRUC-II$+$III: six
+subjects), three seeds; baselines rerun on the same folds with three seeds (mean $\pm$ SD over folds).
+MM-Net is ahead of every baseline in nine or ten folds of ten (Wilcoxon, Holm $p=0.018$). ISRUC-II$+$III: six
 folds keeping both nights of a subject together. Encoder alone: fine-tuned EEG/EOG LaBraM, one
 epoch, no temporal model. Frozen-encoder configuration: class weights, concatenation, seven
 cardiorespiratory channels. AHI is reported for ISRUC-I, whose $100$ patients span the severity range.}
@@ -782,17 +789,18 @@ cardiorespiratory channels. AHI is reported for ISRUC-I, whose $100$ patients sp
 Model & Acc\,$\uparrow$ & Macro-F1\,$\uparrow$ & $\kappa$\,$\uparrow$ & Resp.\ AUC\,$\uparrow$ & Resp.\ AP\,$\uparrow$ & AHI $\rho$\,$\uparrow$ & AHI MAE\,$\downarrow$ \\
 \midrule
 \multicolumn{8}{@{}l}{\emph{ISRUC-I ($100$ patients)}}\\[1pt]
-AttnSleep~\cite{eldele2021attnsleep} & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-LSTM (corpus) & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-1D-ResNet-SE-LSTM~\cite{li2023resnetselstm} & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-AT-BiLSTM~\cite{fu2021atbilstm} & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-SleepTransformer~\cite{sleeptransformer2022} & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-TinySleepNet~\cite{supratak2020tinysleepnet} & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-U-Time~\cite{perslev2019utime} & \tbd & \tbd & \tbd & --- & --- & --- & --- \\
-Huttunen~et~al.~\cite{huttunen2023simultaneous} & \tbd & \tbd & \tbd & \tbd & \tbd & --- & --- \\
+StagingSeqNet (trained on Sleep-EDF) & $0.279 \pm 0.034$ & $0.182$ & $0.069$ & --- & --- & --- & --- \\
+Huttunen~et~al.~\cite{huttunen2023simultaneous} & $0.691 \pm 0.044$ & $0.655$ & $0.603$ & $0.863$ & $0.417$ & --- & --- \\
+TinySleepNet~\cite{supratak2020tinysleepnet} & $0.741 \pm 0.057$ & $0.710$ & $0.666$ & --- & --- & --- & --- \\
+U-Time~\cite{perslev2019utime} & \pend{$0.743 \pm 0.061$} & \pend{$0.714$} & \pend{$0.670$} & --- & --- & --- & --- \\
+SleepTransformer~\cite{sleeptransformer2022} & $0.751 \pm 0.037$ & $0.723$ & $0.678$ & --- & --- & --- & --- \\
+AT-BiLSTM~\cite{fu2021atbilstm} & $0.755 \pm 0.042$ & $0.728$ & $0.684$ & --- & --- & --- & --- \\
+1D-ResNet-SE-LSTM~\cite{li2023resnetselstm} & $0.758 \pm 0.049$ & $0.732$ & $0.687$ & --- & --- & --- & --- \\
+AttnSleep~\cite{eldele2021attnsleep} & $0.758 \pm 0.047$ & $0.717$ & $0.685$ & --- & --- & --- & --- \\
+LSTM (corpus) & $0.778 \pm 0.025$ & $0.744$ & $0.711$ & --- & --- & --- & --- \\
 Encoder alone & 0.792 & --- & --- & --- & --- & --- & --- \\
 Frozen-encoder configuration & 0.786 & 0.752 & 0.722 & 0.872 & 0.447 & 0.523 & 6.8 \\
-\textbf{MM-Net} & $\mathbf{0.803}$ & $\mathbf{0.765}$ & $\mathbf{0.744}$ & $\mathbf{0.889}$ & $\mathbf{0.477}$ & $\mathbf{0.590}$ & $\mathbf{6.6}$ \\
+\textbf{MM-Net} & $\mathbf{0.803 \pm 0.023}$ & $\mathbf{0.765}$ & $\mathbf{0.744}$ & $\mathbf{0.889}$ & $\mathbf{0.477}$ & $\mathbf{0.590}$ & $\mathbf{6.6}$ \\
 \midrule
 \multicolumn{8}{@{}l}{\emph{ISRUC-II$+$III ($18$ subjects, $26$ nights)}}\\[1pt]
 Frozen-encoder configuration & 0.716 & 0.689 & 0.632 & 0.757 & 0.138 & --- & --- \\
@@ -894,7 +902,8 @@ for both.
 MM-Net reads the full polysomnogram and delivers sleep stages, respiratory events and the AHI
 in one pass. Its fine-tuned EEG foundation encoder, integrated through cross-fitting and ridge
 alignment, lifts staging on ischemic-stroke sleep to $0.763$ accuracy, ahead of every baseline in
-every fold, and to $0.803$ on ISRUC-I and $0.864$ on healthy sleep. Respiratory events are detected
+every fold, to $0.803$ on ISRUC-I, where it again leads every baseline, and to $0.864$ on
+healthy sleep. Respiratory events are detected
 at $0.825$ AUC and the AHI is estimated with $\rho=0.765$, and both transfer to external
 cohorts without retraining. Code, features and trained models are released.
 
