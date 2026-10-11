@@ -36,7 +36,8 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
-MM = os.path.join(REPO, "data", "multimodal")
+MM = os.path.join(REPO, "data", os.environ.get("MMNET_MULTIMODAL", "multimodal"))
+TAG = "" if os.environ.get("MMNET_MULTIMODAL", "multimodal") == "multimodal" else "_aligned"
 P7 = os.path.join(REPO, "data", "processed7")
 OUTDIR = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final")
 DEV = "cuda" if torch.cuda.is_available() else "cpu"
@@ -162,7 +163,7 @@ def main(which, seeds=SEEDS):
     data = load(which)
     n_ch = len(CHANNELS[which])
     n_par = sum(p.numel() for p in Detector(n_ch).parameters())
-    out = os.path.join(OUTDIR, "resp_raw_%s.json" % which)
+    out = os.path.join(OUTDIR, "resp_raw_%s%s.json" % (which, TAG))
     print("raw-signal respiratory detector [%s] | %d patients | %d params | %s"
           % (which, len(data), n_par, DEV), flush=True)
     # resume: keep seeds an earlier run completed on all ten folds
