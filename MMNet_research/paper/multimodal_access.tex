@@ -280,7 +280,7 @@ nights from $21$ subjects, with Fpz-Cz and Pz-Oz mapped to the central and occip
 
 \begin{table}[t]
 \caption{Stage distribution and respiratory-event prevalence on iSLEEPS ($N=99$). Respiratory
-events occupy $15.7\%$ of epochs; $79$ of $99$ patients exceed $5\%$.}
+events occupy $16.0\%$ of epochs; $80$ of $99$ patients exceed $5\%$.}
 \label{tab:dist}
 \centering
 \begin{tabular}{lccccc}
@@ -648,13 +648,13 @@ MM-Net & 0.810 & 0.202 & 0.817 & 0.716 & 0.794 \\
 
 \subsection{Respiratory-Event Detection}
 MM-Net detects respiratory-event onsets at $\mmAuc\pm0.035$ AUC and $\mmAp\pm0.093$ AP
-(three-seed), against a prevalence of $0.157$ (Table~\ref{tab:resp}). On the same folds and
+(three-seed), against a prevalence of $0.160$ (Table~\ref{tab:resp}). On the same folds and
 labels, gradient boosting on the engineered cardiorespiratory descriptors reaches $0.673$, so
 MM-Net adds $0.152$ AUC and $0.197$ AP to the strongest conventional detector.
 
 \begin{table}[t]
 \caption{Respiratory-event detection on iSLEEPS, ten-fold patient-independent, same epoch
-labels for every method. Chance AP is the $0.157$ prevalence.}
+labels for every method. Chance AP is the $0.160$ prevalence.}
 \label{tab:resp}
 \centering
 \small
