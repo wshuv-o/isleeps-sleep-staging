@@ -774,7 +774,7 @@ the ten healthy subjects of ISRUC-III.
 subjects), three seeds; baselines rerun on the same folds with three seeds. ISRUC-II$+$III: six
 folds keeping both nights of a subject together. Encoder alone: fine-tuned EEG/EOG LaBraM, one
 epoch, no temporal model. Frozen-encoder configuration: class weights, concatenation, seven
-cardiorespiratory channels. ISRUC-II$+$III AHI spans only $0$--$48$ events/h over $26$ nights.}
+cardiorespiratory channels. AHI is reported for ISRUC-I, whose $100$ patients span the severity range.}
 \label{tab:isruccv}
 \centering
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l c c c c c c c @{}}
@@ -795,9 +795,9 @@ Frozen-encoder configuration & 0.786 & 0.752 & 0.722 & 0.872 & 0.447 & 0.523 & 6
 \textbf{MM-Net} & $\mathbf{0.803}$ & $\mathbf{0.765}$ & $\mathbf{0.744}$ & $\mathbf{0.889}$ & $\mathbf{0.477}$ & $\mathbf{0.590}$ & $\mathbf{6.6}$ \\
 \midrule
 \multicolumn{8}{@{}l}{\emph{ISRUC-II$+$III ($18$ subjects, $26$ nights)}}\\[1pt]
-Frozen-encoder configuration & 0.716 & 0.689 & 0.632 & 0.757 & 0.138 & 0.061 & 8.0 \\
-\textbf{MM-Net} & $\mathbf{0.725}$ & $\mathbf{0.692}$ & $\mathbf{0.641}$ & $\mathbf{0.794}$ & $\mathbf{0.197}$ & $\mathbf{0.138}$ & $\mathbf{7.3}$ \\
-\ \ of which ISRUC-III (healthy) & $0.779$ & $0.747$ & $0.714$ & $0.867$ & $0.260$ & $0.079$ & $3.9$ \\
+Frozen-encoder configuration & 0.716 & 0.689 & 0.632 & 0.757 & 0.138 & --- & --- \\
+\textbf{MM-Net} & $\mathbf{0.725}$ & $\mathbf{0.692}$ & $\mathbf{0.641}$ & $\mathbf{0.794}$ & $\mathbf{0.197}$ & --- & --- \\
+\ \ of which ISRUC-III (healthy) & $0.779$ & $0.747$ & $0.714$ & $0.867$ & $0.260$ & --- & --- \\
 \bottomrule
 \end{tabular*}
 \end{table*}
@@ -827,8 +827,8 @@ cohort and the seven-channel variant when applied to a new acquisition system.
 
 \begin{table}[t]
 \caption{MM-Net trained on all $99$ iSLEEPS patients and applied unchanged (three-seed).
-Seven-channel variant without nasal pressure; AHI scale $k$ from iSLEEPS. ISRUC-III is
-healthy, with AHI between $0$ and $12$.}
+Seven-channel variant without nasal pressure; AHI scale $k$ from iSLEEPS. AHI is not
+reported for the healthy ISRUC-III subjects.}
 \label{tab:transfer}
 \centering
 \small
@@ -840,7 +840,7 @@ Cohort & Nights & Acc & $\kappa$ & Resp.\ AUC & AHI $\rho$ \\
 \midrule
 ISRUC-I (sleep disorders) & 100 & 0.730 & 0.641 & 0.833 & 0.631 \\
 ISRUC-II (sleep disorders) & 16 & 0.681 & 0.568 & 0.783 & 0.518 \\
-ISRUC-III (healthy) & 10 & 0.709 & 0.618 & 0.776 & $-0.01$ \\
+ISRUC-III (healthy) & 10 & 0.709 & 0.618 & 0.776 & --- \\
 UCD (suspected apnea) & 25 & 0.607 & 0.463 & 0.841 & 0.653 \\
 \midrule
 iSLEEPS (in-cohort, reference) & 99 & 0.763 & 0.656 & 0.825 & 0.765 \\
