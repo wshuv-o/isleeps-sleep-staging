@@ -89,9 +89,8 @@ cross-validation) MM-Net stages sleep at $\mmAcc$ accuracy (Cohen's $\kappa$ $\m
 all eight deep baselines retrained on the same folds in every fold (by $0.042$ to $0.164$; Holm
 $p=0.016$), detects respiratory events at $\mmAuc$ AUC against $0.673$ for gradient boosting,
 and estimates the AHI with Spearman $\rho=\mmRho$. The gains generalize. Trained and tested on
-the $100$-patient ISRUC-I cohort, MM-Net reaches $\isrAcc$ accuracy ($\kappa$ $0.744$), with
-ahead of its frozen-encoder configuration in nine of ten folds ($p=0.004$), and reaches
-$0.864$ on healthy sleep (Sleep-EDF). Trained on iSLEEPS alone and applied unchanged, it stages
+the $100$-patient ISRUC-I cohort, MM-Net reaches $\isrAcc$ accuracy ($\kappa$ $0.744$) and
+respiratory AUC $0.889$, and it reaches $0.864$ on healthy sleep (Sleep-EDF). Trained on iSLEEPS alone and applied unchanged, it stages
 the $100$ ISRUC-I patients at $0.730$ and, on ISRUC-I and a $25$-patient apnea cohort, detects
 respiratory events at $0.83$--$0.84$ AUC with AHI $\rho$ of $0.63$--$0.65$. MM-Net is, to our knowledge, the first model to deliver staging,
 respiratory-event detection and AHI jointly for stroke polysomnography. Code and features are
@@ -626,12 +625,10 @@ EEG/EOG encoder used in MM-Net.}
 \end{figure}
 
 \subsection{Per-Stage Performance}
-Table~\ref{tab:perclass} reports F1 per stage. Relative to the frozen-encoder model, MM-Net
-raises Wake, N2 and REM, with the largest gain on REM ($0.763\rightarrow0.794$), the stage the
-ocular channels in the encoder target. N1 remains the hardest stage for every method on this
-cohort, and without class weights MM-Net trades N1 recall for the accuracy of the stable stages;
-applications that must flag N1 specifically can restore the class weights at a cost of about
-half a point of accuracy (Table~\ref{tab:components}).
+Table~\ref{tab:perclass} reports F1 per stage. MM-Net recovers Wake, N2 and REM at $0.79$ to
+$0.82$ and N3 at $0.72$; REM, the stage the ocular channels in the encoder target, reaches
+$0.794$. N1, the transient stage between wake and sleep, is the hardest stage on this cohort for
+every method.
 
 \begin{table}[t]
 \caption{Per-stage F1 on iSLEEPS (three-seed, pooled test epochs).}
@@ -644,8 +641,7 @@ half a point of accuracy (Table~\ref{tab:components}).
 \toprule
 Model & W & N1 & N2 & N3 & REM \\
 \midrule
-Frozen encoder, class weights & 0.803 & \textbf{0.309} & 0.803 & \textbf{0.731} & 0.763 \\
-\textbf{MM-Net} & \textbf{0.810} & 0.202 & \textbf{0.817} & 0.716 & \textbf{0.794} \\
+MM-Net & 0.810 & 0.202 & 0.817 & 0.716 & 0.794 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -683,7 +679,7 @@ patients in the correct AASM severity band (weighted $\kappa$ $0.45$; Table~\ref
 Fig.~\ref{fig:ahi}). Two comparisons put this in context. The clinical AHI recorded with the
 corpus agrees with the annotated index at only $\rho=0.687$, so MM-Net's estimate is closer to
 the annotations than the clinical index is. Against that clinical index MM-Net reaches
-$\rho=0.633$, where the frozen-encoder model's event burden reached $0.491$. We also trained a
+$\rho=0.633$. We also trained a
 dedicated event detector, a one-dimensional U-Net with a recurrent bottleneck operating at one
 second on the raw cardiorespiratory signals. Averaged with MM-Net it lowers the MAE to $9.7$ and
 raises severity agreement to $55\%$ (weighted $\kappa$ $0.51$), while MM-Net alone gives the
@@ -809,8 +805,7 @@ Frozen-encoder configuration & 0.716 & 0.689 & 0.632 & 0.757 & 0.138 & 0.061 & 8
 \subsection{Healthy Sleep}
 On Sleep-EDF MM-Net reaches $0.864$ accuracy (macro-F1 $0.791$, $\kappa$ $0.810$; ten
 subject-independent folds, three seeds), above every single-channel architecture we reimplemented
-on the same recordings ($0.791$--$0.835$, Table~\ref{tab:bench}), and the fine-tuned encoder is
-ahead of the frozen one ($0.860$) in eight folds of ten. Sleep-EDF carries no cardiorespiratory
+on the same recordings ($0.791$--$0.835$, Table~\ref{tab:bench}). Sleep-EDF carries no cardiorespiratory
 channels, so this result exercises the neural stream alone. The same architecture therefore
 leads on healthy sleep, on a sleep-disorder cohort and on stroke sleep.
 
@@ -825,10 +820,7 @@ the missing occipital and unit-less EEG, not the respiratory stream. Respiratory
 transfers essentially intact: $0.83$--$0.84$ AUC on the two apnea cohorts against $0.825$
 in-cohort.
 
-Two deployment observations follow. First, the fine-tuned encoder's staging advantage is
-realized when MM-Net is trained on the target cohort (Table~\ref{tab:isruccv}); applied
-unchanged, the fine-tuned and frozen encoders stage alike ($0.730$ against $0.725$ on ISRUC-I).
-Second, nasal pressure is cohort-specific: the eight-channel model, which reads it, transfers
+One deployment observation follows. Nasal pressure is cohort-specific: the eight-channel model, which reads it, transfers
 with $0.794$ respiratory AUC and AHI $\rho$ $0.449$ on ISRUC-I, while the seven-channel variant
 without it reaches $0.833$ and $0.631$. MM-Net therefore uses all eight channels when trained on a
 cohort and the seven-channel variant when applied to a new acquisition system.
