@@ -8,7 +8,9 @@ from matplotlib import gridspec
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIGDIR = os.path.join(ROOT, "results", "revision", "figures")
-d = np.load(os.path.join(FIGDIR, "hypnogram_data.npz"), allow_pickle=True)
+DATA_NAME = os.environ.get("HYPNO_DATA", "hypnogram_data.npz")
+OUT_NAME = os.environ.get("HYPNO_OUT", "fig_hypnogram")
+d = np.load(os.path.join(FIGDIR, DATA_NAME), allow_pickle=True)
 ref, pred, sp = d["ref"], d["pred"], d["stage_probs"]
 Sdb, spec_f, spec_t = d["spec_db"], d["spec_f"], d["spec_t"]
 acc = float(d["acc"]); sid = str(d["subject"])
@@ -46,6 +48,6 @@ axC.legend(loc="lower left", ncol=1, fontsize=7, framealpha=0.9)
 for ax, lab, yy in [(axA1, "A", 1.10), (axB, "B", 1.02), (axC, "C", 1.02)]:
     ax.text(-0.085, yy, lab, transform=ax.transAxes, fontsize=15, fontweight="bold", va="bottom")
 
-fig.savefig(os.path.join(FIGDIR, "fig_hypnogram.pdf"), bbox_inches="tight", dpi=200)
-fig.savefig(os.path.join(FIGDIR, "fig_hypnogram.png"), bbox_inches="tight", dpi=200)
+fig.savefig(os.path.join(FIGDIR, OUT_NAME + ".pdf"), bbox_inches="tight", dpi=200)
+fig.savefig(os.path.join(FIGDIR, OUT_NAME + ".png"), bbox_inches="tight", dpi=200)
 print(f"regenerated fig_hypnogram ({sid}, acc={acc:.3f}) with corrected tag placement")
