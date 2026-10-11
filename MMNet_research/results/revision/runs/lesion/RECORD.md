@@ -165,3 +165,20 @@ HYP-C/M/O from <rec>_respevt.txt, onset in a scored sleep epoch per hour of scor
 |---|---|---|---|---|---|---|---|---|---|
 | frozen encoder (initial configuration, 7 ch) | 0.6063 | 0.5261 | 0.4607 | 0.863 | 0.550 | 0.725 | 8.2 | 0.48 | 0.40 |
 | fine-tuned encoder, no class weights, cross fusion, 7 ch (final7) | 0.6068 | 0.4949 | 0.4631 | 0.841 | 0.517 | 0.653 | 9.4 | 0.60 | 0.51 |
+
+## ISRUC-I, trained and tested on ISRUC-I (isruc_cv.py --groups I --folds 10; external/isruc_cv_I_*.txt)
+
+100 subjects, 10 subject-independent folds (80 train / 10 validation / 10 test subjects; validation
+excluded from training -- fixed 2026-10-11, the earlier run with overlapping validation was discarded).
+3 seeds, HMM from training recordings. Fine-tuned encoder: LaBraM-EOG fine-tuned per fold on the fold's
+training subjects, cross-fitted in 3 parts by subject and ridge-aligned; 8 channels, no class weights,
+cross fusion. AHI scale k from each fold's validation subjects.
+
+| Config | Staging (3-seed) | single | mF1 | kappa | Resp AUC | AP | AHI rho | MAE | Sev acc | Sev kappa |
+|---|---|---|---|---|---|---|---|---|---|---|
+| frozen encoder (initial configuration) | 0.7856 | 0.7820 | 0.7515 | 0.7220 | 0.872 | 0.447 | 0.523 | 6.8 | 0.43 | 0.26 |
+| fine-tuned encoder (final) | 0.8033 | 0.8007 | 0.7647 | 0.7435 | 0.889 | 0.477 | 0.590 | 6.6 | 0.45 | 0.30 |
+
+Per fold (3-seed acc), frozen: 0.748 0.828 0.766 0.814 0.802 0.753 0.796 0.779 0.796 0.775
+                     final:  0.796 0.842 0.784 0.830 0.817 0.766 0.820 0.776 0.811 0.793
+Final - frozen +0.0176, 9/10 folds higher, Wilcoxon p = 0.0039.

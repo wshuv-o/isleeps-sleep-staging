@@ -1,0 +1,2 @@
+ISRUC I, MM-Net frozen trained and tested on ISRUC (10 subject-independent folds)
+I        100 rec  staging single 0.7820 | 3-seed acc 0.7856 mf1 0.7515 kappa 0.7220 | resp AUC 0.872 AP 0.447 | AHI rho 0.523 MAE 6.8 sev acc 0.43 kappa 0.26
