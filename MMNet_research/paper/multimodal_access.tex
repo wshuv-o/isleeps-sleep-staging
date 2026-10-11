@@ -1,18 +1,10 @@
-%=====================================================================
-%  IEEE journal manuscript. Compile with pdfLaTeX + BibTeX
-%  Order:  pdfLaTeX -> BibTeX -> pdfLaTeX -> pdfLaTeX
-%  Multimodal polysomnography: joint staging + respiratory-event detection.
-%  Final manuscript: MM-Net with the fine-tuned, cross-fitted, aligned foundation encoder; five cohorts.
-%=====================================================================
 \documentclass{ieeeaccess}
 % Avoid "TeX capacity exceeded [PDF object stream buffer]" that Overleaf/TeXLive raises
 % on large embedded figures. Disabling object-stream compression sidesteps the buffer.
 \ifdefined\pdfobjcompresslevel\pdfobjcompresslevel=0\fi
 
-% The class ships VOLUME 11, 2023 in the page footer. Production sets the real
-% values; until then they should at least not contradict a 2026 manuscript.
-\vol{14}
-\def\theyear{2026}
+\vol{XX}
+\def\theyear{20XX}
 
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -54,23 +46,23 @@
 
 \begin{document}
 
+
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2026.DOI}
 
-\title{Multimodal Deep Learning With an EEG Foundation Model Stages Sleep and Quantifies
-Sleep Apnea After Ischemic Stroke}
+\title{MM-Net: A Multimodal Multi-Task Network for Sleep Staging and Sleep Apnea Assessment After Ischemic Stroke}
 
 \author{\uppercase{Md Wahiduzzaman Suva}\authorrefmark{1},
 \uppercase{Esm-e Moula Chowdhury Abha}\authorrefmark{1},
 \uppercase{Md Imtiaj Alam Sajin}\authorrefmark{1},
-AND \uppercase{Md Iftekharul Mobin}\authorrefmark{1}}
+\uppercase{Md Iftekharul Mobin}\authorrefmark{1},
+\uppercase{M. Abdullah-Al-Wadud}\authorrefmark{2}, \uppercase{Saifur Rahman Sabuj}\authorrefmark{3}, and \uppercase{Jia Uddin}\authorrefmark{4}}
 
-\address[1]{Department of Computer Science and Engineering, American International
-University-Bangladesh, Dhaka 1229, Bangladesh}
-
-\corresp{Corresponding author: Md Iftekharul Mobin (e-mail: iftekhar.mobin@aiub.edu).}
-
-\tfootnote{The authors received no specific funding for this work.}
+\address[1]{Department of Computer Science and Engineering, American International University-Bangladesh, Dhaka 1229, Bangladesh (e-mail: 26-94088-2@student.aiub.edu, 26-94089-2@student.aiub.edu, 26-94090-2@student.aiub.edu, iftekhar.mobin@aiub.edu)}
+\address[2]{Department of Software Engineering, College of Computer and Information Sciences, King Saud University, 11543, Riyadh, Saudi Arabia (e-mail: mwadud@ksu.edu.sa)}
+\address[3]{Department of Automotive Engineering, Hanyang University, Seoul, 04763, South Korea (e-mail: s.r.sabuj@ieee.org)}
+\address[4]{AI and Big Data Department, Woosong University, Daejeon, Republic of Korea (e-mail: jia.uddin@wsu.ac.kr)}
+\corresp{Corresponding author: M. I. Mobin (e-mail: iftekhar.mobin@aiub.edu), and J. Uddin (e-mail: jia.uddin@wsu.ac.kr).}
 
 \titlepgskip=-21pt
 
@@ -339,8 +331,7 @@ Per channel we take absolute and relative Welch band power in delta ($0.5$--$4$)
 ($4$--$8$), alpha ($8$--$13$), sigma ($11$--$16$) and beta ($16$--$30$)\,Hz, spectral entropy,
 the $95\%$ spectral-edge and mean frequency, time-domain statistics and the three Hjorth
 descriptors~\cite{hjorth1970eeg}; sigma-envelope spindle descriptors and slow-wave amplitude on
-the EEG, ocular-movement energy on the EOG and tonic level on the EMG complete the $188$
-(Appendix~\ref{app:features}). Descriptors are standardized per recording.
+the EEG, ocular-movement energy on the EOG and tonic level on the EMG complete the $188$. Descriptors are standardized per recording.
 
 \subsection{Fine-Tuned Foundation Encoder}
 \label{sec:encoder}
@@ -889,14 +880,6 @@ with the annotations at weighted $\kappa$ up to $0.51$. For stroke units without
 technicians, a single automated pass delivering stages, events and severity is the practical
 form of screening.
 
-\paragraph{Scope} The evidence comes from offline whole-night analysis: staging is decoded after
-the recording ends, which suits overnight polysomnography and not real-time monitoring.
-Stroke-specific claims rest on iSLEEPS, the only public stroke polysomnography cohort; the four
-external cohorts establish generalization across populations and acquisition systems. N1 remains
-the hardest stage on every cohort and for every method, and the AHI severity band is the output
-with most room to grow; event-level training on larger annotated cohorts is the natural next step
-for both.
-
 %=====================================================================
 \section{Conclusion}
 MM-Net reads the full polysomnogram and delivers sleep stages, respiratory events and the AHI
@@ -908,47 +891,13 @@ at $0.825$ AUC and the AHI is estimated with $\rho=0.765$, and both transfer to 
 cohorts without retraining. Code, features and trained models are released.
 
 %=====================================================================
-\appendices
-\section{The $188$ Neural Descriptors}
-\label{app:features}
-Each $30$-second epoch is $3000$ samples at $100$\,Hz, and every descriptor below is
-computed on one epoch alone; the cross-epoch context is supplied by the recurrent decoder.
-Twenty-three descriptors are computed on each of the seven neural channels, C4:M1, C3:M2,
-O2:M1, O1:M2, E1:M2, E2:M2 and the chin EMG, which gives $161$; a further $27$ event
-descriptors are applied only to the channels whose physiology defines them, giving $188$.
-
-The per-channel set begins with the spectrum, a Welch estimate over $256$-sample
-segments overlapping by $128$. From it we take absolute and relative power in the
-five bands of Section~\ref{sec:features}, the logarithm of total power, spectral
-entropy on the normalised spectrum, the $95\%$ spectral-edge frequency and the mean
-frequency. Six time-domain statistics follow, namely standard deviation,
-peak-to-peak, root mean square, skewness, kurtosis and zero-crossing rate, and to
-these are added the three Hjorth descriptors, activity, mobility and complexity,
-computed from the first and second differences~\cite{hjorth1970eeg}.
-
-The event descriptors follow the graphoelements a scorer reads, and every band-pass
-among them is a fourth-order Butterworth applied forwards and backwards so that
-phase is preserved. Spindles contribute three descriptors per EEG channel: the
-channel is filtered to $11$--$16$\,Hz, its analytic envelope is taken by Hilbert
-transform, and the threshold is set at the $90$th percentile of that envelope within
-the epoch; density counts upward crossings of that threshold, and the mean and
-standard deviation of the envelope complete the three. Slow waves contribute two per
-EEG channel, the peak-to-peak and the mean absolute amplitude of the $0.5$--$4$\,Hz
-band. Each EOG channel contributes the log mean squared first difference and the
-$95$th percentile of its absolute value, which separate the fast deflections of REM
-from slow drift, and the chin EMG contributes log root-mean-square, the $90$th
-percentile of the absolute signal, and the log variance of the first difference,
-which together track tonic level and its loss in REM. Non-finite values, which arise
-only from a flat channel, are set to zero, and each descriptor is standardised against
-the mean and standard deviation of its own recording.
-
 %=====================================================================
 \section*{Data and Code Availability}
-iSLEEPS is publicly available (Zenodo, DOI 10.5281/zenodo.14873844)~\cite{maiti2026isleeps};
-ISRUC-Sleep~\cite{khalighi2016isruc}, the UCD database~\cite{ucddb2007} and
-Sleep-EDF~\cite{kemp2000sleepedf} are public. Our code, the per-fold configuration, engineered
-features and the corrections applied to the external cohorts are released at
-\url{https://github.com/wshuv-o/isleeps-sleep-staging}.
+iSLEEPS is publicly available (Zenodo, DOI 10.5281/zenodo.14873844; and the india-data.org
+portal)~\cite{maiti2026isleeps}; ISRUC-Sleep~\cite{khalighi2016isruc}, the UCD database~\cite{ucddb2007} and
+Sleep-EDF~\cite{kemp2000sleepedf} are public. Our code, the per-fold configuration, engineered features
+and the corrections applied to the external cohorts are released at
+\url{https://github.com/wshuv-o/MM-Net}.
 
 \section*{Ethics}
 The iSLEEPS data collection was approved by the NIMHANS Institutional Ethics Committee
@@ -956,7 +905,7 @@ The iSLEEPS data collection was approved by the NIMHANS Institutional Ethics Com
 is a secondary analysis of de-identified public data and required no additional enrollment.
 
 \section*{Funding}
-The authors received no specific funding for this work.
+This work was supported by King Saud University, Riyadh, Saudi Arabia, under ongoing Research Funding program (ORF-2026–951).
 
 %=====================================================================
 \section*{Acknowledgment}
@@ -971,31 +920,11 @@ data.
 %
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{bio_suva.jpg}}]{MD WAHIDUZZAMAN SUVA}
-received the B.Sc. degree in computer science and engineering from American
-International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025, where he is
-currently pursuing the M.Sc. degree in computer science. He is an Applied AI Engineer with
-Odin, Dhaka, and a Co-Founder of Prodigy AI, a non-profit research group focused on
-brain--computer interfaces. He is a co-author of an article on equivariant quantum
-graph neural networks in \emph{IEEE Transactions on Artificial Intelligence}, of an
-article on equivariant quantum clustering in \emph{Physica Scripta}, and of a Springer
-book chapter on federated learning in healthcare technology. His work spans quantum
-machine learning, federated learning, and EEG-based brain--computer interfaces. He
-serves as a reviewer for several international
-journals and conferences. His research interests include brain--computer and brain--machine interfaces, brain signal analysis, transformer models for EEG, and applied machine learning for health.
+received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. He is currently working as an Applied AI Engineer with Odin, Dhaka, Bangladesh. His research focuses on artificial intelligence for biomedical and neural signal analysis, with particular interests in brain-computer interfaces, EEG decoding, multimodal learning, federated learning, and quantum machine learning. He has contributed to research published in peer-reviewed journals and book chapters in the areas of artificial intelligence, quantum machine learning, and healthcare technology. His current research interests include representation learning for EEG, multimodal physiological signal analysis, robust and generalizable machine learning, and AI-assisted healthcare systems.
 \end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{bio_abha.jpg}}]{ESM-E MOULA CHOWDHURY ABHA}
-received the B.Sc. degree in computer science and engineering from American
-International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025, where she
-is currently pursuing the M.Sc. degree in computer science. She is with the Department of
-Computer Science and Engineering, AIUB, and a Researcher with Prodigy AI, a non-profit
-research group focused on brain--computer interfaces. She has over three years of industry
-experience as a Backend and AI Application Developer, building scalable API architectures
-and AI-integrated platforms for fintech, education, and customer-support products. She is
-the lead author of a Springer book chapter on federated learning in healthcare technology
-and a co-author of an article on equivariant quantum clustering in \emph{Physica Scripta},
-and she has contributed to research on attention-based EEG classification and multimodal
-deep learning for autonomous vehicle perception. Her research interests span brain signal analysis, transformer models for EEG, brain--computer and brain--machine interfaces, and applied machine learning for health.
+received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. Her research interests include artificial intelligence, machine learning, biomedical signal analysis, multimodal learning, and healthcare-oriented intelligent systems. She has contributed to research involving data-driven methods for physiological signal analysis and intelligent healthcare applications. Her current research interests include representation learning, multimodal physiological data analysis, and robust machine learning for healthcare.
 \end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{bio_sajin.jpg}}]{MD IMTIAJ ALAM SAJIN}
@@ -1003,13 +932,15 @@ received the B.Sc. degree in computer science and engineering, with a major in
 data science, from American International University-Bangladesh (AIUB), Dhaka, Bangladesh,
 in 2026, where he is currently pursuing the M.Sc. degree in computer science. He is with the
 Department of Computer Science and Engineering, AIUB, and a Researcher with Prodigy AI, a
-non-profit research group focused on brain--computer interfaces. He has also worked as a
-Software Developer with Byteverse Ltd., Dhaka, contributing to Chatsby, an AI-driven
-customer-support platform. His B.Sc. thesis proposed a dual-attention transformer for EEG
-classification in brain--computer interfaces. He is a co-author of an article on
-symmetry-aware equivariant quantum clustering in \emph{Physica Scripta} and of a Springer
-book chapter on federated learning in healthcare technology. His research interests are in transformer models for EEG, brain--computer and brain--machine interfaces, brain signal analysis, and applied machine learning for health.
+non-profit research group focused on brain--computer interfaces. He is currently a Software
+Engineer (AI \& Automation) with ODIN, Dhaka, where he develops privacy-first fintech
+solutions, and previously worked as a Software Developer with Byteverse Ltd., Dhaka. His
+B.Sc. thesis proposed a dual-attention transformer for EEG classification in
+brain--computer interfaces. His research interests are in transformer models for
+EEG, brain--computer and brain--machine interfaces, brain signal analysis, quantum machine
+learning, and applied machine learning for health.
 \end{IEEEbiography}
+
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{bio_mobin.jpg}}]{MD IFTEKHARUL MOBIN}
 (Member, IEEE) is an Assistant Professor with the Faculty of Science and
@@ -1025,6 +956,19 @@ industry--academia collaboration. He has served on the program committees of int
 conferences and as an editor and reviewer for conferences and journals worldwide. His
 research interests include natural language processing, time-series prediction, health
 informatics, the Internet of Things, and image processing.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}
+[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{MDALWadud.png}}]{M. ABDULLAH-AL-WADUD} received the B.S. degree in computer science and the M.S. degree in computer science and engineering from the University of Dhaka, Bangladesh, in 2003 and 2004, respectively, and the Ph.D. degree in computer engineering from Kyung Hee University, South Korea, in 2009. He was a Faculty Member with the Department of Industrial and Management Engineering, Hankuk University of Foreign Studies, South Korea, from 2009 to 2014. He was a Lecturer with Daffodil International University, Bangladesh, and East West University, Bangladesh. He is currently an Associate Professor with the Department of Software Engineering, King Saud University, Saudi Arabia. His research interests include artificial intelligence, optimization, computer vision, cloud computing, recommender systems, software engineering, sensors, and ad hoc networks.
+\end{IEEEbiography}
+
+
+\begin{IEEEbiography}
+[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{SaifurRahmanSabuj.png}}]{Saifur Rahman Sabuj} is currently working with Automotive Engineering Department as a Brain Pool Fellow, Seoul, South Korea. He has been in the position of an Associate Professor in the department of Electrical and Electronic Engineering at Brac University, Bangladesh, since September 2017. From 2020 to 2022, he worked as a Postdoctoral Research Fellow in the Electronic Engineering Department at Hanbat National University, South Korea. From 2008 to 2013, he was a faculty member of Green University of Bangladesh, Metropolitan University, Sylhet, and Bangladesh University. He received a Ph.D. degree in the Graduate School of Engineering, Kochi University of Technology, Japan in 2017. His research interests include Cognitive Radio, Internet-of-things, Unmanned Aerial Vehicle, Machine Learning, Artificial Intelligence, Biomedical signal processing and Brain-computer interfaces.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}
+[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{JiaUddin.png}}]{JIA UDDIN} received the M.Sc. degree in telecommunications from Blekinge Institute of Technology, Sweden, in 2010, and the Ph.D. degree in computer engineering from the University of Ulsan, South Korea, in January 2015. He is currently an Associate Professor with AI and Big Data Department, Endicott College, Woosong University, South Korea. He was also an Associate Professor with CSE Department, BRAC University, Bangladesh. He was a member of the Self-Assessment Team (SAC), CSE, BRACU, in HEQEP Project funded by the World Bank and the University of Grant Commission of Bangladesh, from 2016 to 2017. His research interests include fault diagnosis using AI and audio and image processing.
 \end{IEEEbiography}
 
 \EOD
