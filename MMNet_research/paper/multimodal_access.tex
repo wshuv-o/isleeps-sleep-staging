@@ -133,48 +133,38 @@ $12$ to $20$ accuracy points~\cite{bose2026gap}.
 
 We present MM-Net, a model that reads the whole polysomnogram of a stroke patient and returns
 the three quantities a sleep clinician reports: the hypnogram, the respiratory events and the
-apnea--hypopnea index (AHI). Its central technical element is the way it absorbs a pretrained
-EEG foundation encoder. Fine-tuning LaBraM~\cite{labram2024} on sleep makes it a strong stager
-on its own, but placing the fine-tuned encoder inside a sequence model naively yields nothing:
-the encoder has seen its own training patients, so the embeddings the sequence model trains on
-are in-sample while the ones it is tested on are not. We remove this mismatch by
-\emph{cross-fitting} the training embeddings and \emph{aligning} each cross-fitted encoder to
-the deployed one with a ridge map, and this is what turns a stronger encoder into a stronger
-system.
+apnea--hypopnea index (AHI). Its neural stream carries a pretrained EEG foundation encoder,
+LaBraM~\cite{labram2024}, fine-tuned on sleep. Using a fine-tuned encoder inside a second model
+trained on the same patients raises a problem that frozen encoders do not have: the encoder has
+seen its own training patients, so the embeddings the downstream model learns from are in-sample
+while those it is tested on are not. MM-Net addresses this by \emph{cross-fitting} the training
+embeddings and \emph{aligning} each cross-fitted encoder to the deployed one.
 
 Our contributions are:
 \begin{enumerate}
 \item \label{c:method}\textbf{Cross-fitted, aligned foundation-encoder integration.} We
 fine-tune LaBraM on EEG and ocular channels and integrate it into a multimodal sequence model
-through cross-fitting and ridge alignment (Section~\ref{sec:encoder}). Without alignment the
-fine-tuned encoder adds $+0.002$ accuracy ($p=0.63$); with it, $+0.014$ ($p=0.020$), on the
-same folds with every other component fixed (Table~\ref{tab:components}). On ISRUC-I the
-complete model gains $+0.018$ over the frozen-encoder configuration in nine of ten folds
-($p=0.004$).
+through cross-fitting and ridge alignment of the embedding spaces (Section~\ref{sec:encoder}),
+and isolate the contribution of each step.
 
-\item \label{c:stroke}\textbf{State-of-the-art staging on stroke sleep.} On iSLEEPS MM-Net
-reaches $\mmAcc$ accuracy, $\kappa$ $\mmK$, ahead of all eight deep baselines retrained on
-identical folds in every fold, by $0.042$ to $0.164$ (Table~\ref{tab:bench}), and ahead of the
-fine-tuned foundation encoder used on its own by $0.024$ ($p=0.014$).
+\item \label{c:model}\textbf{A single model for staging, respiratory events and the AHI.}
+MM-Net fuses the foundation-encoder representation with engineered neural descriptors and a
+learned encoder of eight raw cardiorespiratory channels, and derives a calibrated AHI estimate from
+its respiratory head over its own decoded sleep (Section~\ref{sec:method}).
 
-\item \label{c:ahi}\textbf{Respiratory events and the AHI from the same model.} MM-Net detects
-respiratory events at $\mmAuc$ AUC, $0.152$ above gradient boosting on the same
-cardiorespiratory signals, and estimates each patient's AHI with $\rho=\mmRho$ against the
-annotated index, closer than the clinical index itself agrees with the annotations
-($\rho=0.687$; Section~\ref{sec:ahi}).
+\item \label{c:stroke}\textbf{A same-fold benchmark on stroke sleep.} We compare MM-Net with
+reimplemented deep staging architectures and conventional respiratory detectors on identical
+patient-independent folds of the iSLEEPS stroke cohort (Section~\ref{sec:results}).
 
-\item \label{c:cohorts}\textbf{Evidence across five cohorts and three settings.} Beyond
-in-cohort cross-validation, MM-Net trained on ISRUC-I reaches $\isrAcc$ accuracy, reaches
-$0.864$ on healthy sleep, and applied without retraining stages ISRUC-I at $0.730$ and
-detects respiratory events on two external apnea cohorts at $0.83$--$0.84$ AUC with AHI $\rho$
-of $0.63$--$0.65$ (Section~\ref{sec:external}). The same baselines are rerun on ISRUC-I with MM-Net's folds.
+\item \label{c:cohorts}\textbf{Validation across five cohorts and three settings.} We evaluate
+MM-Net in-cohort, trained and tested on the public ISRUC-Sleep and Sleep-EDF cohorts, and applied
+without retraining to sleep-disorder, healthy and apnea cohorts recorded on other systems
+(Section~\ref{sec:external}).
 
-\item \label{c:physio}\textbf{Physiological attribution and deployment guidance.} An
-interventional ablation shows each stream serves the output its physiology is closest to,
-cortical channels for staging and respiratory effort for events, and the read-out does not
-depend on the airflow channel the events are scored from. Across cohorts we identify nasal
-pressure as a cohort-specific input and give a seven-channel variant for transfer
-(Section~\ref{sec:attrib}).
+\item \label{c:physio}\textbf{Physiological attribution and deployment guidance.} We attribute
+each output to the physiology it depends on by interventional ablation, test whether the
+respiratory read-out depends on the channel the events are scored from, and identify which inputs
+transfer across acquisition systems (Sections~\ref{sec:attrib} and~\ref{sec:external}).
 \end{enumerate}
 
 %=====================================================================
