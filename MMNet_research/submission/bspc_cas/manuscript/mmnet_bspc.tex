@@ -109,7 +109,7 @@
 \cortext[1]{Corresponding authors: M. I. Mobin (iftekhar.mobin@aiub.edu) and J. Uddin (jia.uddin@wsu.ac.kr).}
 
 \begin{abstract}
-Automated polysomnography analysis after ischemic stroke presents distinct challenges because cerebrovascular injury can alter sleep-related neural activity, while respiratory disturbances introduce additional physiological complexity. Existing stroke-specific studies have primarily addressed sleep staging, leaving the joint characterization of sleep architecture and respiratory events insufficiently explored. We propose MM-Net, a multimodal multi-task framework that integrates neural and cardiorespiratory representations for concurrent sleep-stage classification and respiratory-event detection. The neural stream combines physiological descriptors with a sleep-adapted pretrained EEG encoder, while cross-fitting and embedding alignment address representation mismatch between downstream training and inference. A complementary cardiorespiratory stream learns directly from respiratory and cardiac waveforms, with shared temporal modeling and task-specific prediction pathways. On iSLEEPS, comprising 99 patients with subacute ischemic stroke, patient-independent ten-fold cross-validation yields 76.3\% sleep-staging accuracy (Cohen's $\kappa = 0.656$) and respiratory-event AUC of 0.825, outperforming the evaluated baselines under matched protocols. On the independent ISRUC-I cohort, MM-Net achieves 80.3\% staging accuracy and 0.889 respiratory AUC. External evaluations further demonstrate respiratory-event discrimination across different recording cohorts. The framework additionally supports patient-level apnea--hypopnea index estimation from respiratory scores. Controlled analyses identify distinct contributions of neural and cardiorespiratory signals, supporting joint physiological modeling for automated stroke polysomnography assessment.
+Automated polysomnography after ischemic stroke presents challenges arising from altered sleep-related neural activity and concurrent respiratory disturbances. Existing stroke-specific approaches have primarily addressed sleep-stage classification, leaving the joint analysis of sleep architecture and respiratory events insufficiently investigated. Furthermore, adapting pretrained EEG encoders introduces a representation inconsistency when downstream models are trained on embeddings from previously observed patients but evaluated on unseen individuals. We propose MM-Net, a multimodal multi-task framework that addresses this inconsistency through cross-fitting and ridge-based embedding alignment. Sleep-adapted EEG--EOG representations and engineered neural descriptors are integrated with learned cardiorespiratory features through cross-attention and shared temporal modeling to support simultaneous sleep staging and respiratory-event detection. On iSLEEPS, comprising 99 patients with subacute ischemic stroke, ten-fold patient-independent evaluation achieved 76.3\% sleep-staging accuracy (Cohen's $\kappa = 0.656$) and 0.825 respiratory-event AUC, outperforming the evaluated baselines under matched protocols. Controlled experiments demonstrated that embedding alignment improved staging accuracy from 75.7\% to 76.9\% over cross-fitted adaptation without alignment. The framework also achieved 86.4\% staging accuracy on healthy Sleep-EDF, the highest reported in the study's benchmark comparison, and 80.3\% staging accuracy with 0.889 respiratory AUC on ISRUC-I, exceeding its retrained staging baselines. Without retraining, the iSLEEPS-trained model retained respiratory AUCs of 0.833 on ISRUC-I and 0.841 on UCD. These findings support representation-consistent neural adaptation and joint physiological modeling across stroke, healthy-sleep, and sleep-disorder cohorts.
 \end{abstract}
 
 \begin{keywords}
@@ -121,73 +121,19 @@ Apnea--hypopnea index \sep cardiorespiratory signals \sep EEG representation lea
 %=====================================================================
 \section{Introduction}
 
-Sleep disturbances are common after ischemic stroke and can persist
-through the subacute phase of recovery. Sleep-disordered breathing is particularly
-prevalent in this population and has been associated with poorer functional
-outcomes~\cite{bassetti2006sleep,denis2024sleep,tellenbach2023brainstem,johnson2010frequency}.
-Polysomnography (PSG) provides a detailed view of both processes within the same
-overnight recording. Electroencephalographic (EEG), ocular, and muscular activity
-supports characterization of sleep state, whereas airflow, respiratory effort,
-electrocardiography (ECG), pulse, and peripheral oxygen saturation reflect the
-physiological changes associated with respiratory disturbance. Automated analysis
-of these signals therefore has the potential to characterize two clinically
-relevant aspects of post-stroke sleep from a common examination.
+Sleep disturbances are common after ischemic stroke and have been associated with neurological recovery and functional outcomes~\cite{bassetti2006sleep,denis2024sleep,tellenbach2023brainstem,johnson2010frequency}. Sleep-disordered breathing is particularly prevalent in this population, making the assessment of sleep architecture and respiratory disturbance relevant to post-stroke evaluation. Polysomnography (PSG) records the physiological information required for both assessments, including electroencephalographic (EEG), electrooculographic (EOG), electromyographic (EMG), respiratory, and cardiovascular signals. Sleep-stage scoring primarily depends on neural and muscular activity, whereas respiratory-event identification relies on changes in ventilation, respiratory effort, oxygen saturation, and related physiological responses. Their concurrent analysis therefore requires a model capable of learning from heterogeneous signals whose relevance differs across prediction tasks.
 
-Most automated PSG analysis has addressed these tasks separately. Sleep-stage
-classification has progressed from convolutional and recurrent networks to
-attention-based models and large pretrained EEG representations
-~\cite{supratak2017deepsleepnet,phan2019seqsleepnet,eldele2021attnsleep,
-supratak2020tinysleepnet,labram2024,cbramod2025,eegpt2024,biot2023}.
-Respiratory-event detection has developed in parallel around airflow, respiratory
-effort, oximetry, and cardiac signals. More recently, joint models have shown that
-sleep stages and respiratory events can be estimated within a common framework.
-Huttunen \emph{et al.}~\cite{huttunen2023simultaneous}, for example, evaluated
-simultaneous sleep-stage and respiratory-event scoring across 877 clinical
-recordings, and related multi-task systems have since been studied in other sleep
-populations~\cite{multitask2025elderly}. These studies establish the feasibility
-of joint analysis, but their evidence comes primarily from suspected-apnea,
-elderly, or general sleep cohorts.
+Automated sleep staging has progressed from convolutional and recurrent architectures to attention-based sequence models and pretrained neural representations~\cite{supratak2017deepsleepnet,phan2019seqsleepnet,eldele2021attnsleep,supratak2020tinysleepnet,labram2024,cbramod2025,eegpt2024,biot2023}. Multimodal approaches have expanded this direction by integrating physiological signals, temporal context, and complementary representations. Recent studies published in Biomedical Signal Processing and Control, including MMS-SleepNet~\cite{mmssleepnet2025} and CrossFusionSleepNet~\cite{crossfusionsleepnet2026}, demonstrate the growing use of physiological knowledge, modality-specific encoding, and attention-based fusion for sleep staging. Respiratory-event detection has developed alongside these methods, and joint approaches have established the feasibility of predicting sleep stages and respiratory events within a shared framework. Huttunen \emph{et al.}~\cite{huttunen2023simultaneous} evaluated simultaneous scoring in 877 clinical PSG recordings, while subsequent multi-task models have investigated related problems in other sleep populations~\cite{multitask2025elderly}. These developments establish a methodological foundation for joint sleep analysis, although their evaluation has primarily involved general sleep-disorder, suspected-apnea, or elderly cohorts.
 
-The corresponding problem in stroke is less well characterized. Cerebrovascular
-injury can alter sleep-related neural activity, including spindles, slow-wave
-activity, and hemispheric EEG patterns
-~\cite{gottselig2002stroke,fernandez2019spindles,facchin2020slowwaves,
-simpson2023laterality,zheng2025spindles,anastasi2017bsi}. Models developed on
-conventional sleep cohorts may therefore encounter a substantially different
-neural signal distribution when applied after stroke. Existing work on the
-iSLEEPS cohort has begun to examine automatic sleep staging in this setting
-~\cite{maiti2026isleeps,bose2026gap}, but joint analysis of sleep state and
-respiratory disturbance has not been characterized in the same population.
+The application of these methods to ischemic stroke introduces additional physiological and computational considerations. Cerebrovascular injury can alter sleep spindles, slow-wave activity, and hemispheric EEG characteristics~\cite{gottselig2002stroke,fernandez2019spindles,facchin2020slowwaves,simpson2023laterality,zheng2025spindles,anastasi2017bsi}, potentially affecting representations learned from healthy or conventional sleep-disorder populations. The recently released iSLEEPS dataset~\cite{maiti2026isleeps} provides multimodal overnight PSG recordings from 100 patients with ischemic stroke, including expert annotations of sleep stages and respiratory events. Its initial analysis established sleep-staging baselines for this population. Bose \emph{et al.}~\cite{bose2026gap} subsequently investigated the generalization of EEG-based staging models between healthy and stroke cohorts, reporting performance degradation and changes in the physiological patterns emphasized by the model. More recently, Alhazmi~\cite{alhazmi2026sleepstagenet} introduced SleepStageNet, a compact five-channel staging architecture evaluated on 95 iSLEEPS recordings, together with physiological attribution analyses and transfer to an independent healthy-sleep cohort. Collectively, these studies have advanced stroke-specific sleep classification and demonstrated the importance of population-dependent evaluation. The joint prediction of sleep architecture and respiratory-event onset from stroke PSG, however, remains insufficiently investigated.
 
-A second issue concerns what multimodal models learn from the available
-physiology. Predictive performance from a combined signal set does not identify
-which modalities support each output. This distinction is particularly relevant
-when sleep staging and respiratory-event prediction share a representation:
-neural and cardiorespiratory signals may contribute differently to the two tasks,
-and a respiratory model may also derive much of its discrimination from airflow,
-a signal closely related to clinical event annotation. Establishing the role of
-each physiological source therefore requires controlled intervention on the
-signal streams and channels in addition to conventional benchmark comparisons.
+This gap also raises a question concerning the organization of multimodal physiological information. Neural and cardiorespiratory signals provide different evidence for sleep state and respiratory disturbance, although both tasks depend on temporal context and interactions among physiological systems. A shared model must therefore integrate information across modalities while retaining features relevant to individual outputs. Furthermore, respiratory-event annotations are closely associated with recorded airflow and respiratory-effort signals. Improved discrimination from multimodal inputs cannot, by itself, establish whether a model has learned complementary physiological relationships or relies predominantly on channels directly associated with event scoring. Controlled modality and channel interventions are necessary to distinguish these contributions and characterize the dependence of each task on its available signals.
 
-We investigate these questions using the iSLEEPS dataset
-~\cite{maiti2026isleeps}, comprising overnight PSG from patients with subacute
-ischemic stroke. We develop MM-Net, a two-stream multi-task model in which neural
-and cardiorespiratory signals are represented separately before being integrated
-by a shared temporal decoder. The neural stream combines physiologically defined
-descriptors with a pretrained EEG representation, LaBraM~\cite{labram2024},
-adapted to sleep from EEG and ocular channels. Because an adapted encoder has seen
-its own training patients, its embeddings are integrated into the downstream
-model through cross-fitting and alignment to the deployed encoder. The
-cardiorespiratory stream learns directly from eight respiratory and cardiac
-waveforms. The shared decoder produces a five-class sleep-stage output and a
-respiratory-event score for each 30-s epoch, with an additional
-cardiorespiratory pathway to the respiratory head for task-specific information,
-and the respiratory scores over decoded sleep yield a patient-level AHI estimate.
-The evaluation is patient-independent and combines comparative benchmarking with
-matched single-task controls, representation analyses, modality and channel
-interventions, nested model selection, repeated training seeds, training and
-evaluation on an independent sleep-disorder cohort, and transfer without
-retraining to sleep-disorder, healthy and sleep-apnea cohorts.
+A separate methodological difficulty arises when pretrained EEG encoders are adapted to a clinical cohort and subsequently used to train a downstream prediction model. Adaptation can improve the relevance of learned representations to post-stroke sleep, but embeddings generated for patients used during encoder training may differ from those produced for previously unseen patients. Cross-fitting addresses the in-sample dependence by generating downstream training embeddings from encoders that have not observed the corresponding patients, consistent with established principles of stacked generalization~\cite{wolpert1992stacked,chernozhukov2018dml}. However, independently adapted encoders may produce representations in different feature spaces, introducing an additional inconsistency with the encoder used at deployment. Consequently, reliable integration requires both out-of-sample representation generation and alignment with the deployed encoder's embedding space. The contribution of these operations can be evaluated directly through controlled encoder-integration comparisons.
+
+To address these problems, we develop MM-Net, a multimodal multi-task framework for joint sleep-stage classification and respiratory-event-onset detection. The neural stream combines physiologically defined descriptors with embeddings from a sleep-adapted LaBraM encoder~\cite{labram2024}. Cross-fitting produces out-of-sample representations for downstream training, and ridge-based alignment maps these representations into the embedding space of the encoder used for inference. A complementary convolutional stream extracts information directly from cardiorespiratory waveforms. Cross-attention and bidirectional temporal modeling integrate the representations, while task-specific prediction pathways support five-class sleep staging and respiratory-event scoring. A direct cardiorespiratory pathway preserves respiratory information for event detection, and the resulting scores additionally support patient-level apnea--hypopnea index estimation.
+
+We evaluate the framework using patient-independent protocols across stroke, healthy-sleep, and sleep-disorder populations. The primary analysis uses 99 unique iSLEEPS recordings after a duplicate-record audit, supported by matched staging and respiratory baselines, controlled encoder comparisons, and physiological signal interventions. MM-Net achieves 76.3\% sleep-staging accuracy and 0.825 respiratory-event AUC on iSLEEPS. Controlled experiments further establish the contribution of embedding alignment to sleep-adapted encoder integration. To examine applicability beyond the development population, the framework is separately evaluated on Sleep-EDF and ISRUC-Sleep, achieving 86.4\% staging accuracy in the healthy-sleep staging configuration and 80.3\% staging accuracy with 0.889 respiratory AUC on ISRUC-I. Additional experiments assess transfer of the iSLEEPS-trained model to independent cohorts without retraining. Together, these evaluations investigate both the methodological contribution of representation-consistent adaptation and the applicability of joint physiological modeling across different sleep populations.
 
 The principal contributions of this study are threefold:
 
@@ -201,7 +147,7 @@ The principal contributions of this study are threefold:
 
 \end{enumerate}
 
-The remainder of the paper describes the datasets and the model, followed by the experimental evaluation, the physiological analyses, and the discussion.
+The remainder of this paper presents the related literature, datasets, proposed methodology, experimental evaluation, and discussion of the findings.
 
 %=====================================================================
 \section{Related Work}
