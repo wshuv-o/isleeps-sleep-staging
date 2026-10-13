@@ -19,8 +19,9 @@ one overnight recording:
  - iSLEEPS (99 patients with subacute ischemic stroke): 76.3% staging accuracy (Cohen's kappa
    0.656) and 0.825 respiratory-event AUC, ahead of thirteen staging architectures retrained on
    the same patient-independent folds (Holm-corrected p <= 0.025 for every comparison).
- - Joint training improves on matched single-task models for both outputs, and modality removal
-   shows that each stream carries the output closest to its physiology.
+ - Joint training improves respiratory-event detection over a matched single-task model without
+   reducing staging accuracy, and modality removal shows that each stream carries the output
+   closest to its physiology.
  - ISRUC-I (sleep disorders): 80.3% accuracy and 0.889 respiratory AUC; Sleep-EDF (healthy
    sleep): 86.4% accuracy.
  - Trained on iSLEEPS and applied without retraining, respiratory detection reaches 0.833 AUC
@@ -29,8 +30,8 @@ one overnight recording:
 The published work on the iSLEEPS cohort (Maiti et al., Scientific Data 2026; Bose et al., ISBI
 2026; Alhazmi, Brain Sciences 2026) addresses sleep staging only. To our knowledge, MM-Net is the
 first framework to analyse sleep architecture and respiratory events jointly in this population,
-and the integration procedure applies to any pipeline that fine-tunes a foundation model and trains
-a second model on its outputs. We believe the work fits the journal's scope in multimodal
+and the integration procedure may apply to other pipelines that fine-tune a foundation model and
+train a second model on its outputs. We believe the work fits the journal's scope in multimodal
 physiological signal processing and clinically oriented machine learning.
 
 All datasets are public, and the code, per-fold configurations and reproduction notebooks are
