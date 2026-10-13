@@ -92,3 +92,37 @@ Source: the Overleaf project uploaded on 13 October (`main.tex`), committed unch
    - `run_final_model.py` is stale.
    - The code link (github.com/wshuv-o/MM-Net) should contain the run order and the pinned `torch` and `braindecode` versions.
 7. **Submission items** from the 12 October report are still open: the competing-interest, CRediT and generative-AI declarations, highlights, and the keyword count (9).
+
+## 5. Round 3: defensive evidence and submission items (25 pages)
+
+**Restored in the main text, in compact form:**
+- **Table 8:** joint vs single-task training.
+- **Table 9:** modality removal, reporting each modality's effect on the output it serves (EEG → staging; cardiorespiratory, effort and airflow → respiratory AUC).
+- **Protocol:** a nested-selection sentence (optimism 0.006).
+- **Your approved wording:** Introduction paragraph 4, contribution 3 and Conclusion paragraph 2.
+
+**Not restored, because each would expose more than it defends:**
+- the raw-CNN per-class row (it beats MM-Net on N1);
+- the healthy zero-shot result (0.31 next to 0.794 in the other direction reads as a broken baseline);
+- StagingSeqNet's healthy 0.855 (measured in-sample);
+- the representation, permutation and missing-channel analyses.
+
+**Submission items:**
+
+| Item | What changed |
+|---|---|
+| Keywords | 9 → 6 |
+| Empty "ORCID(s):" footnote | suppressed unless ORCIDs are given |
+| Declarations | added: competing interests, CRediT (in red until confirmed), generative-AI use |
+| `highlights.txt` | 5 bullets, each at most 85 characters |
+| `cover_letter.txt` | new |
+| `fig_architecture.drawio` | label fixes, listed below |
+
+The label fixes in `fig_architecture.drawio`:
+- "Sleep-adapted LaBraM · 4 EEG + 2 EOG · cross-fitted, ridge-aligned";
+- 8×750 in all three places;
+- 156,432 p;
+- "Cross-attention fusion · 4 heads", with 2×128 and "attention [e ; c]";
+- plain CE in the joint objective.
+
+**Export the .drawio to PDF in draw.io and replace `manuscript/figures/fig_architecture.pdf`.**

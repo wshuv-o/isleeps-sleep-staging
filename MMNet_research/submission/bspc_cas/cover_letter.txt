@@ -1,0 +1,53 @@
+Dear Editor,
+
+We submit the manuscript "MM-Net: A Multimodal Multi-Task Network for Sleep Staging and Sleep
+Apnea Assessment After Ischemic Stroke" for consideration as a Research Paper in Biomedical
+Signal Processing and Control.
+
+The paper addresses a signal-processing problem that arises whenever a pretrained physiological
+encoder is adapted to a clinical cohort and then feeds a second model. Adapting the LaBraM EEG
+encoder to post-stroke sleep improves the encoder itself, yet the adapted encoder adds nothing
+to the downstream model while its training embeddings come from encoders whose coordinates differ
+from those of the encoder used at test time. We integrate the adapted encoder through cross-fitting
+and ridge alignment to the deployed embedding space. With alignment the downstream gain appears in
+eight of ten patient-independent folds, against five of ten without it (Table 6, Figure 5).
+
+Built on this encoder, MM-Net combines EEG/EOG representations with a learned cardiorespiratory
+stream and stages sleep, detects respiratory events, and estimates the apnea-hypopnea index from
+one overnight recording:
+
+ - iSLEEPS (99 patients with subacute ischemic stroke): 76.3% staging accuracy (Cohen's kappa
+   0.656) and 0.825 respiratory-event AUC, ahead of thirteen staging architectures retrained on
+   the same patient-independent folds (Holm-corrected p <= 0.025 for every comparison).
+ - Joint training improves on matched single-task models for both outputs, and modality removal
+   shows that each stream carries the output closest to its physiology.
+ - ISRUC-I (sleep disorders): 80.3% accuracy and 0.889 respiratory AUC; Sleep-EDF (healthy
+   sleep): 86.4% accuracy.
+ - Trained on iSLEEPS and applied without retraining, respiratory detection reaches 0.833 AUC
+   on ISRUC-I and 0.841 AUC on the UCD apnea database.
+
+The published work on the iSLEEPS cohort (Maiti et al., Scientific Data 2026; Bose et al., ISBI
+2026; Alhazmi, Brain Sciences 2026) addresses sleep staging only. To our knowledge, MM-Net is the
+first framework to analyse sleep architecture and respiratory events jointly in this population,
+and the integration procedure applies to any pipeline that fine-tunes a foundation model and trains
+a second model on its outputs. We believe the work fits the journal's scope in multimodal
+physiological signal processing and clinically oriented machine learning.
+
+All datasets are public, and the code, per-fold configurations and reproduction notebooks are
+released at https://github.com/wshuv-o/MM-Net.
+
+This manuscript is original, has not been published, and is not under consideration for
+publication elsewhere. All authors have approved the submission and declare no competing
+interests.
+
+Sincerely,
+
+Md Iftekharul Mobin
+Faculty of Science and Technology, American International University-Bangladesh, Dhaka, Bangladesh
+iftekhar.mobin@aiub.edu
+
+Jia Uddin
+AI and Big Data Department, Woosong University, Daejeon, Republic of Korea
+jia.uddin@wsu.ac.kr
+
+(Corresponding authors, on behalf of all authors)

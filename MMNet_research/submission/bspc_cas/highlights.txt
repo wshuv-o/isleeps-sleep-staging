@@ -1,0 +1,7 @@
+Highlights
+
+- One model stages sleep and detects respiratory events in post-stroke PSG
+- Aligning cross-fitted embeddings unlocks a sleep-adapted EEG encoder downstream
+- 76.3% staging accuracy and 0.825 respiratory AUC on 99 ischemic stroke patients
+- Ahead of thirteen retrained staging baselines under patient-independent folds
+- Respiratory detection transfers to two external cohorts at 0.83-0.84 AUC
