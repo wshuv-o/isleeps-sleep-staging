@@ -1,7 +1,7 @@
 \documentclass[a4paper,fleqn]{cas-sc}
 % Avoid 'TeX capacity exceeded [PDF object stream buffer]' on large embedded figures.
 \ifdefined\pdfobjcompresslevel\pdfobjcompresslevel=0\fi
-
+\usepackage{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{graphicx}
 \graphicspath{{./}}
@@ -67,6 +67,7 @@
 \author[1]{Md Wahiduzzaman Suva}
 \ead{26-94088-2@student.aiub.edu}
 
+
 \author[1]{Esm-e Moula Chowdhury Abha}
 \ead{26-94089-2@student.aiub.edu}
 
@@ -129,7 +130,7 @@ The application of these methods to ischemic stroke introduces additional physio
 
 This gap also raises a question concerning the organization of multimodal physiological information. Neural and cardiorespiratory signals provide different evidence for sleep state and respiratory disturbance, although both tasks depend on temporal context and interactions among physiological systems. A shared model must therefore integrate information across modalities while retaining features relevant to individual outputs. Furthermore, respiratory-event annotations are closely associated with recorded airflow and respiratory-effort signals. Improved discrimination from multimodal inputs cannot, by itself, establish whether a model has learned complementary physiological relationships or relies predominantly on channels directly associated with event scoring. Controlled modality and channel interventions are necessary to distinguish these contributions and characterize the dependence of each task on its available signals.
 
-A separate methodological difficulty arises when pretrained EEG encoders are adapted to a clinical cohort and subsequently used to train a downstream prediction model. Adaptation can improve the relevance of learned representations to post-stroke sleep, but embeddings generated for patients used during encoder training may differ from those produced for previously unseen patients. Cross-fitting addresses the in-sample dependence by generating downstream training embeddings from encoders that have not observed the corresponding patients, consistent with established principles of stacked generalization~\cite{wolpert1992stacked,chernozhukov2018dml}. However, independently adapted encoders may produce representations in different feature spaces, introducing an additional inconsistency with the encoder used at deployment. Consequently, reliable integration requires both out-of-sample representation generation and alignment with the deployed encoder's embedding space. The contribution of these operations can be evaluated directly through controlled encoder-integration comparisons.
+A separate methodological difficulty arises when pretrained EEG encoders are adapted to a clinical cohort and subsequently used to train a downstream prediction model. Adaptation can improve the relevance of learned representations to post-stroke sleep, but embeddings generated for patients used during encoder training may differ from those produced for previously unseen patients. Cross-fitting addresses the in-sample dependence by generating downstream training embeddings from encoders that have not observed the corresponding patients, consistent with established principles of stacked generalization~\cite{chernozhukov2018dml}. However, independently adapted encoders may produce representations in different feature spaces, introducing an additional inconsistency with the encoder used at deployment. Consequently, reliable integration requires both out-of-sample representation generation and alignment with the deployed encoder's embedding space. The contribution of these operations can be evaluated directly through controlled encoder-integration comparisons.
 
 To address these problems, we develop MM-Net, a multimodal multi-task framework for joint sleep-stage classification and respiratory-event-onset detection. The neural stream combines physiologically defined descriptors with embeddings from a sleep-adapted LaBraM encoder~\cite{labram2024}. Cross-fitting produces out-of-sample representations for downstream training, and ridge-based alignment maps these representations into the embedding space of the encoder used for inference. A complementary convolutional stream extracts information directly from cardiorespiratory waveforms. Cross-attention and bidirectional temporal modeling integrate the representations, while task-specific prediction pathways support five-class sleep staging and respiratory-event scoring. A direct cardiorespiratory pathway preserves respiratory information for event detection, and the resulting scores additionally support patient-level apnea--hypopnea index estimation.
 
@@ -182,7 +183,7 @@ used frozen or fine-tuned end to end for a single task. Using a fine-tuned
 encoder as the input of a second model trained on the same patients raises the
 requirement addressed by stacked generalization and cross-fitting, namely that the
 second model be trained on out-of-sample first-stage outputs
-~\cite{wolpert1992stacked,chernozhukov2018dml}.
+~\cite{chernozhukov2018dml}.
 
 Most of these developments have been established on healthy or general sleep
 datasets. Performance can change substantially when models are transferred
@@ -1952,63 +1953,63 @@ their data.
 %  AUTHOR BIOGRAPHIES
 %
 
-\bio{bio_suva}
-\textbf{MD WAHIDUZZAMAN SUVA} received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. He is currently working as an Applied AI Engineer with Odin, Dhaka, Bangladesh. His research focuses on artificial intelligence for biomedical and neural signal analysis, with particular interests in brain-computer interfaces, EEG decoding, multimodal learning, federated learning, and quantum machine learning. He has contributed to research published in peer-reviewed journals and book chapters in the areas of artificial intelligence, quantum machine learning, and healthcare technology. His current research interests include representation learning for EEG, multimodal physiological signal analysis, robust and generalizable machine learning, and AI-assisted healthcare systems.
-\endbio
+% \bio{bio_suva}
+% \textbf{MD WAHIDUZZAMAN SUVA} received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. He is currently working as an Applied AI Engineer with Odin, Dhaka, Bangladesh. His research focuses on artificial intelligence for biomedical and neural signal analysis, with particular interests in brain-computer interfaces, EEG decoding, multimodal learning, federated learning, and quantum machine learning. He has contributed to research published in peer-reviewed journals and book chapters in the areas of artificial intelligence, quantum machine learning, and healthcare technology. His current research interests include representation learning for EEG, multimodal physiological signal analysis, robust and generalizable machine learning, and AI-assisted healthcare systems.
+% \endbio
 
 
-\bio{bio_abha}
-\textbf{ESM-E MOULA CHOWDHURY ABHA} received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. Her research interests include artificial intelligence, machine learning, biomedical signal analysis, multimodal learning, and healthcare-oriented intelligent systems. She has contributed to research involving data-driven methods for physiological signal analysis and intelligent healthcare applications. Her current research interests include representation learning, multimodal physiological data analysis, and robust machine learning for healthcare.
-\endbio
+% \bio{bio_abha}
+% \textbf{ESM-E MOULA CHOWDHURY ABHA} received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. Her research interests include artificial intelligence, machine learning, biomedical signal analysis, multimodal learning, and healthcare-oriented intelligent systems. She has contributed to research involving data-driven methods for physiological signal analysis and intelligent healthcare applications. Her current research interests include representation learning, multimodal physiological data analysis, and robust machine learning for healthcare.
+% \endbio
 
 
-\bio{bio_sajin}
-\textbf{MD IMTIAJ ALAM SAJIN} received the B.Sc. degree in computer science and engineering, with a major in
-data science, from American International University-Bangladesh (AIUB), Dhaka, Bangladesh,
-in 2026, where he is currently pursuing the M.Sc. degree in computer science. He is with the
-Department of Computer Science and Engineering, AIUB, and a Researcher with Prodigy AI, a
-non-profit research group focused on brain--computer interfaces. He is currently a Software
-Engineer (AI \& Automation) with ODIN, Dhaka, where he develops privacy-first fintech
-solutions, and previously worked as a Software Developer with Byteverse Ltd., Dhaka. His
-B.Sc. thesis proposed a dual-attention transformer for EEG classification in
-brain--computer interfaces. His research interests are in transformer models for
-EEG, brain--computer and brain--machine interfaces, brain signal analysis, quantum machine
-learning, and applied machine learning for health.
-\endbio
-
-
-
-\bio{bio_mobin}
-\textbf{MD IFTEKHARUL MOBIN} (Member, IEEE) is an Assistant Professor with the Faculty of Science and
-Technology, American International University-Bangladesh (AIUB), Dhaka, Bangladesh. He
-received the Ph.D. degree from Queen Mary University of London, London, U.K., and the B.Sc.
-degree from the Islamic University of Technology (IUT), Gazipur, Bangladesh. He was awarded
-the Queen Mary scholarship and the ImpactQM scholarship in acknowledgment of his
-contributions to industry--academia partnerships, and his research has received support
-from Bangladesh's Ministry of Information and Communication Technology. He served as a
-software engineer in the United Kingdom, Japan, and Bangladesh for several years, and that
-dual exposure to academic and industry settings informs his perspective on
-industry--academia collaboration. He has served on the program committees of international
-conferences and as an editor and reviewer for conferences and journals worldwide. His
-research interests include natural language processing, time-series prediction, health
-informatics, the Internet of Things, and image processing.
-\endbio
-
-
-\bio{MDALWadud}
-\textbf{M. ABDULLAH-AL-WADUD} received the B.S. degree in computer science and the M.S. degree in computer science and engineering from the University of Dhaka, Bangladesh, in 2003 and 2004, respectively, and the Ph.D. degree in computer engineering from Kyung Hee University, South Korea, in 2009. He was a Faculty Member with the Department of Industrial and Management Engineering, Hankuk University of Foreign Studies, South Korea, from 2009 to 2014. He was a Lecturer with Daffodil International University, Bangladesh, and East West University, Bangladesh. He is currently an Associate Professor with the Department of Software Engineering, King Saud University, Saudi Arabia. His research interests include artificial intelligence, optimization, computer vision, cloud computing, recommender systems, software engineering, sensors, and ad hoc networks.
-\endbio
+% \bio{bio_sajin}
+% \textbf{MD IMTIAJ ALAM SAJIN} received the B.Sc. degree in computer science and engineering, with a major in
+% data science, from American International University-Bangladesh (AIUB), Dhaka, Bangladesh,
+% in 2026, where he is currently pursuing the M.Sc. degree in computer science. He is with the
+% Department of Computer Science and Engineering, AIUB, and a Researcher with Prodigy AI, a
+% non-profit research group focused on brain--computer interfaces. He is currently a Software
+% Engineer (AI \& Automation) with ODIN, Dhaka, where he develops privacy-first fintech
+% solutions, and previously worked as a Software Developer with Byteverse Ltd., Dhaka. His
+% B.Sc. thesis proposed a dual-attention transformer for EEG classification in
+% brain--computer interfaces. His research interests are in transformer models for
+% EEG, brain--computer and brain--machine interfaces, brain signal analysis, quantum machine
+% learning, and applied machine learning for health.
+% \endbio
 
 
 
-\bio{SaifurRahmanSabuj}
-\textbf{Saifur Rahman Sabuj} is currently working with Automotive Engineering Department as a Brain Pool Fellow, Seoul, South Korea. He has been in the position of an Associate Professor in the department of Electrical and Electronic Engineering at Brac University, Bangladesh, since September 2017. From 2020 to 2022, he worked as a Postdoctoral Research Fellow in the Electronic Engineering Department at Hanbat National University, South Korea. From 2008 to 2013, he was a faculty member of Green University of Bangladesh, Metropolitan University, Sylhet, and Bangladesh University. He received a Ph.D. degree in the Graduate School of Engineering, Kochi University of Technology, Japan in 2017. His research interests include Cognitive Radio, Internet-of-things, Unmanned Aerial Vehicle, Machine Learning, Artificial Intelligence, Biomedical signal processing and Brain-computer interfaces.
-\endbio
+% \bio{bio_mobin}
+% \textbf{MD IFTEKHARUL MOBIN} (Member, IEEE) is an Assistant Professor with the Faculty of Science and
+% Technology, American International University-Bangladesh (AIUB), Dhaka, Bangladesh. He
+% received the Ph.D. degree from Queen Mary University of London, London, U.K., and the B.Sc.
+% degree from the Islamic University of Technology (IUT), Gazipur, Bangladesh. He was awarded
+% the Queen Mary scholarship and the ImpactQM scholarship in acknowledgment of his
+% contributions to industry--academia partnerships, and his research has received support
+% from Bangladesh's Ministry of Information and Communication Technology. He served as a
+% software engineer in the United Kingdom, Japan, and Bangladesh for several years, and that
+% dual exposure to academic and industry settings informs his perspective on
+% industry--academia collaboration. He has served on the program committees of international
+% conferences and as an editor and reviewer for conferences and journals worldwide. His
+% research interests include natural language processing, time-series prediction, health
+% informatics, the Internet of Things, and image processing.
+% \endbio
 
 
-\bio{JiaUddin}
-\textbf{JIA UDDIN} received the M.Sc. degree in telecommunications from Blekinge Institute of Technology, Sweden, in 2010, and the Ph.D. degree in computer engineering from the University of Ulsan, South Korea, in January 2015. He is currently an Associate Professor with AI and Big Data Department, Endicott College, Woosong University, South Korea. He was also an Associate Professor with CSE Department, BRAC University, Bangladesh. He was a member of the Self-Assessment Team (SAC), CSE, BRACU, in HEQEP Project funded by the World Bank and the University of Grant Commission of Bangladesh, from 2016 to 2017. His research interests include fault diagnosis using AI and audio and image processing.
-\endbio
+% \bio{MDALWadud}
+% \textbf{M. ABDULLAH-AL-WADUD} received the B.S. degree in computer science and the M.S. degree in computer science and engineering from the University of Dhaka, Bangladesh, in 2003 and 2004, respectively, and the Ph.D. degree in computer engineering from Kyung Hee University, South Korea, in 2009. He was a Faculty Member with the Department of Industrial and Management Engineering, Hankuk University of Foreign Studies, South Korea, from 2009 to 2014. He was a Lecturer with Daffodil International University, Bangladesh, and East West University, Bangladesh. He is currently an Associate Professor with the Department of Software Engineering, King Saud University, Saudi Arabia. His research interests include artificial intelligence, optimization, computer vision, cloud computing, recommender systems, software engineering, sensors, and ad hoc networks.
+% \endbio
+
+
+
+% \bio{SaifurRahmanSabuj}
+% \textbf{Saifur Rahman Sabuj} is currently working with Automotive Engineering Department as a Brain Pool Fellow, Seoul, South Korea. He has been in the position of an Associate Professor in the department of Electrical and Electronic Engineering at Brac University, Bangladesh, since September 2017. From 2020 to 2022, he worked as a Postdoctoral Research Fellow in the Electronic Engineering Department at Hanbat National University, South Korea. From 2008 to 2013, he was a faculty member of Green University of Bangladesh, Metropolitan University, Sylhet, and Bangladesh University. He received a Ph.D. degree in the Graduate School of Engineering, Kochi University of Technology, Japan in 2017. His research interests include Cognitive Radio, Internet-of-things, Unmanned Aerial Vehicle, Machine Learning, Artificial Intelligence, Biomedical signal processing and Brain-computer interfaces.
+% \endbio
+
+
+% \bio{JiaUddin}
+% \textbf{JIA UDDIN} received the M.Sc. degree in telecommunications from Blekinge Institute of Technology, Sweden, in 2010, and the Ph.D. degree in computer engineering from the University of Ulsan, South Korea, in January 2015. He is currently an Associate Professor with AI and Big Data Department, Endicott College, Woosong University, South Korea. He was also an Associate Professor with CSE Department, BRAC University, Bangladesh. He was a member of the Self-Assessment Team (SAC), CSE, BRACU, in HEQEP Project funded by the World Bank and the University of Grant Commission of Bangladesh, from 2016 to 2017. His research interests include fault diagnosis using AI and audio and image processing.
+% \endbio
 
 
 
