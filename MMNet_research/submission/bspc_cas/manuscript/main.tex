@@ -350,7 +350,7 @@ Share (\%) & 26.7 & 10.1 & 42.3 & 8.9 & 12.1 \\
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.62\textwidth]{figures/fig_mm_apnea_prev.pdf}
+\includegraphics[width=0.55\textwidth]{figures/fig_mm_apnea_prev.pdf}
 \caption{Patient-level respiratory-event burden in iSLEEPS, measured as the
 fraction of 30-s epochs containing the onset of a scored respiratory event. The dashed line
 denotes the cohort median of $13\%$.}
@@ -826,7 +826,7 @@ stage on this cohort for every evaluated model. A representative held-out night 
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=\textwidth]{figures/revision/fig_hypnogram_final.pdf}
+\includegraphics[width=0.85\textwidth]{figures/revision/fig_hypnogram_final.pdf}
 \caption{An illustrative held-out night (patient SN90, three-seed MM-Net, staging accuracy
 $0.83$). \textbf{(A)} Predicted and reference hypnograms, REM highlighted. \textbf{(B)} EEG
 spectrogram, C4 derivation, $0$--$25$\,Hz. \textbf{(C)} Per-epoch stage-probability
@@ -836,7 +836,7 @@ ribbon; the black line is the maximum posterior.}
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.7\textwidth]{figures/revision/fig_confusion_final.pdf}
+\includegraphics[width=0.55\textwidth]{figures/revision/fig_confusion_final.pdf}
 \caption{Row-normalised confusion matrix for MM-Net (three-seed, pooled ten-fold test epochs,
 hidden-Markov operating point). Errors concentrate on N1, which is absorbed into Wake and N2.}
 \label{fig:confusion}
@@ -909,7 +909,7 @@ MM-Net: EEG$+$EOG encoder, 8 channels, epoch-aligned & 0.756 & 0.763 & \\
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/revision/fig_alignment_folds.pdf}
+\includegraphics[width=0.78\textwidth]{figures/revision/fig_alignment_folds.pdf}
 \caption{Per-fold staging accuracy of MM-Net with the sleep-adapted encoder, relative to the
 frozen-encoder reference (three-seed, ten patient-independent folds). The training embeddings are
 cross-fitted in both cases; aligning them to the deployed encoder turns an inconsistent effect into
@@ -919,7 +919,7 @@ a gain in eight folds of ten.}
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/revision/fig_rev_tsne.pdf}
+\includegraphics[width=0.72\textwidth]{figures/revision/fig_rev_tsne.pdf}
 \caption{t-SNE~\cite{vandermaaten2008tsne} of $4000$ epochs from the ten held-out patients of
 one fold, coloured by scored stage. Left: frozen LaBraM. Right: the sleep-adapted, aligned
 EEG/EOG encoder used in MM-Net.}
@@ -944,7 +944,7 @@ MM-Net holds $0.70$ specificity at $0.80$ sensitivity and $0.53$ at $0.90$.
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/revision/fig_roc_pr_final.pdf}
+\includegraphics[width=0.78\textwidth]{figures/revision/fig_roc_pr_final.pdf}
 \caption{Respiratory-event detection by MM-Net (three-seed), pooled over the ten
 patient-independent test folds. \textbf{(a)} ROC curve. \textbf{(b)} Precision--recall; the
 dashed line is the $0.160$ event prevalence, the no-skill floor.}
@@ -1108,7 +1108,7 @@ Clinical vs.\ annotated AHI & 0.687 & & & & \\
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.85\textwidth]{figures/revision/fig_rev_ahi.pdf}
+\includegraphics[width=0.75\textwidth]{figures/revision/fig_rev_ahi.pdf}
 \caption{MM-Net AHI estimate against the annotated AHI. Left: iSLEEPS, ten-fold test patients.
 Right: ISRUC-I, MM-Net trained on iSLEEPS only and applied without retraining
 (Section~\ref{sec:external}). Shading marks the AASM severity bands; the dashed line is
@@ -1371,14 +1371,14 @@ The authors declare that they have no known competing financial interests or per
 relationships that could have appeared to influence the work reported in this paper.
 
 \section*{CRediT Authorship Contribution Statement}
-\pend{\textbf{Md Wahiduzzaman Suva:} Conceptualization, Methodology, Software, Formal analysis,
+\textbf{Md Wahiduzzaman Suva:} Conceptualization, Methodology, Software, Formal analysis,
 Investigation, Writing -- original draft. \textbf{Esm-e Moula Chowdhury Abha:} Methodology,
 Software, Validation, Writing -- original draft. \textbf{Md Imtiaj Alam Sajin:} Software,
 Investigation, Data curation, Visualization, Writing -- original draft. \textbf{Md Iftekharul
 Mobin:} Conceptualization, Supervision, Project administration, Writing -- review \& editing.
 \textbf{M. Abdullah-Al-Wadud:} Funding acquisition, Resources, Writing -- review \& editing.
 \textbf{Saifur Rahman Sabuj:} Validation, Writing -- review \& editing. \textbf{Jia Uddin:}
-Conceptualization, Supervision, Writing -- review \& editing.}
+Conceptualization, Supervision, Writing -- review \& editing.
 
 \section*{Declaration of Generative AI and AI-Assisted Technologies in the Writing Process}
 During the preparation of this work the authors used ChatGPT (OpenAI) and Claude (Anthropic) to
