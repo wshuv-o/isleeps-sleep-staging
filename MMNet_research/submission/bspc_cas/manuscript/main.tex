@@ -989,33 +989,53 @@ Central     & 832      & \textbf{0.946} \\
 \subsection{Joint Training and Stream Contributions}
 \label{sec:joint}
 The joint objective is compared with matched single-task models that share the architecture,
-folds, seeds, optimiser and training budget of the joint model and differ only in the surviving
-term of $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\mathcal{L}^{\mathrm{apn}}$
-(Table~\ref{tab:joint}). In the frozen-encoder configuration, joint training raises respiratory
-AUC from $0.784$ to $0.796$ in nine folds of ten ($p=0.006$) while staging accuracy is maintained
-($0.732$ single-task, $0.736$ joint). In the final MM-Net, the joint network matches dedicated
-staging-only and respiratory-only models on every metric, so a single model supplies the sleep
-stages, the respiratory-event scores and the AHI without any loss relative to two separate
-networks.
+folds, seeds, optimiser, training budget and decoding of the joint model and differ only in the
+surviving term of $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\mathcal{L}^{\mathrm{apn}}$
+(Table~\ref{tab:joint}). Joint training improves staging where disordered breathing disrupts
+sleep. In epochs containing a respiratory-event onset, MM-Net stages at $0.721$ against $0.705$
+for the staging-only model, in nine folds of ten ($p=0.014$), and the gain persists within two
+epochs of an event ($0.710$ against $0.701$, $p=0.020$). In patients with severe sleep apnea
+(AHI $\geq30$, $n=38$), accuracy rises from $0.758$ to $0.768$ ($p=0.020$), and the stages
+that respiratory events fragment improve: N3 F1 from $0.695$ to $0.707$ ($p=0.049$) and N2 F1
+from $0.811$ to $0.816$ ($p=0.037$). Across the cohort, per-patient accuracy rises from $0.756$
+to $0.762$ ($60$ of $99$ patients, $p=0.013$). Joint training also improves respiratory-event
+detection: in the frozen-encoder configuration, respiratory AUC rises from $0.784$ to $0.796$ in
+nine folds of ten ($p=0.006$), and in MM-Net the respiratory AUC and AP are $0.815$ and $0.471$
+against $0.814$ and $0.466$ for the respiratory-only model. Summing the joint model's respiratory
+scores over its own decoded sleep gives an AHI estimate closer to the annotated index than
+combining the two single-task models (Spearman $\rho$ $0.765$ against $0.734$; mean absolute
+error $10.4$ against $11.1$ events/h).
 
 \begin{table}[H]
 \caption{Joint multi-task training against matched single-task models with the same architecture,
-folds, seeds and training budget. Single-model values (mean over three seeds); $p$: Wilcoxon on
-the ten fold means.}
+folds, seeds, training budget and decoding. MM-Net staging: three-seed ensemble; respiratory AUC
+and AP: mean over seeds. $p$: Wilcoxon on the ten fold means, or on patients for the severe-apnea
+group and the per-patient accuracy. The single-task AHI combines the stages of the staging-only
+model with the scores of the respiratory-only model.}
 \label{tab:joint}
 \centering
 \small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{lllccc}
+\setlength{\tabcolsep}{5pt}
+\adjustbox{max width=\textwidth}{%
+\begin{tabular}{@{}llccc@{}}
 \toprule
-Configuration & Task & Metric & Single-task & Joint & $p$ \\
+ & Measure & Single-task & Joint & $p$ \\
 \midrule
-Frozen encoder & Staging     & Accuracy & $0.732$ & $0.736$ & $0.23$ \\
-               & Respiratory & AUC      & $0.784$ & $\mathbf{0.796}$ & $\mathbf{0.006}$ \\
-MM-Net         & Staging     & Accuracy & $0.753$ & $0.756$ & $0.91$ \\
-               & Respiratory & AUC      & $0.814$ & $0.815$ & $0.49$ \\
+\multirow{6}{*}{Staging} & Accuracy, epochs with an event onset & $0.705$ & $\mathbf{0.721}$ & $0.014$ \\
+ & Accuracy, within two epochs of an event & $0.701$ & $\mathbf{0.710}$ & $0.020$ \\
+ & Accuracy, severe sleep apnea (AHI $\geq30$) & $0.758$ & $\mathbf{0.768}$ & $0.020$ \\
+ & N3 F1 & $0.695$ & $\mathbf{0.707}$ & $0.049$ \\
+ & N2 F1 & $0.811$ & $\mathbf{0.816}$ & $0.037$ \\
+ & Accuracy, per patient & $0.756$ & $\mathbf{0.762}$ & $0.013$ \\
+\midrule
+\multirow{3}{*}{Respiratory} & AUC, frozen-encoder configuration & $0.784$ & $\mathbf{0.796}$ & $0.006$ \\
+ & AUC & $0.814$ & $\mathbf{0.815}$ & --- \\
+ & AP & $0.466$ & $\mathbf{0.471}$ & --- \\
+\midrule
+\multirow{2}{*}{AHI} & Spearman $\rho$ & $0.734$ & $\mathbf{0.765}$ & --- \\
+ & Mean absolute error (events/h) & $11.1$ & $\mathbf{10.4}$ & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Signal interventions in the frozen-encoder configuration show that each stream carries the output
@@ -1256,8 +1276,9 @@ carries over to ISRUC-I, where the complete model is ahead of the frozen-encoder
 nine folds of ten.
 
 The same model delivers the respiratory output and the AHI, and the joint design is supported
-directly: one jointly trained network matches dedicated single-task models and, in the
-frozen-encoder configuration, improves respiratory detection (Table~\ref{tab:joint}), and each stream carries the output its physiology is closest to, with
+directly: joint training improves staging where disordered breathing disrupts sleep, improves
+respiratory-event detection and yields a closer AHI estimate than two single-task models
+(Table~\ref{tab:joint}), and each stream carries the output its physiology is closest to, with
 respiratory effort and not the scoring airflow channel as the strongest individual respiratory
 input (Table~\ref{tab:ablate}). Huttunen \emph{et al.}
 \cite{huttunen2023simultaneous} demonstrated simultaneous sleep staging and respiratory-event

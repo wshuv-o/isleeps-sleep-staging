@@ -19,9 +19,10 @@ one overnight recording:
  - iSLEEPS (99 patients with subacute ischemic stroke): 76.3% staging accuracy (Cohen's kappa
    0.656) and 0.825 respiratory-event AUC, ahead of thirteen staging architectures retrained on
    the same patient-independent folds (Holm-corrected p <= 0.025 for every comparison).
- - Joint training improves respiratory-event detection over a matched single-task model without
-   reducing staging accuracy, and modality removal shows that each stream carries the output
-   closest to its physiology.
+  - Joint training improves staging where disordered breathing disrupts sleep (epochs with a
+   respiratory-event onset: 72.1% against 70.5%, 9 of 10 folds; severe sleep apnea: 76.8% against
+   75.8%) and improves respiratory-event detection, and modality removal shows that each stream
+   carries the output closest to its physiology.
  - ISRUC-I (sleep disorders): 80.3% accuracy and 0.889 respiratory AUC; Sleep-EDF (healthy
    sleep): 86.4% accuracy.
  - Trained on iSLEEPS and applied without retraining, respiratory detection reaches 0.833 AUC

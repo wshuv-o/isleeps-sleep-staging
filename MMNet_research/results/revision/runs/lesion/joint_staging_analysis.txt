@@ -1,0 +1,32 @@
+Final MM-Net, joint vs staging-only (three-seed ensemble, HMM), 99 test patients
+
+1. overall
+  overall accuracy                       staging-only 0.7565  joint 0.7626  diff +0.0061  up 7/10 folds  Wilcoxon p=0.084
+  overall accuracy                       staging-only 0.7564  joint 0.7624  diff +0.0060  up 60/99 patients  Wilcoxon p=0.013
+
+2. epochs near a respiratory-event onset vs the rest
+  near event (+-0 ep) accuracy           staging-only 0.7050  joint 0.7207  diff +0.0157  up 9/10 folds  Wilcoxon p=0.014
+  away from events (+-0 ep) accuracy     staging-only 0.7648  joint 0.7695  diff +0.0047  up 5/10 folds  Wilcoxon p=0.492
+  near event (+-0 ep) accuracy           staging-only 0.7059  joint 0.7183  diff +0.0123  up 52/98 patients  Wilcoxon p=0.000
+  away from events (+-0 ep) accuracy     staging-only 0.7643  joint 0.7688  diff +0.0045  up 52/99 patients  Wilcoxon p=0.116
+  near event (+-1 ep) accuracy           staging-only 0.7001  joint 0.7108  diff +0.0107  up 9/10 folds  Wilcoxon p=0.027
+  away from events (+-1 ep) accuracy     staging-only 0.7793  joint 0.7839  diff +0.0046  up 5/10 folds  Wilcoxon p=0.492
+  near event (+-1 ep) accuracy           staging-only 0.7042  joint 0.7109  diff +0.0067  up 54/98 patients  Wilcoxon p=0.012
+  away from events (+-1 ep) accuracy     staging-only 0.7801  joint 0.7847  diff +0.0047  up 49/99 patients  Wilcoxon p=0.262
+  near event (+-2 ep) accuracy           staging-only 0.7009  joint 0.7102  diff +0.0093  up 9/10 folds  Wilcoxon p=0.020
+  away from events (+-2 ep) accuracy     staging-only 0.7876  joint 0.7925  diff +0.0049  up 5/10 folds  Wilcoxon p=0.492
+  near event (+-2 ep) accuracy           staging-only 0.7060  joint 0.7130  diff +0.0071  up 56/98 patients  Wilcoxon p=0.006
+  away from events (+-2 ep) accuracy     staging-only 0.7908  joint 0.7957  diff +0.0048  up 47/99 patients  Wilcoxon p=0.283
+
+3. patients by annotated AHI (per-patient accuracy)
+  AHI normal <5 (n=12)                   staging-only 0.7613  joint 0.7635  diff +0.0022  up 8/12 patients  Wilcoxon p=0.519
+  AHI mild 5-15 (n=21)                   staging-only 0.7579  joint 0.7668  diff +0.0089  up 13/21 patients  Wilcoxon p=0.179
+  AHI moderate 15-30 (n=28)              staging-only 0.7504  joint 0.7509  diff +0.0005  up 15/28 patients  Wilcoxon p=0.755
+  AHI severe >=30 (n=38)                 staging-only 0.7584  joint 0.7680  diff +0.0095  up 24/38 patients  Wilcoxon p=0.020
+
+4. per-class F1 (fold-level)
+  F1 W                                   staging-only 0.8015  joint 0.8086  diff +0.0071  up 6/10 folds  Wilcoxon p=0.275
+  F1 N1                                  staging-only 0.2039  joint 0.1977  diff -0.0062  up 3/10 folds  Wilcoxon p=0.432
+  F1 N2                                  staging-only 0.8114  joint 0.8159  diff +0.0045  up 8/10 folds  Wilcoxon p=0.037
+  F1 N3                                  staging-only 0.6948  joint 0.7070  diff +0.0122  up 8/10 folds  Wilcoxon p=0.049
+  F1 REM                                 staging-only 0.7787  joint 0.7897  diff +0.0110  up 7/10 folds  Wilcoxon p=0.160
