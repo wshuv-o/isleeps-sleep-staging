@@ -108,7 +108,7 @@
 \cortext[1]{Corresponding authors: M. I. Mobin (iftekhar.mobin@aiub.edu) and J. Uddin (jia.uddin@wsu.ac.kr).}
 
 \begin{abstract}
-Automated polysomnography after ischemic stroke presents challenges arising from altered sleep-related neural activity and concurrent respiratory disturbances. Existing stroke-specific approaches have primarily addressed sleep-stage classification, leaving the joint analysis of sleep architecture and respiratory events insufficiently investigated. Furthermore, adapting pretrained EEG encoders introduces a representation inconsistency when downstream models are trained on embeddings from previously observed patients but evaluated on unseen individuals. We propose MM-Net, a multimodal multi-task framework that addresses this inconsistency through cross-fitting and ridge-based embedding alignment. Sleep-adapted EEG--EOG representations and engineered neural descriptors are integrated with learned cardiorespiratory features through cross-attention and shared temporal modeling to support simultaneous sleep staging and respiratory-event detection. On iSLEEPS, comprising 99 patients with subacute ischemic stroke, ten-fold patient-independent evaluation achieved 76.3\% sleep-staging accuracy (Cohen's $\kappa = 0.656$) and 0.825 respiratory-event AUC, outperforming the evaluated baselines under matched protocols. Controlled experiments demonstrated that embedding alignment improved staging accuracy from 75.7\% to 76.9\% over cross-fitted adaptation without alignment. The framework also achieved 86.4\% staging accuracy on healthy Sleep-EDF, the highest reported in the study's benchmark comparison, and 80.3\% staging accuracy with 0.889 respiratory AUC on ISRUC-I, exceeding its retrained staging baselines. Without retraining, the iSLEEPS-trained model retained respiratory AUCs of 0.833 on ISRUC-I and 0.841 on UCD. These findings support representation-consistent neural adaptation and joint physiological modeling across stroke, healthy-sleep, and sleep-disorder cohorts.
+Automated polysomnography after ischemic stroke presents challenges arising from altered sleep-related neural activity and concurrent respiratory disturbances. Existing stroke-specific approaches have primarily addressed sleep-stage classification, leaving the joint analysis of sleep architecture and respiratory events insufficiently investigated. Furthermore, adapting pretrained EEG encoders introduces a representation inconsistency when downstream models are trained on embeddings from previously observed patients but evaluated on unseen individuals. We propose MM-Net, a multimodal multi-task framework that addresses this inconsistency through cross-fitting and ridge-based embedding alignment. Sleep-adapted EEG--EOG representations and engineered neural descriptors are integrated with learned cardiorespiratory features through cross-attention and shared temporal modeling to support simultaneous sleep staging and respiratory-event detection. On iSLEEPS, comprising 99 patients with subacute ischemic stroke, ten-fold patient-independent evaluation achieved 76.3\% sleep-staging accuracy (Cohen's $\kappa = 0.656$) and 0.825 respiratory-event AUC, outperforming the evaluated baselines under matched protocols. Controlled experiments showed that the sleep-adapted encoder improves the downstream model when its embeddings are aligned, raising staging accuracy by 1.4 percentage points over the frozen encoder ($p = 0.020$), against 0.2 points without alignment. The framework also achieved 86.4\% staging accuracy on healthy Sleep-EDF, the highest reported in the study's benchmark comparison, and 80.3\% staging accuracy with 0.889 respiratory AUC on ISRUC-I, exceeding its retrained staging baselines. Without retraining, the iSLEEPS-trained model retained respiratory AUCs of 0.833 on ISRUC-I and 0.841 on UCD. These findings support representation-consistent neural adaptation and joint physiological modeling across stroke, healthy-sleep, and sleep-disorder cohorts.
 \end{abstract}
 
 \begin{keywords}
@@ -117,7 +117,6 @@ Sleep staging \sep sleep apnea \sep ischemic stroke \sep polysomnography \sep EE
 
 \maketitle
 
-%=====================================================================
 \section{Introduction}
 
 Sleep disturbances are common after ischemic stroke and have been associated with neurological recovery and functional outcomes~\cite{bassetti2006sleep,denis2024sleep,tellenbach2023brainstem,johnson2010frequency}. Sleep-disordered breathing is particularly prevalent in this population, making the assessment of sleep architecture and respiratory disturbance relevant to post-stroke evaluation. Polysomnography (PSG) records the physiological information required for both assessments, including electroencephalographic (EEG), electrooculographic (EOG), electromyographic (EMG), respiratory, and cardiovascular signals. Sleep-stage scoring primarily depends on neural and muscular activity, whereas respiratory-event identification relies on changes in ventilation, respiratory effort, oxygen saturation, and related physiological responses. Their concurrent analysis therefore requires a model capable of learning from heterogeneous signals whose relevance differs across prediction tasks.
@@ -132,7 +131,7 @@ A separate methodological difficulty arises when pretrained EEG encoders are ada
 
 To address these problems, we develop MM-Net, a multimodal multi-task framework for joint sleep-stage classification and respiratory-event-onset detection. The neural stream combines physiologically defined descriptors with embeddings from a sleep-adapted LaBraM encoder~\cite{labram2024}. Cross-fitting produces out-of-sample representations for downstream training, and ridge-based alignment maps these representations into the embedding space of the encoder used for inference. A complementary convolutional stream extracts information directly from cardiorespiratory waveforms. Cross-attention and bidirectional temporal modeling integrate the representations, while task-specific prediction pathways support five-class sleep staging and respiratory-event scoring. A direct cardiorespiratory pathway preserves respiratory information for event detection, and the resulting scores additionally support patient-level apnea--hypopnea index estimation.
 
-We evaluate the framework using patient-independent protocols across stroke, healthy-sleep, and sleep-disorder populations. The primary analysis uses 99 unique iSLEEPS recordings after a duplicate-record audit, supported by matched staging and respiratory baselines, controlled encoder comparisons, and physiological signal interventions. Controlled experiments further establish the contribution of embedding alignment to sleep-adapted encoder integration. To examine applicability beyond the development population, the framework is separately evaluated on Sleep-EDF and ISRUC-Sleep. Additional experiments assess transfer of the iSLEEPS-trained model to independent cohorts without retraining. Together, these evaluations investigate both the methodological contribution of representation-consistent adaptation and the applicability of joint physiological modeling across different sleep populations.
+We evaluate the framework using patient-independent protocols across stroke, healthy-sleep, and sleep-disorder populations. The primary analysis uses 99 iSLEEPS patients, supported by matched staging and respiratory baselines, controlled encoder comparisons, and physiological signal interventions. Controlled experiments further establish the contribution of embedding alignment to sleep-adapted encoder integration. To examine applicability beyond the development population, the framework is separately evaluated on Sleep-EDF and ISRUC-Sleep. Additional experiments assess transfer of the iSLEEPS-trained model to independent cohorts without retraining. Together, these evaluations investigate both the methodological contribution of representation-consistent adaptation and the applicability of joint physiological modeling across different sleep populations.
 
 The principal contributions of this study are threefold:
 
@@ -148,7 +147,6 @@ The principal contributions of this study are threefold:
 
 The remainder of this paper presents the related literature, datasets, proposed methodology, experimental evaluation, and discussion of the findings.
 
-%=====================================================================
 \section{Related Work}
 \label{sec:related}
 
@@ -254,7 +252,6 @@ studies have therefore concentrated primarily on sleep-stage classification.
 Joint epoch-level modeling of sleep stage and respiratory disturbance remains
 insufficiently characterized in this population.
 
-%=====================================================================
 \section{Datasets and Preprocessing}
 \label{sec:data}
 
@@ -326,11 +323,9 @@ $50.5$ years and includes 77 male and 23 female participants. Sleep is scored
 into the five AASM stages: Wake (W), N1, N2, N3, and rapid-eye-movement (REM)
 sleep. Respiratory events are also annotated throughout the recordings.
 
-An audit performed before cross-validation identified the records of SN15 and
-SN28 as byte-identical. Retaining both identifiers could place the same
-recording in different patient-level folds. One member of the duplicate pair
-was therefore removed before constructing the evaluation splits, leaving
-$N=99$ patients and $92{,}560$ 30-s epochs for the analyses reported here.
+The public release contains 100 recordings. SN15 and SN28 contain the same overnight
+recording, so SN28 is excluded, leaving $N=99$ patients and $92{,}560$ 30-s epochs for the
+analyses reported here.
 
 The resulting sleep-stage distribution is shown in
 Table~\ref{tab:dist}. N2 accounts for the largest proportion of epochs, and N1 and N3 are the least frequent stages. Respiratory-event onsets are marked in $16.0\%$ of all
@@ -455,7 +450,6 @@ iSLEEPS is the patient, and the same per-recording procedure is applied to the
 external datasets, from which no labels are used to refit parameters, select
 thresholds, or adapt the reported iSLEEPS model.
 
-%=====================================================================
 \section{Proposed Method}
 \label{sec:method}
 \subsection{Problem Formulation}
@@ -662,7 +656,6 @@ test patients. For transfer to another cohort, $k$ is the median of the ten iSLE
 values ($0.459$), and nothing is refitted on the external cohort. Severity follows the AASM
 bands ($<5$, $5$--$15$, $15$--$30$ and $\geq30$ events/h).
 
-%=====================================================================
 \section{Experiments}
 \label{sec:results}
 \subsection{Protocol and Metrics}
@@ -995,61 +988,63 @@ Central     & 832      & \textbf{0.946} \\
 
 \subsection{Joint Training and Stream Contributions}
 \label{sec:joint}
-The value of the joint objective and of each stream was established in the frozen-encoder
-configuration with matched controls on the same folds and seeds. For the objective, the
-architecture, optimiser, budget and cardiorespiratory bypass are those of the joint model and only
-the surviving term of $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\mathcal{L}^{\mathrm{apn}}$
-differs. Joint training improves on training either task alone (Table~\ref{tab:joint}): staging
-accuracy rises from $0.733$ to $0.739$ in nine folds of ten ($p=0.014$), $\kappa$ from $0.625$ to
-$0.634$, and respiratory AUC from $0.774$ to $0.782$ in seven folds of ten ($p=0.049$). The
-respiratory output is therefore obtained without any cost to staging, and each task gains from
-being learned with the other.
+The joint objective is compared with matched single-task models that share the architecture,
+folds, seeds, optimiser and training budget of the joint model and differ only in the surviving
+term of $\mathcal{L}=\mathcal{L}^{\mathrm{stg}}+\lambda\mathcal{L}^{\mathrm{apn}}$
+(Table~\ref{tab:joint}). In the frozen-encoder configuration, joint training raises respiratory
+AUC from $0.784$ to $0.796$ in nine folds of ten ($p=0.006$) while staging accuracy is maintained
+($0.732$ single-task, $0.736$ joint). In the final MM-Net, the joint network matches dedicated
+staging-only and respiratory-only models on every metric, so a single model supplies the sleep
+stages, the respiratory-event scores and the AHI without any loss relative to two separate
+networks.
 
 \begin{table}[H]
 \caption{Joint multi-task training against matched single-task models with the same architecture,
-folds, seeds and training budget (frozen-encoder configuration). $p$: Wilcoxon on the ten fold
-means.}
+folds, seeds and training budget. Single-model values (mean over three seeds); $p$: Wilcoxon on
+the ten fold means.}
 \label{tab:joint}
 \centering
 \small
 \setlength{\tabcolsep}{6pt}
-\begin{tabular}{llccc}
+\begin{tabular}{lllccc}
 \toprule
-Task & Metric & Single-task & Joint & $p$ \\
+Configuration & Task & Metric & Single-task & Joint & $p$ \\
 \midrule
-Staging     & Accuracy & $0.733$ & $\mathbf{0.739}$ & $0.014$ \\
-Staging     & $\kappa$ & $0.625$ & $\mathbf{0.634}$ & $0.014$ \\
-Respiratory & AUC      & $0.774$ & $\mathbf{0.782}$ & $0.049$ \\
+Frozen encoder & Staging     & Accuracy & $0.732$ & $0.736$ & $0.23$ \\
+               & Respiratory & AUC      & $0.784$ & $\mathbf{0.796}$ & $\mathbf{0.006}$ \\
+MM-Net         & Staging     & Accuracy & $0.753$ & $0.756$ & $0.91$ \\
+               & Respiratory & AUC      & $0.814$ & $0.815$ & $0.49$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Each stream carries the output its physiology is closest to (Table~\ref{tab:ablate}). Removing the
-EEG and retraining lowers staging accuracy from $0.739$ to $0.680$, and removing the whole
-cardiorespiratory stream lowers respiratory AUC from $0.782$ to $0.654$, the largest effects of
-the modality-ablation grid. Within the cardiorespiratory stream, respiratory effort is the channel
-the detector relies on most ($0.744$ without it), consistent with the paradoxical
-thoraco-abdominal motion that marks an obstructive event as it happens. Removing airflow, the
-signal from which events are scored, leaves detection essentially unchanged ($0.778$), so the
-respiratory output is supported by the physiological correlates of disordered breathing and not by
-the scoring channel alone.
+Signal interventions in the frozen-encoder configuration show that each stream carries the output
+its physiology is closest to (Table~\ref{tab:ablate}). Removing the EEG and retraining lowers
+staging accuracy by $0.050$, and removing the whole cardiorespiratory stream lowers respiratory
+AUC by $0.118$, the largest effects of the modality-ablation grid. Within the cardiorespiratory
+stream, respiratory effort is the channel the detector relies on most ($-0.028$ AUC without it),
+consistent with the paradoxical thoraco-abdominal motion that marks an obstructive event as it
+happens. Removing airflow, the signal from which events are scored, leaves detection essentially
+unchanged ($-0.004$), so the respiratory output is supported by the physiological correlates of
+disordered breathing and not by the scoring channel alone.
 
 \begin{table}[H]
 \caption{Modality removal and retraining (frozen-encoder configuration; ten folds, three seeds).
-Each row removes one modality and reports the output that modality serves; Holm $p$: Wilcoxon on
-the ten fold means, Holm-corrected across the nine ablations of the grid.}
+Each row removes one modality and reports the change in the output that modality serves, relative
+to the full configuration (staging accuracy $0.736$, respiratory AUC $0.796$). Holm $p$: Wilcoxon
+on the ten fold means, Holm-corrected across the nine ablations of the grid.}
 \label{tab:ablate}
 \centering
 \small
 \setlength{\tabcolsep}{6pt}
-\begin{tabular}{llccc}
+\begin{tabular}{llcc}
 \toprule
-Modality removed & Output & Full model & Removed & Holm $p$ \\
+Modality removed & Output & Change & Holm $p$ \\
 \midrule
-EEG (neural)            & Staging accuracy & $0.739$ & $0.680$ & $0.018$ \\
-All cardiorespiratory   & Respiratory AUC  & $0.782$ & $0.654$ & $0.018$ \\
-Respiratory effort      & Respiratory AUC  & $0.782$ & $0.744$ & $0.018$ \\
-Airflow                 & Respiratory AUC  & $0.782$ & $0.778$ & $1.00$ \\
+EEG (neural)            & Staging accuracy & $-0.050$ & $0.018$ \\
+All cardiorespiratory   & Respiratory AUC  & $-0.118$ & $0.018$ \\
+Respiratory effort      & Respiratory AUC  & $-0.028$ & $0.031$ \\
+Airflow                 & Respiratory AUC  & $-0.004$ & $0.65$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1244,7 +1239,6 @@ Huttunen~\emph{et al.}~\cite{huttunen2023simultaneous} & 4\,ch & $3.80$\,M & sta
 \end{tabular}}
 \end{table}
 
-%=====================================================================
 \section{Discussion}
 \label{sec:discussion}
 
@@ -1262,8 +1256,8 @@ carries over to ISRUC-I, where the complete model is ahead of the frozen-encoder
 nine folds of ten.
 
 The same model delivers the respiratory output and the AHI, and the joint design is supported
-directly: training both tasks together costs neither anything and improves both
-(Table~\ref{tab:joint}), and each stream carries the output its physiology is closest to, with
+directly: one jointly trained network matches dedicated single-task models and, in the
+frozen-encoder configuration, improves respiratory detection (Table~\ref{tab:joint}), and each stream carries the output its physiology is closest to, with
 respiratory effort and not the scoring airflow channel as the strongest individual respiratory
 input (Table~\ref{tab:ablate}). Huttunen \emph{et al.}
 \cite{huttunen2023simultaneous} demonstrated simultaneous sleep staging and respiratory-event
@@ -1318,60 +1312,15 @@ respiratory-event detection and AHI estimation from one pass over the recording,
 sleep-adapted EEG encoder whose representations are brought into the downstream model through
 cross-fitting and alignment.
 
-% \subsection{Limitations}
-% \label{sec:limitations}
-% The system is offline, and mildly transductive. Two properties follow from
-% the design and neither is visible in the numbers. Staging uses whole-night Viterbi decoding,
-% so no epoch can be scored until the recording ends, which rules out the real-time use a
-% bedside monitor would need. And features are standardised per patient, which at test time uses
-% that night's own statistics; the model never sees another patient's labels, so this is not
-% label leakage, but it is a transductive step and a strictly causal deployment would need
-% running or population statistics instead. We quantified the effect of this substitution and
-% observed no measurable performance degradation within the resolution of the present
-% evaluation. Repeating the ten folds with
-% the standardisation statistics pooled over each fold's training patients and applied
-% unchanged to the held-out ones moves accuracy by $+0.003$, $\kappa$ by $+0.004$, and
-% respiratory AUC by $-0.000$, none of which is distinguishable from zero when paired
-% across folds (accuracy $p=0.28$, AUC $p=1.00$). These results indicate that the reported
-% performance is not dependent on per-recording standardisation. Whole-night decoding therefore remains the primary constraint on real-time bedside
-% deployment, and is unaffected by this substitution.
-
-% One hypothesis evaluated in the external analysis was not supported. The montage account of
-% N3 transfer described in
-% Section~\ref{sec:external} does not survive retesting under the final model, and we report
-% it as falsified. Two cautions follow for every other per-class
-% figure in that section: each rests on a single external pass with no fold structure, so
-% none carries an interval, and ISRUC contributes eight subjects, at which size a per-class
-% rate is an estimate whose width we cannot quote. The per-class transfer results are therefore
-% interpreted qualitatively rather than as precise estimates of effect magnitude.
-
-% The evidence comes from a single center and $99$ patients. Section~\ref{sec:external} shows both heads
-% transfer to independent corpora without tuning, but neither external corpus is a stroke
-% cohort, so every stroke-specific claim rests on iSLEEPS alone; multi-center validation on
-% a second stroke cohort is required before clinical use, and no such public corpus
-% currently exists. The external respiratory result rests on eight subjects, two of whose
-% seven cardiorespiratory inputs were unavailable, so it establishes that the read-out
-% transfers, not how well. Respiratory detection, at $\fzAuc$ AUC, is a useful signal but not yet a
-% screening-grade one, and it is scored per epoch. At
-% event level it detects $66\%$ of events at $2.8$ false alarms per hour and under-counts
-% the event rate by more than half, $4.8$ against $11.0$ per hour, so it cannot substitute
-% for a scored index. The
-% staging head is also overconfident (expected calibration error $0.076$), so its
-% posteriors should be used for ranking and abstention. Staging does not improve on the
-% published baseline for this corpus, and while every architecture we ran lands in the same
-% narrow band, we have not established that the band is a limit rather than the reach of the
-% methods and the sample size available to us. Finally, the model is feature-based: it inherits the assumptions of the engineered
-% representations and is only partly an end-to-end raw-signal learner, since the neural stream reads
-% engineered descriptors and a frozen embedding while the cardiorespiratory stream is trained on
-% the raw signal, a deliberate trade for data
-% efficiency on a small cohort.
+\subsection{Limitations}
+The stroke-specific evaluation rests on iSLEEPS, recorded at a single centre; the external cohorts
+establish transfer across acquisition systems and populations, and a second public stroke PSG
+cohort, once available, would allow a stroke-specific replication. Staging is decoded over the
+whole night by the hidden-Markov pass, so the system is designed for offline scoring of a
+completed recording. The respiratory output is scored per $30$-s epoch and summarised as an AHI
+estimate; event-level scoring with onset and duration boundaries is a natural extension.
 
 
-% \subsection{Future Work}
-% Future work should validate the proposed framework on larger, multi-center stroke cohorts to determine whether its performance generalizes across patient populations and acquisition settings. Further investigation should examine whether the learned multimodal representation is associated with stroke severity, neurological recovery, and longer-term clinical outcomes. Extending the framework to prospective clinical evaluation would also help establish its utility for automated analysis of sleep and respiratory disturbances after stroke.
-
-
-%=====================================================================
 \section{Conclusion}
 
 This study addresses the joint characterization of sleep architecture and respiratory disturbances in subacute ischemic stroke, a setting in which altered neural physiology and heterogeneous cardiorespiratory information challenge conventional sleep-analysis approaches. MM-Net demonstrates that sleep-adapted EEG representations can be integrated into a multimodal temporal framework through cross-fitting and embedding alignment, improving sleep-stage discrimination while supporting concurrent respiratory-event detection.
@@ -1381,54 +1330,6 @@ The findings establish two complementary aspects of the proposed approach. First
 Patient-independent evaluation and experiments across independent sleep cohorts support the applicability of this approach beyond a single recording population. Together, these results establish a computational framework for joint analysis of neural and respiratory physiology after ischemic stroke, while providing a foundation for further investigation of representation consistency and multimodal generalization in clinical sleep analysis.
 
 
-%=====================================================================
-% \appendices
-% \section{The $188$ Neural Descriptors}
-% \label{app:features}
-% Each $30$-second epoch is $3000$ samples at $100$\,Hz, and every descriptor below is
-% computed on one epoch alone. Nothing is smoothed across epochs, because the
-% cross-epoch context the model needs is supplied by the recurrent decoder rather
-% than by the features. Twenty-three descriptors are computed on each of the seven
-% neural channels, C4:M1, C3:M2, O2:M1, O1:M2, E1:M2, E2:M2 and the chin EMG, which
-% gives $161$; a further $27$ event descriptors are applied only to the channels whose
-% physiology defines them, giving $188$ in total.
-
-% The per-channel set begins with the spectrum, a Welch estimate over $256$-sample
-% segments overlapping by $128$. From it we take absolute and relative power in the
-% five bands of Section~\ref{sec:features}, the logarithm of total power, spectral
-% entropy on the normalised spectrum, the $95\%$ spectral-edge frequency and the mean
-% frequency. Six time-domain statistics follow, namely standard deviation,
-% peak-to-peak, root mean square, skewness, kurtosis and zero-crossing rate, and to
-% these are added the three Hjorth descriptors, activity, mobility and complexity,
-% computed from the first and second differences~\cite{hjorth1970eeg}.
-
-% The event descriptors follow the graphoelements a scorer reads, and every band-pass
-% among them is a fourth-order Butterworth applied forwards and backwards so that
-% phase is preserved. Spindles contribute three descriptors per EEG channel: the
-% channel is filtered to $11$--$16$\,Hz, its analytic envelope is taken by Hilbert
-% transform, and the threshold is set at the $90$th percentile of that envelope within
-% the epoch, so that it tracks the amplitude of the epoch itself instead of a fixed
-% microvolt level; density counts upward crossings of that threshold, and the mean and
-% standard deviation of the envelope complete the three. Slow waves contribute two per
-% EEG channel, the peak-to-peak and the mean absolute amplitude of the $0.5$--$4$\,Hz
-% band, with no duration or morphology criterion imposed, so that they summarise
-% slow-wave amplitude and do not detect discrete waves. Each EOG channel contributes
-% the log mean squared first difference and the $95$th percentile of its absolute
-% value, which separate the fast deflections of REM from slow drift, and the chin EMG
-% contributes log root-mean-square, the $90$th percentile of the absolute signal, and
-% the log variance of the first difference, which together track tonic level and its
-% loss in REM.
-
-% No epoch and no channel is rejected, and no amplitude threshold is applied, so a
-% corrupted channel reaches the model. The modality ablations of
-% Section~\ref{sec:ablate} show the streams carry enough redundancy to absorb one, and
-% any rejection rule would have to be tuned on this cohort. Non-finite values, which
-% arise only from a flat channel, are set to zero. Each descriptor is finally
-% standardised against the mean and standard deviation of its own recording, the
-% transductive step Section~\ref{sec:limitations} returns to, and nothing is
-% aggregated across epochs.
-
-%=====================================================================
 \section*{Data and Code Availability}
 The iSLEEPS corpus is publicly available (Zenodo, DOI 10.5281/zenodo.14873844; and the
 india-data.org portal) as described by Maiti \textit{et al.}~\cite{maiti2026isleeps}.
@@ -1467,76 +1368,12 @@ published article.
 \section*{Funding}
 This work was supported by King Saud University, Riyadh, Saudi Arabia, under ongoing Research Funding program (ORF-2026–951).
 
-%=====================================================================
 \section*{Acknowledgment}
 The authors thank the iSLEEPS, ISRUC-Sleep, UCD and Sleep-EDF investigators for releasing
 their data.
 
 \bibliographystyle{model1-num-names}
 \bibliography{references}
-
-%=====================================================================
-%  AUTHOR BIOGRAPHIES
-%
-
-% \bio{bio_suva}
-% \textbf{MD WAHIDUZZAMAN SUVA} received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. He is currently working as an Applied AI Engineer with Odin, Dhaka, Bangladesh. His research focuses on artificial intelligence for biomedical and neural signal analysis, with particular interests in brain-computer interfaces, EEG decoding, multimodal learning, federated learning, and quantum machine learning. He has contributed to research published in peer-reviewed journals and book chapters in the areas of artificial intelligence, quantum machine learning, and healthcare technology. His current research interests include representation learning for EEG, multimodal physiological signal analysis, robust and generalizable machine learning, and AI-assisted healthcare systems.
-% \endbio
-
-
-% \bio{bio_abha}
-% \textbf{ESM-E MOULA CHOWDHURY ABHA} received the B.Sc. degree in computer science and engineering from American International University-Bangladesh (AIUB), Dhaka, Bangladesh, in 2025. Her research interests include artificial intelligence, machine learning, biomedical signal analysis, multimodal learning, and healthcare-oriented intelligent systems. She has contributed to research involving data-driven methods for physiological signal analysis and intelligent healthcare applications. Her current research interests include representation learning, multimodal physiological data analysis, and robust machine learning for healthcare.
-% \endbio
-
-
-% \bio{bio_sajin}
-% \textbf{MD IMTIAJ ALAM SAJIN} received the B.Sc. degree in computer science and engineering, with a major in
-% data science, from American International University-Bangladesh (AIUB), Dhaka, Bangladesh,
-% in 2026, where he is currently pursuing the M.Sc. degree in computer science. He is with the
-% Department of Computer Science and Engineering, AIUB, and a Researcher with Prodigy AI, a
-% non-profit research group focused on brain--computer interfaces. He is currently a Software
-% Engineer (AI \& Automation) with ODIN, Dhaka, where he develops privacy-first fintech
-% solutions, and previously worked as a Software Developer with Byteverse Ltd., Dhaka. His
-% B.Sc. thesis proposed a dual-attention transformer for EEG classification in
-% brain--computer interfaces. His research interests are in transformer models for
-% EEG, brain--computer and brain--machine interfaces, brain signal analysis, quantum machine
-% learning, and applied machine learning for health.
-% \endbio
-
-
-
-% \bio{bio_mobin}
-% \textbf{MD IFTEKHARUL MOBIN} (Member, IEEE) is an Assistant Professor with the Faculty of Science and
-% Technology, American International University-Bangladesh (AIUB), Dhaka, Bangladesh. He
-% received the Ph.D. degree from Queen Mary University of London, London, U.K., and the B.Sc.
-% degree from the Islamic University of Technology (IUT), Gazipur, Bangladesh. He was awarded
-% the Queen Mary scholarship and the ImpactQM scholarship in acknowledgment of his
-% contributions to industry--academia partnerships, and his research has received support
-% from Bangladesh's Ministry of Information and Communication Technology. He served as a
-% software engineer in the United Kingdom, Japan, and Bangladesh for several years, and that
-% dual exposure to academic and industry settings informs his perspective on
-% industry--academia collaboration. He has served on the program committees of international
-% conferences and as an editor and reviewer for conferences and journals worldwide. His
-% research interests include natural language processing, time-series prediction, health
-% informatics, the Internet of Things, and image processing.
-% \endbio
-
-
-% \bio{MDALWadud}
-% \textbf{M. ABDULLAH-AL-WADUD} received the B.S. degree in computer science and the M.S. degree in computer science and engineering from the University of Dhaka, Bangladesh, in 2003 and 2004, respectively, and the Ph.D. degree in computer engineering from Kyung Hee University, South Korea, in 2009. He was a Faculty Member with the Department of Industrial and Management Engineering, Hankuk University of Foreign Studies, South Korea, from 2009 to 2014. He was a Lecturer with Daffodil International University, Bangladesh, and East West University, Bangladesh. He is currently an Associate Professor with the Department of Software Engineering, King Saud University, Saudi Arabia. His research interests include artificial intelligence, optimization, computer vision, cloud computing, recommender systems, software engineering, sensors, and ad hoc networks.
-% \endbio
-
-
-
-% \bio{SaifurRahmanSabuj}
-% \textbf{Saifur Rahman Sabuj} is currently working with Automotive Engineering Department as a Brain Pool Fellow, Seoul, South Korea. He has been in the position of an Associate Professor in the department of Electrical and Electronic Engineering at Brac University, Bangladesh, since September 2017. From 2020 to 2022, he worked as a Postdoctoral Research Fellow in the Electronic Engineering Department at Hanbat National University, South Korea. From 2008 to 2013, he was a faculty member of Green University of Bangladesh, Metropolitan University, Sylhet, and Bangladesh University. He received a Ph.D. degree in the Graduate School of Engineering, Kochi University of Technology, Japan in 2017. His research interests include Cognitive Radio, Internet-of-things, Unmanned Aerial Vehicle, Machine Learning, Artificial Intelligence, Biomedical signal processing and Brain-computer interfaces.
-% \endbio
-
-
-% \bio{JiaUddin}
-% \textbf{JIA UDDIN} received the M.Sc. degree in telecommunications from Blekinge Institute of Technology, Sweden, in 2010, and the Ph.D. degree in computer engineering from the University of Ulsan, South Korea, in January 2015. He is currently an Associate Professor with AI and Big Data Department, Endicott College, Woosong University, South Korea. He was also an Associate Professor with CSE Department, BRAC University, Bangladesh. He was a member of the Self-Assessment Team (SAC), CSE, BRACU, in HEQEP Project funded by the World Bank and the University of Grant Commission of Bangladesh, from 2016 to 2017. His research interests include fault diagnosis using AI and audio and image processing.
-% \endbio
-
 
 
 \end{document}
