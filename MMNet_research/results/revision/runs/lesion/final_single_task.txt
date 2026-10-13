@@ -1,0 +1,6 @@
+Final MM-Net (base-nocw-cross-ftlae-p8-al): joint vs single-task, ten folds, seeds [42, 1, 7]
+acc    single 0.7528  joint 0.7557  diff +0.0029  folds up 3/10  Wilcoxon p=0.910
+kappa  single 0.6429  joint 0.6471  diff +0.0041  folds up 5/10  Wilcoxon p=0.846
+mf1    single 0.6565  joint 0.6609  diff +0.0044  folds up 7/10  Wilcoxon p=0.375
+auc    single 0.8137  joint 0.8154  diff +0.0018  folds up 7/10  Wilcoxon p=0.492
+ap     single 0.4659  joint 0.4711  diff +0.0052  folds up 5/10  Wilcoxon p=0.770
