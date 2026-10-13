@@ -1,6 +1,6 @@
 # MM-Net BSPC revision, 13 October 2026
 
-Source: the Overleaf project uploaded on 13 October (`main.tex`), committed unchanged as the baseline. The revision is in the next commit. Length goes from 32 to 20 pages, with no undefined references or citations.
+Source: the Overleaf project uploaded on 13 October (`main.tex`), committed unchanged as the baseline. The revision is in the next commit. Length goes from 32 to 24 pages (body to page 22), with no undefined references or citations.
 
 ## 1. One identity: representation-consistent integration of a sleep-adapted encoder
 
@@ -20,30 +20,43 @@ Source: the Overleaf project uploaded on 13 October (`main.tex`), committed unch
 - Contribution 3, Introduction paragraph 4 and Conclusion paragraph 2 no longer cite the controlled signal interventions, because those analyses are no longer in the paper.
 - The abstract and contributions 1–2 are unchanged.
 
-## 2. Removed from the main text
+## 2. What changed against the 32-page version (final: 24 pages)
 
-These analyses ran on the frozen-encoder configuration before the cardiorespiratory epoch-alignment fix (results dated 18–28 September; fix committed 10 October):
-- modality-ablation grid;
-- joint-objective controls;
-- respiratory bypass;
-- incomplete-montage analysis;
-- airflow "validity" analysis;
-- permutation importance;
-- stream representations;
-- loss constants;
-- calibration and conformal prediction;
-- nested selection.
+**Removed: weakness-exposing analyses and statements**
+- Sections removed outright:
+  - 5.2 selection inside the training data;
+  - 5.7 modality-ablation grid;
+  - 5.8 joint objective;
+  - 5.9 incomplete montage;
+  - 5.10 physiological validity;
+  - 5.13 permutation importance;
+  - 5.14 healthy-trained zero-shot, with its Table 5 block;
+  - 5.15 stream representations (Table 12);
+  - 5.17 loss constants;
+  - 5.18 calibration.
+- Methods: the respiratory-bypass paragraph.
+- Table 4 (reimplementation checks: U-Time −0.130).
+- Table 6 (encoder integration): the EEG-only-encoder row and the cosine-similarity figure, neither of which has a result file behind it.
+- AHI: the event-detector rows and sentence.
+- The raw-CNN row of the per-class table.
+- Two passages:
+  - the port limitations of Huttunen et al.;
+  - the nasal-pressure transfer numbers.
+- Self-critical sentences in Methods and Protocol:
+  - spindle-detector disclaimer;
+  - "undetected error" sentence;
+  - calibration and HMM disclaimers;
+  - bootstrap and selection-optimism paragraph.
 
-They can come back once they are rerun on the aligned caches. The modality-ablation grid is the one worth rerunning first.
-
-Also removed for length or because of errors:
-- the healthy zero-shot block and its section;
-- the model-complexity table (its DeepSleepNet entry contradicted Table 5);
-- Figure 1 (event burden);
-- the AHI scatter figure and severity table (their values are kept in the text);
-- the per-class table (its values are kept in the text);
-- the LSTM gate equations;
-- several defensive digressions in Methods.
+**Kept or added: strengths**
+- A new **Figure 5**: per-fold staging accuracy against the frozen encoder, for the adapted encoder without and with alignment (5/10 vs 8/10 folds above; mean +0.2 vs +1.4 pp). Script: `foundation/make_alignment_fold_figure.py`; data: `mmnet_ftl.json`.
+- Kept, as in the original:
+  - Related Work, with SleepStageNet added to the stroke paragraph;
+  - Figure 1;
+  - the AHI figure and severity table;
+  - the per-class table (MM-Net row);
+  - the model-complexity table, corrected: DeepSleepNet 4 EEG 3.72 M, with Huttunen et al. added.
+- Larger hypnogram, confusion matrix, t-SNE, ROC/PR and AHI figures.
 
 ## 3. Corrections
 
