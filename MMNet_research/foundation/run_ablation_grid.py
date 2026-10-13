@@ -22,7 +22,8 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final")
-SH = os.path.join(OUT, "ablation_shards")
+TAG = os.environ.get("MMNET_TAG", "")   # e.g. "_aligned": write beside, never over, earlier results
+SH = os.path.join(OUT, "ablation_shards" + TAG)
 
 # manuscript condition name -> (eeg_drop, card_drop)
 CONDITIONS = {

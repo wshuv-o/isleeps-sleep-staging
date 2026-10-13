@@ -38,6 +38,7 @@ import mmnet_core as C          # noqa: E402
 import sweep                    # noqa: E402
 
 OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final")
+TAG = os.environ.get("MMNET_TAG", "")   # e.g. "_aligned": write beside, never over, earlier results
 FINAL = dict(arm="A+labram", cardio="raw_cnn", cardio_mode="concat",
              temporal="lstm", hidden=256, drop=0.3, lr=3e-4, wd=1e-4)
 SEEDS = [42, 1, 7]
@@ -46,7 +47,7 @@ TASKS = ["apnea", "stage"]
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "single_task.json")
+    path = os.path.join(OUT, "single_task%s.json" % TAG)
     results = json.load(open(path)) if os.path.exists(path) else {}
     t0 = time.time()
 
@@ -78,7 +79,7 @@ def main():
                      results[key]["minutes"]), flush=True)
 
     # ---- fold-mean comparison against the joint model -----------------------
-    joint = json.load(open(os.path.join(OUT, "final_model.json")))
+    joint = json.load(open(os.path.join(OUT, "final_model%s.json" % TAG)))
     jkeys = [k for k in joint if k.startswith("final|")]
 
     def fold_means(rows, metric):

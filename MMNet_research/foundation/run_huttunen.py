@@ -65,7 +65,7 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 import mmnet_core as C          # noqa: E402
 
-MM = os.path.join(REPO, "data", "multimodal")
+MM = os.path.join(REPO, "data", os.environ.get("MMNET_MULTIMODAL", "multimodal"))
 OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final")
 FS = 32                         # their sampling rate, kept
 SAMP = FS * 30                  # 960 samples per 30 s epoch
@@ -77,7 +77,7 @@ DEV = C.DEV
 # preprocessing/build_pressure_cache.py), which iSLEEPS does record: with "Flow Th" as
 # the oronasal thermal sensor that gives all five of their Model 3 signals.
 FIVE = os.environ.get("HUTTUNEN_SIGNALS", "4") == "5"
-PFLOW = os.path.join(REPO, "data", "pressure_flow")
+PFLOW = os.path.join(REPO, "data", os.environ.get("MMNET_PFLOW", "pressure_flow"))
 
 # (kernel, filters, pool, dilation, se_ratio) -- DEFAULT_BLOCK_ARGS, verbatim
 BLOCKS = [(5, 32, 8, 2, 0.25), (5, 48, 6, 2, 0.25), (5, 64, 4, 2, 0.25),
@@ -314,7 +314,8 @@ def run_fold(data, tr, va, te, seed):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "huttunen5.json" if FIVE else "huttunen.json")
+    TAG = os.environ.get("MMNET_TAG", "")
+    path = os.path.join(OUT, ("huttunen5%s.json" if FIVE else "huttunen%s.json") % TAG)
     res = json.load(open(path)) if os.path.exists(path) else {}
     data = load()
     print("loaded %d patients at %d Hz, %d channels" % (len(data), FS, next(iter(data.values()))[0].shape[1]))

@@ -37,6 +37,7 @@ import mmnet_core as C          # noqa: E402
 import sweep                    # noqa: E402
 
 OUT = os.path.join(REPO, "MMNet_research", "results", "revision", "runs", "final")
+TAG = os.environ.get("MMNET_TAG", "")   # e.g. "_aligned": write beside, never over, earlier results
 FINAL = dict(arm="A+labram", cardio="raw_cnn", cardio_mode="concat",
              temporal="lstm", hidden=256, drop=0.3, lr=3e-4, wd=1e-4)
 
@@ -48,7 +49,7 @@ def main():
                     help="the seed whose predictions are saved for the derived analyses")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, "final_model.json")
+    path = os.path.join(OUT, "final_model%s.json" % TAG)
     results = json.load(open(path)) if os.path.exists(path) else {}
 
     for seed in a.seeds:
@@ -86,17 +87,17 @@ def main():
             P = r.get("pred")
             if P is not None:
                 np.savez_compressed(
-                    os.path.join(OUT, "predictions_seed%d.npz" % seed),
+                    os.path.join(OUT, "predictions_seed%d%s.npz" % (seed, TAG)),
                     y_true=np.asarray(P[0]), y_pred=np.asarray(P[1]),
                     apnea_true=np.asarray(P[2]), apnea_score=np.asarray(P[3]))
                 print("   saved pooled predictions (%d epochs)" % len(np.asarray(P[0])), flush=True)
             if "per_subject" in r:
                 json.dump(r["per_subject"],
-                          open(os.path.join(OUT, "per_subject_seed%d.json" % seed), "w"), indent=1)
+                          open(os.path.join(OUT, "per_subject_seed%d%s.json" % (seed, TAG)), "w"), indent=1)
                 print("   saved per-subject results (%d patients)" % len(r["per_subject"]), flush=True)
 
     # per-fold CSV in the same schema the submission bundle ships
-    csv_path = os.path.join(OUT, "final_per_fold.csv")
+    csv_path = os.path.join(OUT, "final_per_fold%s.csv" % TAG)
     with open(csv_path, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["seed", "fold", "acc", "mf1", "kappa", "apnea_auc", "apnea_ap"])
