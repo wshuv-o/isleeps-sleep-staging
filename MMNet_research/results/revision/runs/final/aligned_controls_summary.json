@@ -1,0 +1,169 @@
+{
+ "joint_vs_single": {
+  "stage|acc": {
+   "single": 0.7317,
+   "joint": 0.7362,
+   "delta": 0.0045,
+   "folds_joint_higher": 7,
+   "p": 0.2324
+  },
+  "stage|kappa": {
+   "single": 0.6232,
+   "joint": 0.6294,
+   "delta": 0.0062,
+   "folds_joint_higher": 7,
+   "p": 0.2324
+  },
+  "apnea|auc": {
+   "single": 0.7836,
+   "joint": 0.7958,
+   "delta": 0.0122,
+   "folds_joint_higher": 9,
+   "p": 0.0059
+  },
+  "apnea|ap": {
+   "single": 0.4354,
+   "joint": 0.449,
+   "delta": 0.0136,
+   "folds_joint_higher": 6,
+   "p": 0.1602
+  }
+ },
+ "ablation": {
+  "-ECG": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7375,
+    "full": 0.7362,
+    "delta": 0.0014,
+    "holm_p": 1.0
+   },
+   "auc": {
+    "removed": 0.7918,
+    "full": 0.7958,
+    "delta": -0.004,
+    "holm_p": 0.6545
+   }
+  },
+  "-EEG": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.6858,
+    "full": 0.7362,
+    "delta": -0.0504,
+    "holm_p": 0.018
+   },
+   "auc": {
+    "removed": 0.7839,
+    "full": 0.7958,
+    "delta": -0.0118,
+    "holm_p": 0.6545
+   }
+  },
+  "-EMG": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.733,
+    "full": 0.7362,
+    "delta": -0.0032,
+    "holm_p": 1.0
+   },
+   "auc": {
+    "removed": 0.7978,
+    "full": 0.7958,
+    "delta": 0.002,
+    "holm_p": 0.6545
+   }
+  },
+  "-EOG": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7307,
+    "full": 0.7362,
+    "delta": -0.0055,
+    "holm_p": 0.516
+   },
+   "auc": {
+    "removed": 0.7882,
+    "full": 0.7958,
+    "delta": -0.0076,
+    "holm_p": 0.3416
+   }
+  },
+  "-SpO2": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7411,
+    "full": 0.7362,
+    "delta": 0.0049,
+    "holm_p": 0.588
+   },
+   "auc": {
+    "removed": 0.788,
+    "full": 0.7958,
+    "delta": -0.0078,
+    "holm_p": 0.3416
+   }
+  },
+  "-airflow": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7345,
+    "full": 0.7362,
+    "delta": -0.0017,
+    "holm_p": 1.0
+   },
+   "auc": {
+    "removed": 0.7917,
+    "full": 0.7958,
+    "delta": -0.0041,
+    "holm_p": 0.6545
+   }
+  },
+  "-all cardio": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7386,
+    "full": 0.7362,
+    "delta": 0.0024,
+    "holm_p": 1.0
+   },
+   "auc": {
+    "removed": 0.6776,
+    "full": 0.7958,
+    "delta": -0.1182,
+    "holm_p": 0.018
+   }
+  },
+  "-effort": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7366,
+    "full": 0.7362,
+    "delta": 0.0004,
+    "holm_p": 1.0
+   },
+   "auc": {
+    "removed": 0.7682,
+    "full": 0.7958,
+    "delta": -0.0276,
+    "holm_p": 0.0312
+   }
+  },
+  "-pulse/HRV": {
+   "seeds": 3,
+   "acc": {
+    "removed": 0.7376,
+    "full": 0.7362,
+    "delta": 0.0014,
+    "holm_p": 1.0
+   },
+   "auc": {
+    "removed": 0.7927,
+    "full": 0.7958,
+    "delta": -0.0031,
+    "holm_p": 0.6545
+   }
+  }
+ }
+}
