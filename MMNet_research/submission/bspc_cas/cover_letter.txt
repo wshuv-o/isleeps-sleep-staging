@@ -23,6 +23,9 @@ one overnight recording:
    respiratory-event onset: 72.1% against 70.5%, 9 of 10 folds; severe sleep apnea: 76.8% against
    75.8%) and improves respiratory-event detection, and modality removal shows that each stream
    carries the output closest to its physiology.
+ - Staging is stable across stroke severity, disability and time since onset (NIHSS,
+   modified Rankin, Barthel), and the sleep-adapted encoder contributes most in patients
+   with moderate-to-severe deficits.
  - ISRUC-I (sleep disorders): 80.3% accuracy and 0.889 respiratory AUC; Sleep-EDF (healthy
    sleep): 86.4% accuracy.
  - Trained on iSLEEPS and applied without retraining, respiratory detection reaches 0.833 AUC

@@ -825,7 +825,7 @@ stage on this cohort for every evaluated model. A representative held-out night 
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.85\textwidth]{figures/revision/fig_hypnogram_final.pdf}
+\includegraphics[width=0.78\textwidth]{figures/revision/fig_hypnogram_final.pdf}
 \caption{An illustrative held-out night (patient SN90, three-seed MM-Net, staging accuracy
 $0.83$). \textbf{(A)} Predicted and reference hypnograms, REM highlighted. \textbf{(B)} EEG
 spectrogram, C4 derivation, $0$--$25$\,Hz. \textbf{(C)} Per-epoch stage-probability
@@ -835,7 +835,7 @@ ribbon; the black line is the maximum posterior.}
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.55\textwidth]{figures/revision/fig_confusion_final.pdf}
+\includegraphics[width=0.42\textwidth]{figures/revision/fig_confusion_final.pdf}
 \caption{Row-normalized confusion matrix for MM-Net (three-seed, pooled ten-fold test epochs,
 hidden-Markov operating point). Errors concentrate on N1, which is absorbed into Wake and N2.}
 \label{fig:confusion}
@@ -918,7 +918,7 @@ a gain in eight folds of ten.}
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.72\textwidth]{figures/revision/fig_rev_tsne.pdf}
+\includegraphics[width=0.66\textwidth]{figures/revision/fig_rev_tsne.pdf}
 \caption{t-SNE~\cite{vandermaaten2008tsne} of $4000$ epochs from the ten held-out patients of
 one fold, colored by scored stage. Left: frozen LaBraM. Right: the sleep-adapted, aligned
 EEG/EOG encoder used in MM-Net.}
@@ -1107,7 +1107,7 @@ Clinical vs.\ annotated AHI & 0.687 & & & & \\
 
 \begin{figure}[pos=H]
 \centering
-\includegraphics[width=0.75\textwidth]{figures/revision/fig_rev_ahi.pdf}
+\includegraphics[width=0.66\textwidth]{figures/revision/fig_rev_ahi.pdf}
 \caption{MM-Net AHI estimate against the annotated AHI. Left: iSLEEPS, ten-fold test patients.
 Right: ISRUC-I, MM-Net trained on iSLEEPS only and applied without retraining
 (Section~\ref{sec:external}). Shading marks the AASM severity bands; the dashed line is
@@ -1130,6 +1130,37 @@ Normal   & $<5$       & 15 & $0.784 \pm 0.057$ \\
 Mild     & $5$--$15$  & 23 & $0.754 \pm 0.092$ \\
 Moderate & $15$--$30$ & 23 & $0.764 \pm 0.083$ \\
 Severe   & $\geq 30$  & 38 & $0.758 \pm 0.078$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Staging Across Stroke Characteristics}
+\label{sec:stroke}
+Staging accuracy is stable across the clinical characteristics of the stroke
+(Table~\ref{tab:stroke}). Per-patient accuracy is unrelated to neurological severity (NIHSS,
+Spearman $\rho=0.15$, $p=0.15$), disability (modified Rankin scale, $\rho=0.13$, $p=0.22$),
+functional independence (Barthel index, $\rho=0.00$, $p=0.98$) and time since stroke onset
+($\rho=-0.06$, $p=0.62$), and patients with moderate-to-severe deficits (NIHSS $\geq5$) are
+staged at $0.778$ against $0.758$ for minor strokes. The sleep-adapted encoder contributes most in
+the most affected patients: $+0.028$ over the frozen encoder for NIHSS $\geq5$ and $+0.024$ for
+dependent patients (modified Rankin $3$--$5$), against $+0.004$ and $+0.005$ in minor and
+independent patients.
+
+\begin{table}[H]
+\caption{Sleep-staging accuracy of MM-Net (three-seed, per patient) by stroke severity (NIHSS) and
+functional status (modified Rankin scale) in iSLEEPS. Encoder gain: accuracy difference from the
+frozen-encoder reference of Table~\ref{tab:components} on the same patients.}
+\label{tab:stroke}
+\centering
+\small
+\begin{tabular}{llccc}
+\toprule
+Characteristic & Group & Patients & Staging acc\,$\uparrow$ & Encoder gain \\
+\midrule
+NIHSS          & $0$--$4$ (minor)              & 86 & $0.758$ & $+0.004$ \\
+               & $\geq5$ (moderate to severe)  & 12 & $0.778$ & $+0.028$ \\
+Modified Rankin & $0$--$2$ (independent)       & 88 & $0.757$ & $+0.005$ \\
+               & $3$--$5$ (dependent)          & 10 & $0.794$ & $+0.024$ \\
 \bottomrule
 \end{tabular}
 \end{table}

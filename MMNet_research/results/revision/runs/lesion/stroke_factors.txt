@@ -1,0 +1,17 @@
+Final MM-Net by stroke characteristics (99 patients)
+nihss    n=98  accuracy rho +0.147 (p=0.149)   encoder gain rho +0.186 (p=0.067)
+mrs      n=98  accuracy rho +0.125 (p=0.219)   encoder gain rho +0.077 (p=0.451)
+barthel  n=98  accuracy rho -0.002 (p=0.983)   encoder gain rho -0.080 (p=0.433)
+days     n=70  accuracy rho -0.061 (p=0.615)   encoder gain rho +0.043 (p=0.723)
+
+NIHSS 0-4 (minor)        n=86  accuracy 0.758  frozen 0.754  encoder gain +0.0043
+NIHSS >=5 (moderate+)    n=12  accuracy 0.778  frozen 0.750  encoder gain +0.0280
+mRS 0-2 (independent)    n=88  accuracy 0.757  frozen 0.752  encoder gain +0.0053
+mRS 3-5 (dependent)      n=10  accuracy 0.794  frozen 0.770  encoder gain +0.0240
+  NIHSS 0-4 (minor) vs NIHSS >=5 (moderate+): accuracy p=0.533, encoder gain p=0.177
+  mRS 0-2 (independent) vs mRS 3-5 (dependent): accuracy p=0.216, encoder gain p=0.382
+
+lesion side L  n=22  accuracy 0.786  encoder gain +0.0182
+lesion side R  n=46  accuracy 0.732  encoder gain -0.0001
+lesion side B  n=11  accuracy 0.760  encoder gain +0.0119
+  across sides: accuracy Kruskal p=0.052, encoder gain Kruskal p=0.315
